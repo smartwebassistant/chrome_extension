@@ -1,0 +1,23 @@
+{
+    "manifest_version": 3,
+    "name": "Webpage Text Reader",
+    "version": "1.0",
+    "description": "Read all texts of the current webpage.",
+    "permissions": [
+      "activeTab"
+    ],
+    "action": {
+      "default_popup": "popup.html"
+    },
+    "background": {
+      "service_worker": "background.js"
+    },
+    "content_scripts": [
+      {
+        "matches": ["<all_urls>"],
+        "js": ["content.js"],
+        "run_at": "document_end"
+      }
+    ]
+  }
+  
