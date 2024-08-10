@@ -1,231 +1,481 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const statusDisplay = document.getElementById('status');
-    const summaryTextArea = document.getElementById('textArea');
-    const startAnalyzeButton = document.getElementById('startAnalyzeButton');
-    const startProcessButton = document.getElementById('startProcessButton');
+document.addEventListener ('DOMContentLoaded', () => {
+  const statusDisplay = document.getElementById ('status');
+  const markdownContent = document.getElementById ('markdownContent');
 
-    //url of text_generation API
-    const gpu_url = 'http://gpu:5000/v1/chat/completions'; //text-generation-webui
-   //const gpu_url = 'http://gpu:11434/v1/chat/completions';   //ollama
-   //const gpu_url = 'http://gpu:3002/v1/chat/completions'; //llama.cpp
-    // const gpu_url = 'http://gpu:3003/v1/completions';
-    //url of vllm API
-    //const gpu_url = 'http://gpu:8088/v1/completions';
+  function displayMarkdown () {
+    const html = converter.makeHtml (markdownContent.innerHTML);
+    markdownContent.innerHTML = html;
+  }
 
-   // const global_api_service = 'text-generation-webui'
-    //const global_api_service = 'ollama'
-    const global_api_service = 'llama.cpp'
-    //const global_llm_model = '/data/dev/models/Starling-LM-7B-alpha'
-    //const global_llm_model = 'starling-lm'
-   // const global_llm_model = 'hermes'
+  function appendMarkdown (content) {
+    markdownContent.innerHTML += content;
+  }
 
-    const global_summarization_model_en = 'mistral-7b-instruct-v0.3'
-   // const global_summarization_model_en = 'llama3-8b-instruct'
-   const global_translation_model_cn = 'qwen1_5-7b-chat'
+  function initMarkdown () {
+    markdownContent.innerHTML = '';
+  }
 
-   const global_llm_model = 'qwen1_5-7b-chat'
-    
-    const global_max_tokens = 4096
-    const global_temperature = 0
-    const global_top_p = 0.9
-    const global_mode = 'instruct'
-    
-    function updateStatus(message) {
-        statusDisplay.textContent = message;
+  function updateStatus (message) {
+    statusDisplay.textContent = message;
+  }
+  let currentController = null;
+  const cancelButton = document.getElementById ('cancelButton');
+  const configButton = document.getElementById ('config');
+  const configPopup = document.getElementById ('configPopup');
+  const apiUrlInput = document.getElementById ('apiUrlInput');
+  const apiTokenInput = document.getElementById ('apiTokenInput');
+  const modelNameInput = document.getElementById ('modelNameInput');
+  const maxTokenInput = document.getElementById ('maxTokenInput');
+  const temperatureInput = document.getElementById ('temperatureInput');
+  const topPInput = document.getElementById ('topPInput');
+  const saveApiUrlButton = document.getElementById ('saveApiUrlButton');
+  const customPromptInput = document.getElementById ('customPromptInput');
+  const languageSelect = document.getElementById ('languageSelect');
+  const submitCustomPromptButton = document.getElementById (
+    'submitCustomPromptButton'
+  );
+  const storedPromptButtons = [
+    document.getElementById ('storedPrompt1Button'),
+    document.getElementById ('storedPrompt2Button'),
+    document.getElementById ('storedPrompt3Button'),
+    document.getElementById ('storedPrompt4Button'),
+    document.getElementById ('storedPrompt5Button'),
+  ];
+  const storedPromptInputs = [
+    document.getElementById ('storedPrompt1Input'),
+    document.getElementById ('storedPrompt2Input'),
+    document.getElementById ('storedPrompt3Input'),
+    document.getElementById ('storedPrompt4Input'),
+    document.getElementById ('storedPrompt5Input'),
+  ];
+  const storedPromptStorages = [
+    document.getElementById ('storedPrompt1Storage'),
+    document.getElementById ('storedPrompt2Storage'),
+    document.getElementById ('storedPrompt3Storage'),
+    document.getElementById ('storedPrompt4Storage'),
+    document.getElementById ('storedPrompt5Storage'),
+  ];
+
+  // Load the last used custom prompt from local storage
+  const lastCustomPrompt = localStorage.getItem ('lastCustomPrompt');
+  if (lastCustomPrompt) {
+    // Checks if lastCustomPrompt is not null and not an empty string
+    customPromptInput.value = lastCustomPrompt;
+  }
+
+  // Load settings from local storage
+  chrome.storage.local.get (
+    [
+      'apiUrl',
+      'apiToken',
+      'modelName',
+      'maxToken',
+      'temperature',
+      'topP',
+      'storedPrompt1',
+      'storedPrompt2',
+      'storedPrompt3',
+      'storedPrompt4',
+      'storedPrompt5',
+    ],
+    function (result) {
+      apiUrlInput.value =
+        result.apiUrl || 'https://api.openai.com/v1/chat/completions';
+      document.getElementById (
+        'apiUrlStorage'
+      ).textContent = `(Stored: ${result.apiUrl || 'None'})`;
+
+      apiTokenInput.value = result.apiToken || '';
+      modelNameInput.value = result.modelName || 'gpt-4o';
+      document.getElementById (
+        'modelNameStorage'
+      ).textContent = `(Stored: ${result.modelName || 'None'})`;
+
+      maxTokenInput.value = result.maxToken || 4096;
+      document.getElementById (
+        'maxTokenStorage'
+      ).textContent = `(Stored: ${result.maxToken || 'None'})`;
+
+      temperatureInput.value = result.temperature || 0.7;
+      document.getElementById (
+        'temperatureStorage'
+      ).textContent = `(Stored: ${result.temperature || 'None'})`;
+
+      topPInput.value = result.topP || 0.9;
+      document.getElementById (
+        'topPStorage'
+      ).textContent = `(Stored: ${result.topP || 'None'})`;
+
+      // Load stored prompts from local storage in a loop
+      storedPromptInputs.forEach ((input, index) => {
+        input.value = result[`storedPrompt${index + 1}`] || '';
+        document.getElementById (
+          `storedPrompt${index + 1}Storage`
+        ).textContent = `(Stored: ${result[`storedPrompt${index + 1}`].slice (0, 20) || 'None'})`;
+        //update the button text with the first 10 characters of the prompt
+        storedPromptButtons[index].title =
+          result[`storedPrompt${index + 1}`].slice (0, 100) || '';
+      });
+
+      updateStatus ('Ready.');
     }
+  );
 
-    function getContent(data) {
-        return data.choices[0].message.content.trim()
+  // Show or hide the configuration popup
+  configButton.addEventListener ('click', () => {
+    configPopup.style.display = configPopup.style.display === 'block'
+      ? 'none'
+      : 'block';
+  });
+
+  const testConnectionButton = document.getElementById ('testConnectionButton');
+
+  function isValidUrl (url) {
+    const pattern = new RegExp (
+      '^(https?:\/\/)?' + // protocol
+      '(([a-z\\d]([a-z\\d-]*[a-z\\d])*)' + // hostname
+      '(\\.([a-z\\d]([a-z\\d-]*[a-z\\d])*))*' + // domain name
+      '|((\\d{1,3}\\.){3}\\d{1,3}))' + // OR ip (v4) address
+      '(\\:\\d+)?(\/[-a-z\\d%_.~+]*)*' + // port and path
+      '(\\?[;&a-z\\d%_.~+=-]*)?' + // query string
+        '(\\#[-a-z\\d_]*)?$',
+      'i'
+    ); // fragment locator
+    return !!pattern.test (url);
+  }
+
+  testConnectionButton.addEventListener ('click', () => {
+    const apiUrl = apiUrlInput.value;
+    if (!isValidUrl (apiUrl)) {
+      updateStatus ('Please enter a valid API URL.');
+      return;
     }
+    testApiConnection (apiUrl);
+  });
 
-    function fetchOpenAI(model,system_prompt, user_prompt, max_tokens, temperature, top_p, api_url=gpu_url) {
-        payload = {
-            model: model || global_llm_model,
-            max_tokens: max_tokens || global_max_tokens,
-            temperature: temperature || global_temperature,
-            top_p: top_p || global_top_p,
+  function testApiConnection (apiUrl) {
+    const controller = new AbortController ();
+    const timeoutId = setTimeout (() => controller.abort (), 30000); // 30 seconds timeout
+
+    updateStatus ('Testing connection...');
+
+    fetch (apiUrl, {
+      method: 'GET', // adjust as necessary for your API
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      signal: controller.signal,
+    })
+      .then (response => {
+        clearTimeout (timeoutId);
+        if (response.ok || (response.status >= 400 && response.status < 500)) {
+          // Considering 2xx and 4xx as successful cases
+          updateStatus (`Connection successful! Status: ${response.status}`);
+        } else if (response.status >= 500) {
+          // Handling server errors separately
+          updateStatus (
+            `Server error encountered: ${response.status} ${response.statusText}`
+          );
         }
-        messages = [
+      })
+      .catch (error => {
+        clearTimeout (timeoutId);
+        if (error.name === 'AbortError') {
+          updateStatus ('Connection test timed out.');
+        } else {
+          updateStatus (`Connection failed: ${error.message}`);
+        }
+      });
+  }
+
+  // Save configuration settings
+  saveApiUrlButton.addEventListener ('click', () => {
+    // Check if required fields are not empty
+    if (
+      !apiUrlInput.value.trim () ||
+      !maxTokenInput.value.trim () ||
+      !temperatureInput.value.trim () ||
+      !topPInput.value.trim ()
+    ) {
+      updateStatus ('Please fill in all required fields.');
+      return;
+    }
+    chrome.storage.local.set (
+      {
+        apiUrl: apiUrlInput.value,
+        apiToken: apiTokenInput.value,
+        modelName: modelNameInput.value,
+        maxToken: maxTokenInput.value,
+        temperature: temperatureInput.value,
+        topP: topPInput.value,
+        storedPrompt1: storedPrompt1Input.value,
+        storedPrompt2: storedPrompt2Input.value,
+        storedPrompt3: storedPrompt3Input.value,
+        storedPrompt4: storedPrompt4Input.value,
+        storedPrompt5: storedPrompt5Input.value,
+      },
+      () => {
+        document.getElementById (
+          'apiUrlStorage'
+        ).textContent = `(Stored: ${apiUrlInput.value})`;
+        document.getElementById (
+          'modelNameStorage'
+        ).textContent = `(Stored: ${modelNameInput.value})`;
+        document.getElementById (
+          'maxTokenStorage'
+        ).textContent = `(Stored: ${maxTokenInput.value})`;
+        document.getElementById (
+          'temperatureStorage'
+        ).textContent = `(Stored: ${temperatureInput.value})`;
+        document.getElementById (
+          'topPStorage'
+        ).textContent = `(Stored: ${topPInput.value})`;
+
+        // Loop through stored prompts to update both storage text and button title
+        storedPromptInputs.forEach ((input, index) => {
+          if (index < storedPromptStorages.length) {
+            storedPromptStorages[
+              index
+            ].textContent = `(Stored: ${input.value.slice (0, 20)})`;
+          }
+          if (index < storedPromptButtons.length) {
+            storedPromptButtons[index].title = input.value.slice (0, 100);
+          }
+        });
+
+        //configPopup.style.display = 'none'; // Optionally hide the popup after saving
+        updateStatus ('Settings saved successfully.');
+      }
+    );
+  });
+
+  const defaultLanguage =
+    localStorage.getItem ('selectedLanguage') || 'English';
+
+  // Set the default selected language from local storage or default to English
+  languageSelect.value = defaultLanguage;
+
+  // Event listener to update local storage when the user changes the selection
+  languageSelect.addEventListener ('change', function () {
+    localStorage.setItem ('selectedLanguage', this.value);
+  });
+
+  const converter = new showdown.Converter ();
+
+  const gpu_url = 'http://gpu:5000/v1/chat/completions'; //text-generation-webui
+  const global_api_service = 'llama.cpp';
+
+  const global_llm_model = 'qwen1_5-7b-chat';
+
+  const global_max_tokens = 4096;
+  const global_temperature = 0;
+  const global_top_p = 0.9;
+  const global_mode = 'instruct';
+
+  function handlePromptSubmission (prompt, language) {
+    chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
+      if (tabs[0] && tabs[0].id) {
+        extractWebpageText (tabs[0].id, text => {
+          // Replace the prompt in your fetchOpenAI call with the custom prompt
+          fetchOpenAI (
+            'Respond in ' + language + ' language',
+            prompt +
+              '. Please output in mark down format and below is the text of the web page:' +
+              text +
+              '. The above text could have advertisement, please ignore them.'
+          ).catch (error => {
+            updateStatus ('Failed to process custom prompt.' + error.message);
+          });
+        });
+        updateStatus ('Calling API, wait for response');
+      }
+    });
+    updateStatus ('Submitting prompt: ' + prompt);
+  }
+
+  storedPromptButtons.forEach ((button, index) => {
+    button.addEventListener ('click', () => {
+      const promptInput = storedPromptInputs[index];
+      const selectedLanguage = languageSelect.value;
+      if (!promptInput.value.trim ()) {
+        updateStatus (
+          `Please save your prompt to stored prompt ${index + 1} in settings.`
+        );
+        return;
+      }
+      handlePromptSubmission (promptInput.value, selectedLanguage);
+    });
+  });
+
+  submitCustomPromptButton.addEventListener ('click', () => {
+    const customPrompt = customPromptInput.value;
+    const selectedLanguage = languageSelect.value;
+    if (!customPrompt) {
+      updateStatus ('Please enter a custom prompt.');
+      return;
+    }
+
+    localStorage.setItem ('lastCustomPrompt', customPrompt);
+    console.log ('Custom prompt saved:', customPrompt);
+
+    handlePromptSubmission (customPrompt, selectedLanguage);
+  });
+
+  cancelButton.addEventListener ('click', () => {
+    if (currentController) {
+      currentController.abort ();
+      currentController = null;
+      updateStatus ('Request cancelled.');
+      cancelButton.style.display = 'none';
+    }
+  });
+
+  /**
+ * Fetches a response from the OpenAI API.
+ * @param {string} system_prompt - The system prompt to send.
+ * @param {string} user_prompt - The user prompt to send.
+ * @returns {Promise<void>} - A promise that resolves when the API call is complete.
+ * @throws {Error} - If the API call fails.
+ */
+  function fetchOpenAI (system_prompt, user_prompt) {
+    chrome.storage.local.get (
+      ['apiUrl', 'apiToken', 'modelName', 'maxToken', 'temperature', 'topP'],
+      function (settings) {
+        if (chrome.runtime.lastError) {
+          console.error ('Error fetching settings:', chrome.runtime.lastError);
+          updateStatus ('Failed to load settings. Please try again.');
+          return;
+        }
+        // Cancel any ongoing fetch
+        if (currentController) {
+          currentController.abort ();
+        }
+
+        // Create a new AbortController
+        currentController = new AbortController ();
+
+        const payload = {
+          model: settings.modelName,
+          max_tokens: parseInt (settings.maxToken, 10), // Ensure max_tokens is an integer
+          temperature: parseFloat (settings.temperature), // Ensure temperature is a float
+          top_p: parseFloat (settings.topP), // Ensure top_p is a float
+          messages: [
             {
-                role: 'system',
-                content: user_prompt
+              role: 'system',
+              content: system_prompt || 'Output response in markdown format',
             },
             {
-                role: 'user',
-                content: user_prompt
+              role: 'user',
+              content: user_prompt,
+            },
+          ],
+          stream: true, // Stream the response
+        };
+
+        const requestOptions = {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${settings.apiToken}`, // Correctly use the token from settings
+          },
+          body: JSON.stringify (payload),
+          signal: currentController.signal, // Add this line
+        };
+
+        updateStatus ('Calling API ' + settings.api_url);
+        cancelButton.style.display = 'block'; // Show cancel button
+
+        fetch (settings.apiUrl, requestOptions)
+          .then (response => {
+            const reader = response.body.getReader ();
+            initMarkdown ();
+            function read () {
+              reader
+                .read ()
+                .then (({done, value}) => {
+                  if (done) {
+                    updateStatus ('Stream complete.');
+                    displayMarkdown ();
+                    cancelButton.style.display = 'none'; // Hide cancel button
+                    return;
+                  }
+                  chunk = new TextDecoder ().decode (value);
+                  // Extract the JSON part after 'data: '
+                  const jsonPart = chunk.split ('data: ')[1];
+
+                  // Parse the JSON string into an object
+                  const obj = JSON.parse (jsonPart);
+
+                  // return if finish_reason is stop
+                  const finish_reason = obj.choices[0].finish_reason;
+                  if ('stop' === finish_reason) {
+                    displayMarkdown ();
+                    return;
+                  }
+
+                  if (obj.choices[0].delta) {
+                    // Access the 'content' field
+                    const content = obj.choices[0].delta.content;
+                    appendMarkdown (content);
+                    if (content.includes ('\n')) {
+                      displayMarkdown ();
+                    }
+                  }
+                  read (); // Recursive call to continue reading
+                })
+                .catch (error => {
+                  if (error.name === 'AbortError') {
+                    updateStatus ('Request was cancelled.');
+                  } else {
+                    console.error ('Error:', error);
+                    updateStatus (`Streaming failed: ${error.message}`);
+                  }
+                  cancelButton.style.display = 'none'; // Hide cancel button
+                });
             }
-        ]
-        payload.messages = messages
-
-        if (global_api_service === 'text-generation-webui') {
-            payload.mode = global_mode  
-            payload.skip_special_tokens = false
-            payload.custom_stopping_strings = "<eot_id>"
-        }
-
-        summaryTextArea.value = JSON.stringify(payload)
-
-        return fetch(api_url, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify(payload)
-        }).then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error, status = ${response.status}`);
+            updateStatus ('Streaming');
+            read ();
+          })
+          .catch (error => {
+            if (error.name === 'AbortError') {
+              updateStatus ('Request was cancelled.');
+            } else {
+              console.error ('Error:', error);
+              updateStatus (`API call failed: ${error.message}`);
             }
-            return response.json();
-        }).catch(error => {
-            console.error('Error fetching data:', error);
-            updateStatus(`Error: ${error.message}`);
-            throw error;  // Re-throw the error for further handling if necessary
-        });
-    }
+            cancelButton.style.display = 'none'; // Hide cancel button
+          });
+        //return;
+      }
+    );
+  }
 
-    function handleResponseError(operation) {
-        updateStatus(`Please refresh the webpage.`);
-        console.error(`${operation} Error:`, chrome.runtime.lastError?.message);
-    }
+  function handleResponseError (operation) {
+    updateStatus (`Please refresh the webpage.`);
+    console.error (`${operation} Error:`, chrome.runtime.lastError.message);
+  }
 
-    function extractWebpageText(tabId, processFunction) {
-        updateStatus('Extracting text from the webpage...');
-        chrome.tabs.sendMessage(tabId, {action: "getText"}, function(response) {
-            if (chrome.runtime.lastError || !response) {
-                handleResponseError('Extraction');
-                return;
-            }
-            processFunction(response.text);
-        });
-    }
-
-    startAnalyzeButton.addEventListener('click', () => {
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            if (tabs[0] && tabs[0].id) extractWebpageText(tabs[0].id, extractCarInfo);
-        });
+  function extractWebpageText (tabId, processFunction) {
+    updateStatus ('Extracting text from the webpage...');
+    chrome.tabs.sendMessage (tabId, {action: 'getText'}, function (response) {
+      if (chrome.runtime.lastError || !response) {
+        handleResponseError ('Extraction');
+        return;
+      }
+      processFunction (response.text);
     });
+  }
 
-    startSummarizeButton.addEventListener('click', () => {
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            if (tabs[0] && tabs[0].id) extractWebpageText(tabs[0].id, summarizeTextOnly);
-        });
-    });
-
-    startProcessButton.addEventListener('click', () => {
-        chrome.tabs.query({active: true, currentWindow: true}, function(tabs) {
-            if (tabs[0] && tabs[0].id) extractWebpageText(tabs[0].id, summarizeText);
-        });
-    });
-
-    function extractContent(text) {
-        updateStatus('Filtering content...' + text.length);
-        prompt = "Here is the full text from a webpage. Please extract and provide only the main news content, keep the original content, do not summarize it, removing all advertisements, external links, navigational elements, and any unrelated content: " + text
-        fetchOpenAI(global_summarization_model_en, "", prompt, global_max_tokens, global_temperature, global_top_p)
-            .then(data => {
-                content = getContent(data);
-                summaryTextArea.value = content;
-
-                content = summarizeText(content);
-                summaryTextArea.value = content;
-                //callback(content);
-            })
-            .catch(error => {
-                updateStatus('Failed to filter content.' + error);
-                //console.error('Error:', error);
-            });
+  chrome.runtime.onMessage.addListener (function (
+    request,
+    sender,
+    sendResponse
+  ) {
+    if (request.action === 'getText') {
+      var mainContentText = document.getElementById ('main_content')
+        ? document.getElementById ('main_content').innerText
+        : 'No content found';
+      sendResponse ({text: mainContentText});
     }
-
-    function convertTranslateNews(text) {
-        updateStatus('Filtering content...' + text.length);
-        prompt = "Here is the full text from a webpage. Please extract and provide only the news, keep the original content no change, do not summarize it, removing all advertisements, external links, navigational elements, and any unrelated content: " + text
-        fetchOpenAI(global_summarization_model_en, "", prompt, global_max_tokens, 0, global_top_p)
-            .then(data => {
-                content = getContent(data);
-                summaryTextArea.value = content;
-
-                content = translateText(content);
-                summaryTextArea.value = content;
-
-                content = rewriteNews(content);
-                summaryTextArea.value = content;
-                //callback(content);
-            })
-            .catch(error => {
-                updateStatus('Failed to filter content.' + error);
-                //console.error('Error:', error);
-            });
-    }
-
-    function extractCarInfo(text) {
-        updateStatus('Filtering content...' + text.length);
-        prompt = "Here is the full text from a used tesla car selling webpage. Please extract car name, VIN, mileage, selling price, lowest list price, battery capacity, battery range, dealder city, whether it's one owner car, whether title is clean or savage, whether there is accident from the page and return in yaml format, whethere there is lifetime free supercharging, any other information seller provided which I should be aware: " + text
-        fetchOpenAI(global_summarization_model_en, "", prompt, global_max_tokens, global_temperature, global_top_p)
-            .then(data => {
-                content = getContent(data);
-                summaryTextArea.value = content;
-            })
-            .catch(error => {
-                updateStatus('Failed to filter content.' + error);
-                //console.error('Error:', error);
-            });
-    }
-
-    function summarizeTextOnly(text) {
-        updateStatus('Summarizing text...' + text.length);
-        prompt = "Please summarize the main points of the following news article and provide an analysis of the author's perspective or intended message. Focus on capturing the essential details and the tone of the article, so that I can understand the key information and the author's viewpoint without needing to read the full text." + text
-        //prompt = "I am new to turo which is a airbnb like platform but renting the cars.Please summarize what I can learn from the reddit posts as consumer or provider and provide categorize the post to see whether it's provider feedback, consumer feedback, postive, negative, talking about insurance, finance or others. Focus on capturing the essential details and the tone of the article, so that I can understand the key information and the author's viewpoint without needing to read the full text." + text
-        //prompt = "I am going to buy a used tesla on ebay.Please summarize what's the car is and also highlight the problem i should be aware. Focus on capturing the essential details and the tone of the article, so that I can understand the key information and the author's viewpoint without needing to read the full text." + text
-        //prompt = "I am going to buy a used tesla.This is transcript of youtube video about used tesla car. Please summarize it and highlight what author emphasize in the video. Focus on capturing the essential details and the tone of the article, so that I can understand the key information and the author's viewpoint without needing to read the full text." + text
-        
-        fetchOpenAI(global_summarization_model_en, "", prompt, global_max_tokens, global_temperature, global_top_p)
-            .then(data => {
-                summaryTextArea.value = getContent(data);
-                updateStatus('Summarization complete.');
-            })
-            .catch(error => {
-                updateStatus('Failed to summarize text.' + error);
-                console.error('Error:', error);
-            });
-    }
-
-    function summarizeText(text) {
-        updateStatus('Summarizing text...' + text.length);
-        prompt = "Please summarize the main points of the following news article and provide an analysis of the author's perspective or intended message. Focus on capturing the essential details and the tone of the article, so that I can understand the key information and the author's viewpoint without needing to read the full text." + text
-        //prompt = "I am new to turo which is a airbnb like platform but renting the cars.Please summarize what I can learn from the reddit posts as consumer or provider and provide categorize the post to see whether it's provider feedback, consumer feedback, postive, negative, talking about insurance, finance or others. Focus on capturing the essential details and the tone of the article, so that I can understand the key information and the author's viewpoint without needing to read the full text." + text
-        //prompt = "I am going to buy a used tesla on ebay.Please summarize what's the car is and also highlight the problem i should be aware. Focus on capturing the essential details and the tone of the article, so that I can understand the key information and the author's viewpoint without needing to read the full text." + text
-        //prompt = "I am going to buy a used tesla.This is transcript of youtube video about used tesla car. Please summarize it and highlight what author emphasize in the video. Focus on capturing the essential details and the tone of the article, so that I can understand the key information and the author's viewpoint without needing to read the full text." + text
-        
-        fetchOpenAI(global_summarization_model_en, "", prompt, global_max_tokens, global_temperature, global_top_p)
-            .then(data => translateText(getContent(data)))
-            .catch(error => {
-                updateStatus('Failed to summarize text.' + error);
-                console.error('Error:', error);
-            });
-    }
-
-    function translateText(text) {
-        updateStatus('Translating text into Chinese...');
-        prompt = 'Please translate the following text into Chinese: ' + text
-        fetchOpenAI(global_translation_model_cn, "", prompt, global_max_tokens, global_temperature, global_top_p)
-            .then(data => {
-                summaryTextArea.value = getContent(data);
-                updateStatus('Translation complete.');
-            })
-            .catch(error => {
-                updateStatus('Failed to translate summary.' + error);
-                //console.error('Translation Error:', error);
-            });
-    }
-
-    function rewriteNews(text) {
-        updateStatus('Rewrite news into Chinese...');
-        prompt = 'Please rewrite the following news into a formal news in Chinese: ' + text
-        fetchOpenAI(global_translation_model_cn, "", prompt, global_max_tokens, global_temperature, global_top_p)
-            .then(data => {
-                summaryTextArea.value = getContent(data);
-                updateStatus('Rewrite  complete.');
-            })
-            .catch(error => {
-                updateStatus('Failed to translate summary.' + error);
-                //console.error('Translation Error:', error);
-            });
-    }
+  });
 });

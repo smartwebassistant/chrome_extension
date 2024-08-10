@@ -4,7 +4,7 @@
     "version": "1.0",
     "description": "Read all texts of the current webpage.",
     "permissions": [
-      "activeTab"
+      "activeTab", "storage"
     ],
     "action": {
       "default_popup": "popup.html"
@@ -18,6 +18,5 @@
         "js": ["content.js"],
         "run_at": "document_end"
       }
-    ]
-  }
+    ]  }
   
