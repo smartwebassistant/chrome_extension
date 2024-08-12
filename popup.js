@@ -454,6 +454,13 @@ document.addEventListener ('DOMContentLoaded', () => {
                     return;
                   }
 
+                  if (chunk.startsWith ('ping')) {
+                    // Log the ping or simply ignore it
+                    console.log ('Received ping:', chunk);
+                    read (); // Continue reading without processing this as data
+                    return;
+                  }
+
                   try {
                     // Attempt to parse and handle JSON data
                     const jsonPart = chunk.split ('data: ')[1]; // Splitting on 'data:' if used as a prefix in streamed data
