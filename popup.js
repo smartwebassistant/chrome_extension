@@ -454,9 +454,24 @@ document.addEventListener ('DOMContentLoaded', () => {
                     return;
                   }
 
+                  if (chunk.startsWith ('ping')) {
+                    // Log the ping or simply ignore it
+                    console.log ('Received ping:', chunk);
+                    read (); // Continue reading without processing this as data
+                    return;
+                  }
+
+                  // Process other chunks that do not start with "data:"
+                  if (!chunk.startsWith ('data:')) {
+                    console.log ('Received data:', chunk);
+                    read (); // Continue reading to get more data
+                    return;
+                  }
+
                   try {
                     // Attempt to parse and handle JSON data
                     const jsonPart = chunk.split ('data: ')[1]; // Splitting on 'data:' if used as a prefix in streamed data
+                    updateStatus (`received ${chunk}`);
                     if (jsonPart) {
                       const obj = JSON.parse (jsonPart);
                       if (obj.choices[0].delta) {
