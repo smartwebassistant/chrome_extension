@@ -286,24 +286,14 @@ document.addEventListener ('DOMContentLoaded', () => {
 
   const converter = new showdown.Converter ();
 
-  const gpu_url = 'http://gpu:5000/v1/chat/completions'; //text-generation-webui
-  const global_api_service = 'llama.cpp';
-
-  const global_llm_model = 'qwen1_5-7b-chat';
-
-  const global_max_tokens = 4096;
-  const global_temperature = 0;
-  const global_top_p = 0.9;
-  const global_mode = 'instruct';
-
   function handlePromptSubmission (prompt, language) {
     chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
       if (tabs[0] && tabs[0].id) {
         extractWebpageText (tabs[0].id, text => {
           // Replace the prompt in your fetchOpenAI call with the custom prompt
           fetchOpenAI (
-            `Output response in ${language} language and markdown format.`,
-            `${prompt}. below is the text of the web page: ${text}.`
+            ``,
+            `${prompt}. below is the text of the web page: ${text}. Output response in ${language} language and markdown format.`
           ).catch (error => {
             updateStatus ('Failed to process custom prompt.' + error.message);
           });
@@ -324,6 +314,8 @@ document.addEventListener ('DOMContentLoaded', () => {
         );
         return;
       }
+      // Set the custom prompt input to the content of the selected stored prompt
+      customPromptInput.value = promptInput.value;
       handlePromptSubmission (promptInput.value, selectedLanguage);
     });
   });
