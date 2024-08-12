@@ -421,7 +421,7 @@ document.addEventListener ('DOMContentLoaded', () => {
                 .read ()
                 .then (({done, value}) => {
                   if (done) {
-                    updateStatus ('Stream complete.');
+                    updateStatus ('Stream completed.');
                     displayMarkdown ();
                     cancelButton.style.display = 'none'; // Hide cancel button
                     return;
@@ -443,6 +443,7 @@ document.addEventListener ('DOMContentLoaded', () => {
                       const obj = JSON.parse (jsonPart);
                       if (obj.choices[0].delta) {
                         const content = obj.choices[0].delta.content;
+                        updateStatus (`Received ${content}`);
                         appendMarkdown (content);
                         if (content.includes ('\n')) {
                           displayMarkdown ();
@@ -453,7 +454,7 @@ document.addEventListener ('DOMContentLoaded', () => {
                     }
                   } catch (error) {
                     // Log non-fatal errors and continue reading the stream
-                    console.error ('Error processing chunk:', error);
+                    updateStatus ('Error processing chunk:', error);
                     read ();
                   }
                 })
