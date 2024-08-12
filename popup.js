@@ -454,13 +454,6 @@ document.addEventListener ('DOMContentLoaded', () => {
                     return;
                   }
 
-                  if (chunk.startsWith ('ping')) {
-                    // Log the ping or simply ignore it
-                    console.log ('Received ping:', chunk);
-                    read (); // Continue reading without processing this as data
-                    return;
-                  }
-
                   try {
                     // Attempt to parse and handle JSON data
                     const jsonPart = chunk.split ('data: ')[1]; // Splitting on 'data:' if used as a prefix in streamed data
@@ -473,9 +466,18 @@ document.addEventListener ('DOMContentLoaded', () => {
                         if (content.includes ('\n')) {
                           displayMarkdown ();
                         }
+                      } else {
+                        updateStatus ('No delta content found in response.');
+                        read ();
+                        return;
                       }
                       // Recursively continue reading the stream
                       read ();
+                    } else {
+                      // Log non-JSON data and continue reading the stream
+                      updateStatus ('Non-JSON data:', chunk);
+                      read ();
+                      return;
                     }
                   } catch (error) {
                     // Log non-fatal errors and continue reading the stream
