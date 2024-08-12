@@ -302,11 +302,8 @@ document.addEventListener ('DOMContentLoaded', () => {
         extractWebpageText (tabs[0].id, text => {
           // Replace the prompt in your fetchOpenAI call with the custom prompt
           fetchOpenAI (
-            'Respond in ' + language + ' language',
-            prompt +
-              '. Please output in mark down format and below is the text of the web page:' +
-              text +
-              '. The above text could have advertisement, please ignore them.'
+            `Output response in ${language} language and markdown format.`,
+            `${prompt}. below is the text of the web page: ${text}.`
           ).catch (error => {
             updateStatus ('Failed to process custom prompt.' + error.message);
           });
@@ -378,32 +375,38 @@ document.addEventListener ('DOMContentLoaded', () => {
         // Create a new AbortController
         currentController = new AbortController ();
 
+        // Create messages array dynamically based on system_prompt
+        const messages = [];
+        if (system_prompt) {
+          // Check if system_prompt is not empty
+          messages.push ({
+            role: 'system',
+            content: system_prompt,
+          });
+        }
+        messages.push ({
+          role: 'user',
+          content: user_prompt,
+        });
+
         const payload = {
           model: settings.modelName,
           max_tokens: parseInt (settings.maxToken, 10), // Ensure max_tokens is an integer
           temperature: parseFloat (settings.temperature), // Ensure temperature is a float
           top_p: parseFloat (settings.topP), // Ensure top_p is a float
-          messages: [
-            {
-              role: 'system',
-              content: system_prompt || 'Output response in markdown format',
-            },
-            {
-              role: 'user',
-              content: user_prompt,
-            },
-          ],
+          messages: messages,
           stream: true, // Stream the response
         };
 
+        // Define the requestOptions including the AbortController's signal
         const requestOptions = {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            Authorization: `Bearer ${settings.apiToken}`, // Correctly use the token from settings
+            Authorization: `Bearer ${settings.apiToken}`,
           },
           body: JSON.stringify (payload),
-          signal: currentController.signal, // Add this line
+          signal: currentController.signal,
         };
 
         updateStatus ('Calling API ' + settings.api_url);
