@@ -457,7 +457,6 @@ document.addEventListener ('DOMContentLoaded', () => {
                   try {
                     // Attempt to parse and handle JSON data
                     const jsonPart = chunk.split ('data: ')[1]; // Splitting on 'data:' if used as a prefix in streamed data
-                    updateStatus (`received ${chunk}`);
                     if (jsonPart) {
                       const obj = JSON.parse (jsonPart);
                       if (obj.choices[0].delta) {
