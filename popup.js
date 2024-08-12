@@ -302,21 +302,6 @@ document.addEventListener ('DOMContentLoaded', () => {
       'includeWebContentCheckbox'
     ).checked;
 
-    chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
-      if (tabs[0] && tabs[0].id) {
-        extractWebpageText (tabs[0].id, text => {
-          // Replace the prompt in your fetchOpenAI call with the custom prompt
-          fetchOpenAI (
-            ``,
-            `${prompt}. below is the text of the web page: ${text}. Output response in ${language} language and markdown format.`
-          ).catch (error => {
-            updateStatus ('Failed to process custom prompt.' + error.message);
-          });
-        });
-        updateStatus ('Calling API, wait for response');
-      }
-    });
-
     const systemPrompt = `Output response in ${language} language and markdown format.`;
 
     if (includeWebContent) {
@@ -324,16 +309,23 @@ document.addEventListener ('DOMContentLoaded', () => {
       chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
         if (tabs[0] && tabs[0].id) {
           extractWebpageText (tabs[0].id, text => {
-            const webpageContent = ` Below is the text of the web page which will be used as context of the query: ${text}.`;
-
-            sendAPIRequest ('', systemPrompt + prompt + webpageContent);
+            // Replace the prompt in your fetchOpenAI call with the custom prompt
+            fetchOpenAI (
+              ``,
+              `${systemPrompt} ${prompt}. below is the text of the web page: ${text}.`
+            ).catch (error => {
+              updateStatus ('Failed to process custom prompt.' + error.message);
+            });
           });
+          updateStatus ('Calling API, wait for response');
         }
       });
     } else {
       // If not including webpage content
 
-      sendAPIRequest ('', systemPrompt + prompt);
+      fetchOpenAI ('', `${systemPrompt} ${prompt}.`).catch (error => {
+        updateStatus ('Failed to process custom prompt.' + error.message);
+      });
     }
     updateStatus ('Submitting prompt: ' + prompt);
   }
