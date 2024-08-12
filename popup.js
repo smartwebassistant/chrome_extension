@@ -1,3 +1,10 @@
+// Log levels
+const LOG_LEVELS = {
+  ERROR: 1,
+  INFO: 2,
+  DEBUG: 3,
+};
+
 document.addEventListener ('DOMContentLoaded', () => {
   const statusDisplay = document.getElementById ('status');
   const markdownContent = document.getElementById ('markdownContent');
@@ -15,7 +22,11 @@ document.addEventListener ('DOMContentLoaded', () => {
     markdownContent.innerHTML = '';
   }
 
-  function updateStatus (message) {
+  function updateStatus (message, level = LOG_LEVELS.INFO) {
+    const isDebugMode = document.getElementById ('debugModeCheckbox').checked;
+    if (!isDebugMode && level === LOG_LEVELS.DEBUG) {
+      return; // Ignore debug messages unless debug mode is enabled
+    }
     statusDisplay.textContent = message;
   }
   let currentController = null;
@@ -157,7 +168,7 @@ document.addEventListener ('DOMContentLoaded', () => {
     const controller = new AbortController ();
     const timeoutId = setTimeout (() => controller.abort (), 30000); // 30 seconds timeout
 
-    updateStatus ('Testing connection...');
+    updateStatus ('Testing connection...', LOG_LEVELS.DEBUG);
 
     fetch (apiUrl, {
       method: 'GET', // adjust as necessary for your API
@@ -287,6 +298,10 @@ document.addEventListener ('DOMContentLoaded', () => {
   const converter = new showdown.Converter ();
 
   function handlePromptSubmission (prompt, language) {
+    const includeWebContent = document.getElementById (
+      'includeWebContentCheckbox'
+    ).checked;
+
     chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
       if (tabs[0] && tabs[0].id) {
         extractWebpageText (tabs[0].id, text => {
@@ -301,6 +316,25 @@ document.addEventListener ('DOMContentLoaded', () => {
         updateStatus ('Calling API, wait for response');
       }
     });
+
+    const systemPrompt = `Output response in ${language} language and markdown format.`;
+
+    if (includeWebContent) {
+      // If including webpage content
+      chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
+        if (tabs[0] && tabs[0].id) {
+          extractWebpageText (tabs[0].id, text => {
+            const webpageContent = ` Below is the text of the web page which will be used as context of the query: ${text}.`;
+
+            sendAPIRequest ('', systemPrompt + prompt + webpageContent);
+          });
+        }
+      });
+    } else {
+      // If not including webpage content
+
+      sendAPIRequest ('', systemPrompt + prompt);
+    }
     updateStatus ('Submitting prompt: ' + prompt);
   }
 
@@ -369,13 +403,14 @@ document.addEventListener ('DOMContentLoaded', () => {
 
         // Create messages array dynamically based on system_prompt
         const messages = [];
+        // Check if system_prompt is not empty
         if (system_prompt) {
-          // Check if system_prompt is not empty
           messages.push ({
             role: 'system',
             content: system_prompt,
           });
         }
+
         messages.push ({
           role: 'user',
           content: user_prompt,
@@ -393,19 +428,21 @@ document.addEventListener ('DOMContentLoaded', () => {
         // Convert payload to JSON string
         const payloadString = JSON.stringify (payload);
 
-        // Copy the API request payload to the clipboard
-        if (navigator.clipboard) {
-          navigator.clipboard
-            .writeText (payloadString)
-            .then (() => {
-              updateStatus ('Payload copied to clipboard.');
-            })
-            .catch (err => {
-              updateStatus ('Failed to copy payload to clipboard.');
-              console.error ('Clipboard write failed:', err);
-            });
-        } else {
-          updateStatus ('Clipboard API not available.');
+        // Copy the API request payload to the clipboard if debug mode is enabled
+        if (document.getElementById ('debugModeCheckbox').checked) {
+          if (navigator.clipboard) {
+            navigator.clipboard
+              .writeText (payloadString)
+              .then (() => {
+                updateStatus ('Payload copied to clipboard.', LOG_LEVELS.DEBUG);
+              })
+              .catch (err => {
+                updateStatus ('Failed to copy payload to clipboard.');
+                console.error ('Clipboard write failed:', err);
+              });
+          } else {
+            updateStatus ('Clipboard API not available.');
+          }
         }
 
         // Define the requestOptions including the AbortController's signal
@@ -419,7 +456,7 @@ document.addEventListener ('DOMContentLoaded', () => {
           signal: currentController.signal,
         };
 
-        updateStatus ('Calling API ' + settings.apiUrl);
+        updateStatus ('Calling API ' + settings.apiUrl, LOG_LEVELS.DEBUG);
         cancelButton.style.display = 'block'; // Show cancel button
 
         fetch (settings.apiUrl, requestOptions)
