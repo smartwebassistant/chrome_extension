@@ -197,7 +197,31 @@ document.addEventListener ('DOMContentLoaded', () => {
       !temperatureInput.value.trim () ||
       !topPInput.value.trim ()
     ) {
-      updateStatus ('Please fill in all required fields.');
+      updateStatus ('Please fill in all required * fields.');
+      return;
+    }
+    if (!isValidUrl (apiUrlInput.value)) {
+      updateStatus ('Please enter a valid API URL.');
+      return;
+    }
+
+    // Ensure that numeric inputs are not only positive but also within expected ranges
+    const maxTokens = parseInt (maxTokenInput.value, 10);
+    const temperature = parseFloat (temperatureInput.value);
+    const topP = parseFloat (topPInput.value);
+
+    if (isNaN (maxTokens) || maxTokens <= 0) {
+      updateStatus ('Max tokens must be a positive number.');
+      return;
+    }
+
+    if (isNaN (temperature) || temperature < 0 || temperature > 1) {
+      updateStatus ('Temperature must be a number between 0 and 1.');
+      return;
+    }
+
+    if (isNaN (topP) || topP < 0 || topP > 1) {
+      updateStatus ('Top P must be a number between 0 and 1.');
       return;
     }
     chrome.storage.local.set (
@@ -299,7 +323,7 @@ document.addEventListener ('DOMContentLoaded', () => {
       const selectedLanguage = languageSelect.value;
       if (!promptInput.value.trim ()) {
         updateStatus (
-          `Please save your prompt to stored prompt ${index + 1} in settings.`
+          `No stored prompt is found. Please save your prompt to stored prompt ${index + 1} in Settings.`
         );
         return;
       }
@@ -451,7 +475,7 @@ document.addEventListener ('DOMContentLoaded', () => {
   }
 
   function handleResponseError (operation) {
-    updateStatus (`Please refresh the webpage.`);
+    updateStatus (`Please refresh the webpage of active tab.`);
     console.error (`${operation} Error:`, chrome.runtime.lastError.message);
   }
 
