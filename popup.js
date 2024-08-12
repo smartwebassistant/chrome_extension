@@ -398,6 +398,24 @@ document.addEventListener ('DOMContentLoaded', () => {
           stream: true, // Stream the response
         };
 
+        // Convert payload to JSON string
+        const payloadString = JSON.stringify (payload);
+
+        // Copy the API request payload to the clipboard
+        if (navigator.clipboard) {
+          navigator.clipboard
+            .writeText (payloadString)
+            .then (() => {
+              updateStatus ('Payload copied to clipboard.');
+            })
+            .catch (err => {
+              updateStatus ('Failed to copy payload to clipboard.');
+              console.error ('Clipboard write failed:', err);
+            });
+        } else {
+          updateStatus ('Clipboard API not available.');
+        }
+
         // Define the requestOptions including the AbortController's signal
         const requestOptions = {
           method: 'POST',
