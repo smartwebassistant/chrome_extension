@@ -426,35 +426,42 @@ document.addEventListener ('DOMContentLoaded', () => {
                     cancelButton.style.display = 'none'; // Hide cancel button
                     return;
                   }
-                  chunk = new TextDecoder ().decode (value);
-                  // Extract the JSON part after 'data: '
-                  const jsonPart = chunk.split ('data: ')[1];
 
-                  // Parse the JSON string into an object
-                  const obj = JSON.parse (jsonPart);
-
-                  // return if finish_reason is stop
-                  const finish_reason = obj.choices[0].finish_reason;
-                  if ('stop' === finish_reason) {
+                  let chunk = new TextDecoder ('utf-8').decode (value);
+                  // Check if the chunk contains the termination pattern "[DONE]"
+                  if (chunk.includes ('[DONE]')) {
+                    updateStatus ('Stream completed.');
                     displayMarkdown ();
+                    cancelButton.style.display = 'none'; // Hide cancel button
                     return;
                   }
 
-                  if (obj.choices[0].delta) {
-                    // Access the 'content' field
-                    const content = obj.choices[0].delta.content;
-                    appendMarkdown (content);
-                    if (content.includes ('\n')) {
-                      displayMarkdown ();
+                  try {
+                    // Attempt to parse and handle JSON data
+                    const jsonPart = chunk.split ('data: ')[1]; // Splitting on 'data:' if used as a prefix in streamed data
+                    if (jsonPart) {
+                      const obj = JSON.parse (jsonPart);
+                      if (obj.choices[0].delta) {
+                        const content = obj.choices[0].delta.content;
+                        appendMarkdown (content);
+                        if (content.includes ('\n')) {
+                          displayMarkdown ();
+                        }
+                      }
+                      // Recursively continue reading the stream
+                      read ();
                     }
+                  } catch (error) {
+                    // Log non-fatal errors and continue reading the stream
+                    console.error ('Error processing chunk:', error);
+                    read ();
                   }
-                  read (); // Recursive call to continue reading
                 })
                 .catch (error => {
                   if (error.name === 'AbortError') {
                     updateStatus ('Request was cancelled.');
                   } else {
-                    console.error ('Error:', error);
+                    console.error ('Stream reading failed:', error);
                     updateStatus (`Streaming failed: ${error.message}`);
                   }
                   cancelButton.style.display = 'none'; // Hide cancel button
