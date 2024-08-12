@@ -409,7 +409,7 @@ document.addEventListener ('DOMContentLoaded', () => {
           signal: currentController.signal,
         };
 
-        updateStatus ('Calling API ' + settings.api_url);
+        updateStatus ('Calling API ' + settings.apiUrl);
         cancelButton.style.display = 'block'; // Show cancel button
 
         fetch (settings.apiUrl, requestOptions)
