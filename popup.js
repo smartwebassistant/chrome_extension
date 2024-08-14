@@ -302,7 +302,7 @@ document.addEventListener ('DOMContentLoaded', () => {
       'includeWebContentCheckbox'
     ).checked;
 
-    const systemPrompt = `Output response in ${language} language and markdown format.`;
+    const systemPrompt = `Output response in ${language} language and markdown format. The prompt is:`;
 
     if (includeWebContent) {
       // If including webpage content
@@ -456,7 +456,7 @@ document.addEventListener ('DOMContentLoaded', () => {
             const reader = response.body.getReader ();
             initMarkdown ();
             function read () {
-              updateStatus ('Streaming');
+              //updateStatus ('Streaming');
               reader
                 .read ()
                 .then (({done, value}) => {
@@ -468,6 +468,7 @@ document.addEventListener ('DOMContentLoaded', () => {
                   }
 
                   let chunk = new TextDecoder ('utf-8').decode (value);
+                  updateStatus ('Received chunk:' + chunk, LOG_LEVELS.DEBUG);
                   // Check if the chunk contains the termination pattern "[DONE]"
                   if (chunk.includes ('[DONE]')) {
                     updateStatus ('Stream completed.');
@@ -495,14 +496,14 @@ document.addEventListener ('DOMContentLoaded', () => {
                     const jsonPart = chunk.split ('data: ')[1]; // Splitting on 'data:' if used as a prefix in streamed data
                     if (jsonPart) {
                       const obj = JSON.parse (jsonPart);
-                      if (obj.choices[0].delta) {
+                      if (obj.choices[0].delta.content) {
                         const content = obj.choices[0].delta.content;
                         appendMarkdown (content);
                         if (content.includes ('\n')) {
                           displayMarkdown ();
                         }
                       } else {
-                        updateStatus ('No delta content found in response.');
+                        updateStatus ('No new content found in response.');
                         read ();
                         return;
                       }
@@ -510,7 +511,7 @@ document.addEventListener ('DOMContentLoaded', () => {
                       read ();
                     } else {
                       // Log non-JSON data and continue reading the stream
-                      updateStatus ('Non-JSON data:', chunk);
+                      updateStatus ('Non-JSON data received:', chunk);
                       read ();
                       return;
                     }
@@ -530,6 +531,7 @@ document.addEventListener ('DOMContentLoaded', () => {
                   cancelButton.style.display = 'none'; // Hide cancel button
                 });
             }
+            updateStatus ('Streaming');
             read ();
           })
           .catch (error => {
