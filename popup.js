@@ -497,13 +497,14 @@ document.addEventListener ('DOMContentLoaded', () => {
                     if (jsonPart) {
                       const obj = JSON.parse (jsonPart);
                       if (obj.choices[0].delta.content) {
+                        updateStatus ('Stream received content.');
                         const content = obj.choices[0].delta.content;
                         appendMarkdown (content);
                         if (content.includes ('\n')) {
                           displayMarkdown ();
                         }
                       } else {
-                        updateStatus ('No new content found in response.');
+                        updateStatus ('Stream received non-content data.');
                         read ();
                         return;
                       }
@@ -531,7 +532,7 @@ document.addEventListener ('DOMContentLoaded', () => {
                   cancelButton.style.display = 'none'; // Hide cancel button
                 });
             }
-            updateStatus ('Streaming');
+            updateStatus ('Stream started.');
             read ();
           })
           .catch (error => {
