@@ -1,3 +1,4 @@
+// Description: This script is used to handle the popup.html page functionality.
 // Log levels
 const LOG_LEVELS = {
   ERROR: 1,
@@ -29,6 +30,15 @@ document.addEventListener ('DOMContentLoaded', () => {
     }
     statusDisplay.textContent = message;
   }
+
+  function debugLog (message, level = LOG_LEVELS.INFO) {
+    const isDebugMode = document.getElementById ('debugModeCheckbox').checked;
+    if (!isDebugMode && level === LOG_LEVELS.DEBUG) {
+      return; // Ignore debug messages unless debug mode is enabled
+    }
+    console.log (message);
+  }
+
   let currentController = null;
   const cancelButton = document.getElementById ('cancelButton');
   const configButton = document.getElementById ('config');
@@ -355,7 +365,7 @@ document.addEventListener ('DOMContentLoaded', () => {
     }
 
     localStorage.setItem ('lastCustomPrompt', customPrompt);
-    console.log ('Custom prompt saved:', customPrompt);
+    debugLog ('Custom prompt saved:' + customPrompt, LOG_LEVELS.DEBUG);
 
     handlePromptSubmission (customPrompt, selectedLanguage);
   });
@@ -379,7 +389,7 @@ document.addEventListener ('DOMContentLoaded', () => {
   function fetchOpenAI (system_prompt, user_prompt) {
     chrome.storage.local.get (
       ['apiUrl', 'apiToken', 'modelName', 'maxToken', 'temperature', 'topP'],
-      function (settings) {
+      async function (settings) {
         if (chrome.runtime.lastError) {
           console.error ('Error fetching settings:', chrome.runtime.lastError);
           updateStatus ('Failed to load settings. Please try again.');
@@ -451,98 +461,75 @@ document.addEventListener ('DOMContentLoaded', () => {
         updateStatus ('Calling API ' + settings.apiUrl, LOG_LEVELS.DEBUG);
         cancelButton.style.display = 'block'; // Show cancel button
 
-        fetch (settings.apiUrl, requestOptions)
-          .then (response => {
-            const reader = response.body.getReader ();
-            initMarkdown ();
-            function read () {
-              //updateStatus ('Streaming');
-              reader
-                .read ()
-                .then (({done, value}) => {
-                  if (done) {
-                    updateStatus ('Stream completed.');
-                    displayMarkdown ();
-                    cancelButton.style.display = 'none'; // Hide cancel button
-                    return;
-                  }
+        try {
+          const response = await fetch (settings.apiUrl, requestOptions);
+          const reader = response.body.getReader ();
+          initMarkdown ();
+          updateStatus ('Streaming');
 
-                  let chunk = new TextDecoder ('utf-8').decode (value);
-                  updateStatus ('Received chunk:' + chunk, LOG_LEVELS.DEBUG);
-                  // Check if the chunk contains the termination pattern "[DONE]"
-                  if (chunk.includes ('[DONE]')) {
-                    updateStatus ('Stream completed.');
-                    displayMarkdown ();
-                    cancelButton.style.display = 'none'; // Hide cancel button
-                    return;
-                  }
-
-                  if (chunk.startsWith ('ping')) {
-                    // Log the ping or simply ignore it
-                    console.log ('Received ping:', chunk);
-                    read (); // Continue reading without processing this as data
-                    return;
-                  }
-
-                  // Process other chunks that do not start with "data:"
-                  if (!chunk.startsWith ('data:')) {
-                    console.log ('Received data:', chunk);
-                    read (); // Continue reading to get more data
-                    return;
-                  }
-
-                  try {
-                    // Attempt to parse and handle JSON data
-                    const jsonPart = chunk.split ('data: ')[1]; // Splitting on 'data:' if used as a prefix in streamed data
-                    if (jsonPart) {
-                      const obj = JSON.parse (jsonPart);
-                      if (obj.choices[0].delta.content) {
-                        const content = obj.choices[0].delta.content;
-                        appendMarkdown (content);
-                        if (content.includes ('\n')) {
-                          displayMarkdown ();
-                        }
-                      } else {
-                        updateStatus ('No new content found in response.');
-                        read ();
-                        return;
-                      }
-                      // Recursively continue reading the stream
-                      read ();
-                    } else {
-                      // Log non-JSON data and continue reading the stream
-                      updateStatus ('Non-JSON data received:', chunk);
-                      read ();
-                      return;
-                    }
-                  } catch (error) {
-                    // Log non-fatal errors and continue reading the stream
-                    updateStatus ('Error processing chunk:', error);
-                    read ();
-                  }
-                })
-                .catch (error => {
-                  if (error.name === 'AbortError') {
-                    updateStatus ('Request was cancelled.');
-                  } else {
-                    console.error ('Stream reading failed:', error);
-                    updateStatus (`Streaming failed: ${error.message}`);
-                  }
-                  cancelButton.style.display = 'none'; // Hide cancel button
-                });
+          while (true) {
+            const {done, value} = await reader.read ();
+            if (done) {
+              updateStatus ('Stream completed.');
+              displayMarkdown ();
+              cancelButton.style.display = 'none'; // Hide cancel button
+              break;
             }
-            updateStatus ('Streaming');
-            read ();
-          })
-          .catch (error => {
-            if (error.name === 'AbortError') {
-              updateStatus ('Request was cancelled.');
-            } else {
-              console.error ('Error:', error);
-              updateStatus (`API call failed: ${error.message}`);
+
+            const chunk = new TextDecoder ('utf-8').decode (value);
+            debugLog ('Received chunk:' + chunk, LOG_LEVELS.DEBUG);
+            if (chunk.startsWith ('ping')) {
+              debugLog ('Received ping:' + chunk, LOG_LEVELS.DEBUG);
+              continue; // Ignore pings and continue reading
             }
-            cancelButton.style.display = 'none'; // Hide cancel button
-          });
+
+            if (!chunk.startsWith ('data:')) {
+              debugLog (
+                'Chunk does not start with "data:"' + chunk,
+                LOG_LEVELS.DEBUG
+              );
+              continue; // Ignore malformed data and continue reading
+            }
+
+            try {
+              const jsonPart = chunk.split ('data: ')[1];
+              if (jsonPart) {
+                const obj = JSON.parse (jsonPart);
+                if (
+                  obj.choices &&
+                  obj.choices[0] &&
+                  obj.choices[0].delta &&
+                  obj.choices[0].delta.content
+                ) {
+                  const content = obj.choices[0].delta.content;
+                  debugLog ('Received content:' + content, LOG_LEVELS.DEBUG);
+                  appendMarkdown (content);
+                  if (content.includes ('\n')) {
+                    displayMarkdown ();
+                  }
+                } else {
+                  debugLog (
+                    'Received correct chunk format but no data:',
+                    chunk,
+                    LOG_LEVELS.DEBUG
+                  );
+                  continue;
+                }
+              }
+            } catch (error) {
+              console.error ('Error processing JSON:', error);
+              updateStatus ('Error processing chunk:', error);
+            }
+          }
+        } catch (error) {
+          if (error.name === 'AbortError') {
+            updateStatus ('Request was cancelled.');
+          } else {
+            console.error ('Error during fetch or reading:', error);
+            updateStatus (`API call failed: ${error.message}`);
+          }
+          cancelButton.style.display = 'none'; // Hide cancel button
+        }
         //return;
       }
     );
