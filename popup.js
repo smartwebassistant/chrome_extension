@@ -462,65 +462,76 @@ document.addEventListener ('DOMContentLoaded', () => {
         cancelButton.style.display = 'block'; // Show cancel button
 
         try {
-          const response = await fetch (settings.apiUrl, requestOptions);
-          const reader = response.body.getReader ();
-          initMarkdown ();
-          updateStatus ('Streaming');
+          fetch (settings.apiUrl, requestOptions).then (response => {
+            const reader = response.body.getReader ();
+            initMarkdown ();
+            updateStatus ('API call successful. Waiting for response...');
+            reader
+              .read ()
+              .then (function pump({done, value}) {
+                if (done) {
+                  updateStatus ('Stream completed.');
+                  displayMarkdown ();
+                  cancelButton.style.display = 'none'; // Hide cancel button
+                  return;
+                }
+                const chunk = new TextDecoder ('utf-8').decode (value);
+                debugLog ('Received chunk:' + chunk, LOG_LEVELS.DEBUG);
+                if (chunk.startsWith ('ping')) {
+                  debugLog ('Received ping:' + chunk, LOG_LEVELS.DEBUG);
+                  updateStatus ('ping received.');
+                }
 
-          while (true) {
-            const {done, value} = await reader.read ();
-            if (done) {
-              updateStatus ('Stream completed.');
-              displayMarkdown ();
-              cancelButton.style.display = 'none'; // Hide cancel button
-              break;
-            }
-
-            const chunk = new TextDecoder ('utf-8').decode (value);
-            debugLog ('Received chunk:' + chunk, LOG_LEVELS.DEBUG);
-            if (chunk.startsWith ('ping')) {
-              debugLog ('Received ping:' + chunk, LOG_LEVELS.DEBUG);
-              continue; // Ignore pings and continue reading
-            }
-
-            if (!chunk.startsWith ('data:')) {
-              debugLog (
-                'Chunk does not start with "data:"' + chunk,
-                LOG_LEVELS.DEBUG
-              );
-              continue; // Ignore malformed data and continue reading
-            }
-
-            try {
-              const jsonPart = chunk.split ('data: ')[1];
-              if (jsonPart) {
-                const obj = JSON.parse (jsonPart);
-                if (
-                  obj.choices &&
-                  obj.choices[0] &&
-                  obj.choices[0].delta &&
-                  obj.choices[0].delta.content
-                ) {
-                  const content = obj.choices[0].delta.content;
-                  debugLog ('Received content:' + content, LOG_LEVELS.DEBUG);
-                  appendMarkdown (content);
-                  if (content.includes ('\n')) {
-                    displayMarkdown ();
-                  }
-                } else {
+                if (!chunk.startsWith ('data:')) {
                   debugLog (
-                    'Received correct chunk format but no data:',
-                    chunk,
+                    'Chunk does not start with "data:"' + chunk,
                     LOG_LEVELS.DEBUG
                   );
-                  continue;
                 }
-              }
-            } catch (error) {
-              console.error ('Error processing JSON:', error);
-              updateStatus ('Error processing chunk:', error);
-            }
-          }
+
+                try {
+                  //if there are multiple daata: in the chunk, split it loop through each data: and process it
+
+                  list = chunk.split ('data:');
+                  list.forEach (function (item) {
+                    if (item) {
+                      const obj = JSON.parse (item);
+                      if (
+                        obj.choices &&
+                        obj.choices[0] &&
+                        obj.choices[0].delta &&
+                        obj.choices[0].delta.content
+                      ) {
+                        updateStatus ('Stream received data.');
+                        const content = obj.choices[0].delta.content;
+                        debugLog (
+                          'Received content:' + content,
+                          LOG_LEVELS.DEBUG
+                        );
+                        appendMarkdown (content);
+                        if (content.includes ('\n')) {
+                          displayMarkdown ();
+                        }
+                      } else {
+                        debugLog (
+                          'Received correct chunk format but no data:',
+                          chunk,
+                          LOG_LEVELS.DEBUG
+                        );
+                      }
+                    }
+                  });
+                } catch (error) {
+                  console.error ('Error processing JSON:', error);
+                  updateStatus ('Error processing chunk:', error);
+                }
+                return reader.read ().then (pump);
+              })
+              .catch (error => {
+                console.error ('Error during fetch or reading:', error);
+                updateStatus (`API call failed: ${error.message}`);
+              });
+          });
         } catch (error) {
           if (error.name === 'AbortError') {
             updateStatus ('Request was cancelled.');
