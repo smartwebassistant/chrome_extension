@@ -81,7 +81,7 @@ document.addEventListener ('DOMContentLoaded', () => {
   const lastCustomPrompt = localStorage.getItem ('lastCustomPrompt');
   if (lastCustomPrompt) {
     // Checks if lastCustomPrompt is not null and not an empty string
-    customPromptInput.value = lastCustomPrompt;
+    customPromptInput.value = lastCustomPrompt.trim ();
   }
 
   // Load settings from local storage
