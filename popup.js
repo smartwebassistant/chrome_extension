@@ -31,7 +31,7 @@ document.addEventListener ('DOMContentLoaded', () => {
     statusDisplay.textContent = message;
   }
 
-  function debugLog (message, level = LOG_LEVELS.INFO) {
+  function consoleLog (message, level = LOG_LEVELS.INFO) {
     const isDebugMode = document.getElementById ('debugModeCheckbox').checked;
     if (!isDebugMode && level === LOG_LEVELS.DEBUG) {
       return; // Ignore debug messages unless debug mode is enabled
@@ -365,7 +365,7 @@ document.addEventListener ('DOMContentLoaded', () => {
     }
 
     localStorage.setItem ('lastCustomPrompt', customPrompt);
-    debugLog ('Custom prompt saved:' + customPrompt, LOG_LEVELS.DEBUG);
+    consoleLog ('Custom prompt saved:' + customPrompt, LOG_LEVELS.DEBUG);
 
     handlePromptSubmission (customPrompt, selectedLanguage);
   });
@@ -476,14 +476,14 @@ document.addEventListener ('DOMContentLoaded', () => {
                   return;
                 }
                 const chunk = new TextDecoder ('utf-8').decode (value);
-                debugLog ('Received chunk:' + chunk, LOG_LEVELS.DEBUG);
+                consoleLog ('Received chunk:' + chunk, LOG_LEVELS.DEBUG);
                 if (chunk.startsWith ('ping')) {
-                  debugLog ('Received ping:' + chunk, LOG_LEVELS.DEBUG);
+                  consoleLog ('Received ping:' + chunk, LOG_LEVELS.DEBUG);
                   updateStatus ('ping received.');
                 }
 
                 if (!chunk.startsWith ('data:')) {
-                  debugLog (
+                  consoleLog (
                     'Chunk does not start with "data:"' + chunk,
                     LOG_LEVELS.DEBUG
                   );
@@ -493,6 +493,10 @@ document.addEventListener ('DOMContentLoaded', () => {
                   //if there are multiple daata: in the chunk, split it loop through each data: and process it
 
                   list = chunk.split ('data:');
+                  consoleLog (
+                    `Received ${list.length} chunks.`,
+                    LOG_LEVELS.DEBUG
+                  );
                   list.forEach (function (item) {
                     if (item) {
                       const obj = JSON.parse (item);
@@ -504,7 +508,7 @@ document.addEventListener ('DOMContentLoaded', () => {
                       ) {
                         updateStatus ('Stream received data.');
                         const content = obj.choices[0].delta.content;
-                        debugLog (
+                        consoleLog (
                           'Received content:' + content,
                           LOG_LEVELS.DEBUG
                         );
@@ -513,7 +517,7 @@ document.addEventListener ('DOMContentLoaded', () => {
                           displayMarkdown ();
                         }
                       } else {
-                        debugLog (
+                        consoleLog (
                           'Received correct chunk format but no data:',
                           chunk,
                           LOG_LEVELS.DEBUG
