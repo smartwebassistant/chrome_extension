@@ -15,7 +15,7 @@ The Browser Assistant is a Chrome extension designed to enhance web browsing by 
 To install the Browser Assistant Chrome Extension, follow these steps:
 
 1. **Clone the repository:**
-- git clone https://github.com/yourusername/browser-assistant.git
+- git clone [https://github.com/yourusername/browser-assistant.git](https://github.com/smartwebassistant/chrome_extension)
 
 2. **Navigate to Chrome Extensions:**
 - Open Google Chrome and go to `chrome://extensions/`
