@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Browser Assistant</title>
-    <link href="bootstrap.min.css" rel="stylesheet" />
+    <link href="lib/bootstrap.min.css" rel="stylesheet" />
     <style>
       body {
         width: 300px;
@@ -36,6 +36,9 @@
       .input-group-text {
         width: 90px;
         font-size: 12px; /* Specifically reduce font size for buttons */
+      }
+      .storage-value {
+        font-size: 10px; /* Specifically reduce font size for buttons */
       }
 
       #configPopup {
@@ -166,6 +169,9 @@
           >Include Web Content As Query Context</label
         >
       </div>
+    </div>
+
+    <div id="configPopup">
       <div class="input-group mb-1">
         <div class="form-check form-switch">
           <input
@@ -174,13 +180,10 @@
             id="debugModeCheckbox"
           />
           <label class="form-check-label" for="debugModeCheckbox"
-            >Enable Debug Mode</label
+            >Enable Debug Logs</label
           >
         </div>
       </div>
-    </div>
-
-    <div id="configPopup">
       <div class="mb-1">
         <label class="form-label margin-bottom-1px">* API URL</label>
         <div class="d-flex">
@@ -195,6 +198,13 @@
           </button>
         </div>
         <span id="apiUrlStorage" class="storage-value"></span>
+        <div>
+          <span
+            id="apiConnectionTestStatus"
+            class="form-label margin-bottom-1px"
+            >&nbsp;</span
+          >
+        </div>
       </div>
       <div class="mb-1">
         <label class="form-label margin-bottom-1px">API Token</label>
@@ -315,10 +325,16 @@
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="jquery.min.js"></script>
-    <script src="popper.min.js"></script>
-    <script src="bootstrap.min.js"></script>
-    <script src="showdown.min.js"></script>
-    <script src="popup.js"></script>
+    <script src="lib/jquery.min.js"></script>
+    <script src="lib/popper.min.js"></script>
+    <script src="lib/bootstrap.min.js"></script>
+    <script src="lib/showdown.min.js"></script>
+    <script type="module" src="popup.js"></script>
+    <script type="module" src="scripts/ui.js"></script>
+    <script type="module" src="scripts/api.js"></script>
+    <script type="module" src="scripts/contentExtraction.js"></script>
+    <script type="module" src="scripts/markdown.js"></script>
+    <script type="module" src="scripts/prompts.js"></script>
+    <script type="module" src="scripts/utils.js"></script>
   </body>
 </html>
