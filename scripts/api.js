@@ -3,7 +3,7 @@ import {updateStatus, consoleLog, LOG_LEVELS} from './utils.js';
 import {initMarkdown, appendMarkdown, displayMarkdown} from './markdown.js';
 
 let currentController = null;
-let requestCancelled = false;
+let requestCancelled = true;
 
 cancelButton.addEventListener ('click', () => {
   consoleLog ('Cancelling the request...', LOG_LEVELS.DEBUG);
