@@ -1,10 +1,10 @@
-# Browser Assistant Chrome Extension
+# Smart Web Assistant Chrome Extension
 
 ## Description
-The Browser Assistant is a Chrome extension designed to enhance web browsing by enabling users to interact with web content through custom prompts. This extension utilizes a user-configurable API to fetch responses based on text input or web content. It's particularly useful for tasks like summarizing texts, translating content, or generating responses based on provided prompts.
+The Smart Web Assistant is a Chrome extension designed to interact with web browsing by leveraging Generative AI. This extension utilizes a user-configurable API to fetch responses based on text input or web content. It's particularly useful for tasks like summarizing texts, translating content, or generating responses based on specific questions.
 
 ## Features
-- **Custom Prompts:** Users can input custom prompts that are processed to generate contextual responses.
+- **Custom Prompts:** Users can input custom prompts that are processed to generate contextual responses based on current web page user browses.
 - **Stored Prompts:** Quickly use predefined prompts such as translations, summaries, or explanations.
 - **Comprehensive API Integration:** Configurable settings to connect to any supported API that accepts and returns text. Pre-configured for OpenAI's API and compatible with open-source systems like LLaMA.cpp, TabbyAPI, and VLLM.
 - **Dynamic Content Interaction:** Option to include web page content as context for queries.
@@ -12,11 +12,14 @@ The Browser Assistant is a Chrome extension designed to enhance web browsing by 
 - **Debug Mode:** For developers, the extension includes a debug mode to log detailed operational data.
 
 ## Installation
-To install the Browser Assistant Chrome Extension, follow these steps:
+### From the Chrome Web Store
+1. **Open Google Chrome** and navigate to the [Chrome Web Store](https://chrome.google.com/webstore).
+2. **Search** for "Smart Web Assistant."
+3. **Click 'Add to Chrome'** to install the extension.
 
+### Manual Installation (Developer Mode)
 1. **Clone the repository:**
 - git clone https://github.com/smartwebassistant/chrome_extension
-
 2. **Navigate to Chrome Extensions:**
 - Open Google Chrome and go to `chrome://extensions/`
 - Enable Developer Mode by toggling the switch in the upper-right corner.
@@ -38,13 +41,10 @@ To configure API settings:
 4. Save your settings to ensure all prompts use the updated configuration.
 
 ## Contributing
-Contributions to the Browser Assistant are welcome. Please ensure to follow the existing code style and include tests for any new or changed functionality.
+Contributions to the Smart Web Assistant are welcome. Please ensure to follow the existing code style and include tests for any new or changed functionality.
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE.md](LICENSE) file for details.
+See the [LICENSE.md](LICENSE) file for details.
 
 ## Support
 For support, please open an issue in the GitHub repository or contact the development team via email.
-
-## About
-The Browser Assistant Chrome Extension is developed and maintained by [Your Name or Organization], dedicated to improving user interaction with digital content.
