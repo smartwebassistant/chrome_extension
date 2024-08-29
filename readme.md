@@ -6,7 +6,7 @@ The Browser Assistant is a Chrome extension designed to enhance web browsing by 
 ## Features
 - **Custom Prompts:** Users can input custom prompts that are processed to generate contextual responses.
 - **Stored Prompts:** Quickly use predefined prompts such as translations, summaries, or explanations.
-- **API Integration:** Configurable settings to connect to any API that accepts and returns text, pre-configured for OpenAI's API.
+- **Comprehensive API Integration:** Configurable settings to connect to any supported API that accepts and returns text. Pre-configured for OpenAI's API and compatible with open-source systems like LLaMA.cpp, TabbyAPI, and VLLM.
 - **Dynamic Content Interaction:** Option to include web page content as context for queries.
 - **Language Selection:** Supports multiple languages for response, enhancing the flexibility of the extension.
 - **Debug Mode:** For developers, the extension includes a debug mode to log detailed operational data.
