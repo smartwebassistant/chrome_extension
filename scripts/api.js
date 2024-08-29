@@ -108,14 +108,17 @@ export function fetchOpenAI (system_prompt, user_prompt) {
       try {
         requestCancelled = false;
         fetch (settings.apiUrl, requestOptions).then (response => {
+          const statusCode = response.status; // Capture the HTTP status code
           const reader = response.body.getReader ();
           initMarkdown ();
-          updateStatus ('API call successful. Waiting for response...');
+          updateStatus (
+            `API call successful. Status code: ${statusCode}. Waiting for response...`
+          );
           reader
             .read ()
             .then (function pump({done, value}) {
               if (done) {
-                updateStatus ('Stream completed.');
+                updateStatus (`Stream completed. Status code: ${statusCode}.`);
                 displayMarkdown ();
                 cancelButton.style.display = 'none'; // Hide cancel button
                 return;

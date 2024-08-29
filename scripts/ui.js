@@ -17,6 +17,7 @@ export function initUI () {
   const saveApiUrlButton = document.getElementById ('saveApiUrlButton');
   const customPromptInput = document.getElementById ('customPromptInput');
   const languageSelect = document.getElementById ('languageSelect');
+  const markdownContent = document.getElementById ('markdownContent');
   const submitCustomPromptButton = document.getElementById (
     'submitCustomPromptButton'
   );
@@ -109,13 +110,15 @@ export function initUI () {
 
   // Show or hide the configuration popup
   configButton.addEventListener ('click', () => {
-    configPopup.style.display = configPopup.style.display === 'block'
-      ? 'none'
-      : 'block';
-    apiConnectionTestStatus = document.getElementById (
-      'apiConnectionTestStatusText'
-    );
-    apiConnectionTestStatus.textContent = '';
+    if (configPopup.style.display === 'block') {
+      // If configPopup is currently shown, hide it and show markdownContent
+      configPopup.style.display = 'none';
+      markdownContent.style.display = 'block';
+    } else {
+      // If configPopup is currently hidden, show it and hide markdownContent
+      configPopup.style.display = 'block';
+      markdownContent.style.display = 'none';
+    }
   });
   const testConnectionButton = document.getElementById ('testConnectionButton');
   // Save configuration settings
