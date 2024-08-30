@@ -18,14 +18,5 @@
   ],
   "side_panel": {
     "default_path": "sidepanel.html"
-  },
-  "web_accessible_resources": [
-    {
-      "resources": ["scripts/injector.js"],
-      "matches": ["<all_urls>"]
-    }
-  ],
-  "content_security_policy": {
-    "extension_pages": "script-src 'self'; object-src 'self'"
   }
 }

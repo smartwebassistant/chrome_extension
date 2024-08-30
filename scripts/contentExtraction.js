@@ -16,5 +16,4 @@ export function extractWebpageText (tabId, processFunction) {
 
 function handleResponseError (operation) {
   updateStatus (`Please refresh the webpage of active tab.`);
-  console.error (`${operation} Error:`, chrome.runtime.lastError.message);
 }
