@@ -154,13 +154,22 @@ export function initUI () {
 
       // Load stored prompts from local storage in a loop
       storedPromptInputs.forEach ((input, index) => {
-        input.value = result[`storedPrompt${index + 1}`] || '';
+        // Safely get the stored prompt value with a fallback to an empty string if undefined
+        const promptKey = `storedPrompt${index + 1}`;
+        const promptValue = result[promptKey] || '';
+
+        // Set the input value
+        input.value = promptValue;
+
+        // Safely slice the prompt for display, defaulting to 'None' if empty
+        const displayText = promptValue ? promptValue.slice (0, 20) : 'None';
         document.getElementById (
-          `storedPrompt${index + 1}Storage`
-        ).textContent = `(Stored: ${result[`storedPrompt${index + 1}`].slice (0, 20) || 'None'})`;
-        //update the button text with the first 10 characters of the prompt
-        storedPromptButtons[index].title =
-          result[`storedPrompt${index + 1}`].slice (0, 100) || '';
+          `${promptKey}Storage`
+        ).textContent = `(Stored: ${displayText})`;
+
+        // Update the button title with the first 100 characters of the prompt, or empty if not available
+        const titleText = promptValue ? promptValue.slice (0, 100) : '';
+        storedPromptButtons[index].title = titleText;
       });
 
       updateStatus ('Ready.');
@@ -238,13 +247,21 @@ export function initUI () {
 
         // Loop through stored prompts to update both storage text and button title
         storedPromptInputs.forEach ((input, index) => {
+          // Check if input value exists and handle appropriately
+          const inputValue = input.value || ''; // Ensure it defaults to an empty string if undefined
+
+          // Update storage text if corresponding storage element exists
           if (index < storedPromptStorages.length) {
+            const displayText = inputValue ? inputValue.slice (0, 20) : 'None';
             storedPromptStorages[
               index
-            ].textContent = `(Stored: ${input.value.slice (0, 20)})`;
+            ].textContent = `(Stored: ${displayText})`;
           }
+
+          // Update button title if corresponding button exists
           if (index < storedPromptButtons.length) {
-            storedPromptButtons[index].title = input.value.slice (0, 100);
+            const titleText = inputValue ? inputValue.slice (0, 100) : '';
+            storedPromptButtons[index].title = titleText;
           }
         });
 
