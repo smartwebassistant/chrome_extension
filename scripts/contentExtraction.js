@@ -14,15 +14,6 @@ export function extractWebpageText (tabId, processFunction) {
   });
 }
 
-chrome.runtime.onMessage.addListener (function (request, sender, sendResponse) {
-  if (request.action === 'getText') {
-    var mainContentText = document.getElementById ('main_content')
-      ? document.getElementById ('main_content').innerText
-      : 'No content found';
-    sendResponse ({text: mainContentText});
-  }
-});
-
 function handleResponseError (operation) {
   updateStatus (`Please refresh the webpage of active tab.`);
   console.error (`${operation} Error:`, chrome.runtime.lastError.message);

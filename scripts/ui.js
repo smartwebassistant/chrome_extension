@@ -5,19 +5,71 @@ import {testApiConnection} from './api.js';
 import {handlePromptSubmission} from './prompts.js';
 
 export function initUI () {
-  const cancelButton = document.getElementById ('cancelButton');
+  //1. Button to show or hide the configuration popup
   const configButton = document.getElementById ('config');
   const configPopup = document.getElementById ('configPopup');
-  const apiUrlInput = document.getElementById ('apiUrlInput');
-  const apiTokenInput = document.getElementById ('apiTokenInput');
-  const modelNameInput = document.getElementById ('modelNameInput');
-  const maxTokenInput = document.getElementById ('maxTokenInput');
-  const temperatureInput = document.getElementById ('temperatureInput');
-  const topPInput = document.getElementById ('topPInput');
-  const saveApiUrlButton = document.getElementById ('saveApiUrlButton');
-  const customPromptInput = document.getElementById ('customPromptInput');
+  // Show or hide the configuration popup, when config pop is shown, markdown content is hidden
+  configButton.addEventListener ('click', () => {
+    if (configPopup.style.display === 'block') {
+      // If configPopup is currently shown, hide it and show markdownContent
+      configPopup.style.display = 'none';
+      markdownContent.style.display = 'block';
+    } else {
+      // If configPopup is currently hidden, show it and hide markdownContent
+      configPopup.style.display = 'block';
+      markdownContent.style.display = 'none';
+    }
+  });
+
+  //2. button to toggle the sidebar, it won't show up in the sidepanel
+  const toggleSidebarButton = document.getElementById ('toggleSidebarButton');
+
+  // hide it in an iframe
+  if (window.self !== window.top) {
+    // Hide the toggle sidebar button if in an iframe
+    if (toggleSidebarButton) {
+      toggleSidebarButton.style.display = 'none';
+      console.log (
+        'Toggle sidebar button hidden because it is inside an iframe.'
+      );
+    }
+  }
+
+  toggleSidebarButton.addEventListener ('click', async () => {
+    // Query the current active tab in the last focused window
+    const [tab] = await chrome.tabs.query ({active: true, currentWindow: true});
+    const tabId = tab.id;
+    console.log ('Tab ID:', tabId);
+    try {
+      // Open the side panel for the active tab
+      await chrome.sidePanel.open ({tabId});
+      // Set options for the side panel
+      await chrome.sidePanel.setOptions ({
+        tabId,
+        path: 'sidepanel.html',
+        enabled: true,
+      });
+      window.close (); // Closes the popup after opening the side panel
+      chrome.storage.local.set ({preferSidePanel: true});
+    } catch (error) {
+      console.error ('Failed to open or configure the side panel:', error);
+    }
+  });
+
   const languageSelect = document.getElementById ('languageSelect');
+
   const markdownContent = document.getElementById ('markdownContent');
+  // I am using iframe to include popup.html in sidepanel.html to reuse the same code
+  // in sidepanel,increase the height of the iframe to fit the content
+  // Check if the current page is loaded within an iframe
+  if (window.self !== window.top) {
+    // This code runs if the page is in an iframe
+    if (markdownContent) {
+      markdownContent.style.height = '480px'; // Adjust the height as needed
+      console.log ('Adjusted markdownContent height for iframe usage.');
+    }
+  }
+
   const submitCustomPromptButton = document.getElementById (
     'submitCustomPromptButton'
   );
@@ -43,6 +95,7 @@ export function initUI () {
     document.getElementById ('storedPrompt5Storage'),
   ];
 
+  const customPromptInput = document.getElementById ('customPromptInput');
   // Load the last used custom prompt from local storage
   const lastCustomPrompt = localStorage.getItem ('lastCustomPrompt');
   if (lastCustomPrompt) {
@@ -50,6 +103,12 @@ export function initUI () {
     customPromptInput.value = lastCustomPrompt.trim ();
   }
 
+  const apiUrlInput = document.getElementById ('apiUrlInput');
+  const apiTokenInput = document.getElementById ('apiTokenInput');
+  const modelNameInput = document.getElementById ('modelNameInput');
+  const maxTokenInput = document.getElementById ('maxTokenInput');
+  const temperatureInput = document.getElementById ('temperatureInput');
+  const topPInput = document.getElementById ('topPInput');
   // Load settings from local storage
   chrome.storage.local.get (
     [
@@ -108,18 +167,7 @@ export function initUI () {
     }
   );
 
-  // Show or hide the configuration popup
-  configButton.addEventListener ('click', () => {
-    if (configPopup.style.display === 'block') {
-      // If configPopup is currently shown, hide it and show markdownContent
-      configPopup.style.display = 'none';
-      markdownContent.style.display = 'block';
-    } else {
-      // If configPopup is currently hidden, show it and hide markdownContent
-      configPopup.style.display = 'block';
-      markdownContent.style.display = 'none';
-    }
-  });
+  const saveApiUrlButton = document.getElementById ('saveApiUrlButton');
   const testConnectionButton = document.getElementById ('testConnectionButton');
   // Save configuration settings
   saveApiUrlButton.addEventListener ('click', () => {

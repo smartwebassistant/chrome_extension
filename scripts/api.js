@@ -111,14 +111,12 @@ export function fetchOpenAI (system_prompt, user_prompt) {
           const statusCode = response.status; // Capture the HTTP status code
           const reader = response.body.getReader ();
           initMarkdown ();
-          updateStatus (
-            `API call successful. Status code: ${statusCode}. Waiting for response...`
-          );
+          updateStatus (`Status : ${statusCode}. Waiting for response...`);
           reader
             .read ()
             .then (function pump({done, value}) {
               if (done) {
-                updateStatus (`Stream completed. Status code: ${statusCode}.`);
+                updateStatus (`Stream completed.`);
                 displayMarkdown ();
                 cancelButton.style.display = 'none'; // Hide cancel button
                 return;
@@ -208,11 +206,22 @@ export function fetchOpenAI (system_prompt, user_prompt) {
   );
 }
 
-// update connection test status, if it's successful then text will be green, otherwise red
-function updateConnectionTestStatus (message, success = false) {
+function updateConnectionTestStatus (message, success) {
   const statusDisplay = document.getElementById ('apiConnectionTestStatus');
   statusDisplay.textContent = message;
-  statusDisplay.style.color = success ? 'green' : 'red';
+
+  // Clear existing alert classes and set visibility
+  statusDisplay.className = 'alert small';
+  statusDisplay.style.display = 'block'; // Make the alert visible
+
+  // Add the appropriate Bootstrap alert class based on success
+  if (success === true) {
+    statusDisplay.classList.add ('alert-success');
+  } else if (success === false) {
+    statusDisplay.classList.add ('alert-danger');
+  } else {
+    statusDisplay.classList.add ('alert-light');
+  }
 }
 
 export function testApiConnection (apiUrl) {
@@ -241,20 +250,25 @@ export function testApiConnection (apiUrl) {
       } else if (response.status >= 500) {
         // Handling server errors separately
         updateConnectionTestStatus (
-          `Server error encountered: ${response.status} ${response.statusText}`
+          `Server error encountered: ${response.status} ${response.statusText}`,
+          false
         );
       } else {
         updateConnectionTestStatus (
-          `Connection failed: ${response.status} ${response.statusText}`
+          `Connection failed: ${response.status} ${response.statusText}`,
+          false
         );
       }
     })
     .catch (error => {
       clearTimeout (timeoutId);
       if (error.name === 'AbortError') {
-        updateConnectionTestStatus ('Connection timed out.');
+        updateConnectionTestStatus ('Connection timed out.', false);
       } else {
-        updateConnectionTestStatus (`Connection failed: ${error.message}`);
+        updateConnectionTestStatus (
+          `Connection failed: ${error.message}`,
+          false
+        );
       }
     });
 }
