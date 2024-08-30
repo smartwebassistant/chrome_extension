@@ -3,16 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Browser Assistant</title>
+    <title>Smart Web Assistant</title>
     <link href="lib/bootstrap.min.css" rel="stylesheet" />
+    <link href="lib/all.min.css" rel="stylesheet" />
     <style>
       body {
-        width: 300px;
-        padding: 5px;
+        min-width: 300px;
         font-size: 14px; /* Specifically reduce font size for buttons */
       }
+      .navbar-brand {
+        flex-grow: 1; /* Ensures the brand takes up all available space, pushing buttons to the right */
+      }
       /* Remove rounded corners */
-      .form-control,
       .form-select {
         border-radius: 0 !important;
         font-size: 12px; /* Specifically reduce font size for buttons */
@@ -20,9 +22,10 @@
       .row + .row {
         margin-top: 5px; /* Reduced margin between rows */
       }
-      .btn {
-        font-size: 14px; /* Specifically reduce font size for buttons */
+      .div-pointer {
+        cursor: pointer; /* header SVG divs, This will change the cursor to a hand when the mouse hovers over the element */
       }
+
       .form-select {
         padding: 2px; /* Reduce select padding */
         font-size: 12px; /* Specifically reduce font size for buttons */
@@ -47,6 +50,8 @@
       .form-control {
         max-width: 100%; /* Ensures input does not exceed its container */
         width: 70%; /* Adjust this to reduce input field width as needed */
+        border-radius: 0 !important;
+        font-size: 12px; /* Specifically reduce font size for buttons */
       }
       span {
         color: #c0c0c0; /* This light grey color is commonly used to indicate disabled elements */
@@ -58,106 +63,136 @@
         height: 100%; /* Make input group text match the height of adjacent controls */
         display: flex;
       }
+      .markdown-content {
+        height: 200px;
+      }
+      /* This targets the switch's track */
+      .form-check-input:checked {
+        background-color: #198754; /* Bootstrap's success green color */
+        border-color: #198754; /* Ensure the border is also green */
+      }
+
+      /* This targets the thumb of the switch */
+      .form-check-input:checked + .form-check-label::before {
+        background-color: #ffffff; /* Typically, you want the thumb to be white */
+      }
+
+      /* For browsers that use pseudo-elements for the switch's appearance */
+      .form-check-input:checked::before {
+        background-color: #198754; /* Green background for the part that slides */
+      }
+      #apiConnectionTestStatus {
+        display: none; /* Hide the alert by default */
+      }
     </style>
   </head>
   <body>
-    <nav class="navbar navbar-light bg-light">
-      <span class="navbar-brand mb-0 h1">Smart Web Assistant</span>
-      <button class="btn btn-outline-success btn-sm" id="config">
-        Settings
-      </button>
-    </nav>
+    <div class="container-fluid">
+      <nav class="navbar navbar-light bg-light">
+        <span class="navbar-brand mb-0 h1">Smart Web Assistant</span>
+        <div
+          id="toggleSidebarButton"
+          class="div-pointer"
+          title="Toggle SidePanel"
+          style="padding-right: 5px"
+        >
+          <img
+            src="images/layout-sidebar-reverse.svg"
+            alt="Toggle SidePanel"
+            style="width: 20px; height: 20px"
+          />
+        </div>
+        <div id="config" class="div-pointer" title="Settings">
+          <img
+            src="images/gear.svg"
+            alt="Settings"
+            style="width: 20px; height: 20px"
+          />
+        </div>
+      </nav>
 
-    <div class="btn-group d-flex mb-1" role="group">
-      <div class="input-group-prepend">
-        <span class="input-group-text">Shortcuts</span>
+      <div class="btn-group d-flex mb-1" role="group">
+        <div class="input-group-prepend">
+          <span class="input-group-text">Shortcuts</span>
+        </div>
+        <button
+          type="button"
+          id="storedPrompt1Button"
+          class="btn btn-success flex-grow-1 btn-sm"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+        >
+          1
+        </button>
+        <button
+          type="button"
+          class="btn btn-success flex-grow-1 btn-sm"
+          id="storedPrompt2Button"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+        >
+          2
+        </button>
+        <button
+          type="button"
+          class="btn btn-success flex-grow-1 btn-sm"
+          id="storedPrompt3Button"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+        >
+          3
+        </button>
+        <button
+          type="button"
+          class="btn btn-success flex-grow-1 btn-sm"
+          id="storedPrompt4Button"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+        >
+          4
+        </button>
+        <button
+          type="button"
+          class="btn btn-success flex-grow-1 btn-sm"
+          id="storedPrompt5Button"
+          data-bs-toggle="tooltip"
+          data-bs-placement="top"
+        >
+          5
+        </button>
       </div>
-      <button
-        type="button"
-        id="storedPrompt1Button"
-        class="btn btn-success flex-grow-1 btn-sm"
-        data-bs-toggle="tooltip"
-        data-bs-placement="top"
-      >
-        1
-      </button>
-      <button
-        type="button"
-        class="btn btn-success flex-grow-1 btn-sm"
-        id="storedPrompt2Button"
-        data-bs-toggle="tooltip"
-        data-bs-placement="top"
-      >
-        2
-      </button>
-      <button
-        type="button"
-        class="btn btn-success flex-grow-1 btn-sm"
-        id="storedPrompt3Button"
-        data-bs-toggle="tooltip"
-        data-bs-placement="top"
-      >
-        3
-      </button>
-      <button
-        type="button"
-        class="btn btn-success flex-grow-1 btn-sm"
-        id="storedPrompt4Button"
-        data-bs-toggle="tooltip"
-        data-bs-placement="top"
-      >
-        4
-      </button>
-      <button
-        type="button"
-        class="btn btn-success flex-grow-1 btn-sm"
-        id="storedPrompt5Button"
-        data-bs-toggle="tooltip"
-        data-bs-placement="top"
-      >
-        5
-      </button>
-    </div>
 
-    <!-- <div class="input-group mb-1">
-      <input
-        type="text"
-        class="form-control"
-        placeholder="Enter custom prompt"
-        id="customPromptInput"
-      />
-    </div> -->
-
-    <div class="input-group mb-1">
-      <div class="input-group-prepend">
-        <span class="input-group-text">Query</span>
+      <div class="input-group mb-1">
+        <div class="input-group-prepend">
+          <span class="input-group-text">Query</span>
+        </div>
+        <textarea
+          class="form-control"
+          placeholder="Enter custom prompt"
+          id="customPromptInput"
+          aria-label="With textarea"
+        >
+        </textarea>
       </div>
-      <textarea
-        class="form-control"
-        placeholder="Enter custom prompt"
-        id="customPromptInput"
-        aria-label="With textarea"
-      >
-      </textarea>
-    </div>
 
-    <div class="input-group mb-1">
-      <button
-        class="btn btn-outline-success btn-sm"
-        type="button"
-        id="submitCustomPromptButton"
-      >
-        Web Context AI Ask
-      </button>
-      <select class="form-select" id="languageSelect">
-        <option value="English">Response - English</option>
-        <option value="Chinese">Response - Chinese</option>
-        <option value="Spanish">Response - Spanish</option>
-        <option value="French">Response - French</option>
-        <option value="German">Response - German</option>
-        <option value="Japanese">Response - Japanese</option>
-        <option value="Russian">Response - Russian</option>
-      </select>
+      <div class="input-group mb-1">
+        <button
+          class="btn btn-outline-success btn-sm"
+          type="button"
+          id="submitCustomPromptButton"
+        >
+          Ask Your AI
+        </button>
+        <select class="form-select" id="languageSelect">
+          <option value="English">Response - English</option>
+          <option value="Chinese">Response - Chinese</option>
+          <option value="Spanish">Response - Spanish</option>
+          <option value="French">Response - French</option>
+          <option value="German">Response - German</option>
+          <option value="Japanese">Response - Japanese</option>
+          <option value="Russian">Response - Russian</option>
+        </select>
+      </div>
       <div class="form-check form-switch">
         <input
           class="form-check-input"
@@ -166,161 +201,165 @@
           checked
         />
         <label class="form-check-label" for="includeWebContentCheckbox"
-          >Include Web Content As Query Context</label
+          >Web Content As Query Context</label
         >
       </div>
-    </div>
-
-    <div id="configPopup">
-      <div class="input-group mb-1">
-        <div class="form-check form-switch">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            id="debugModeCheckbox"
-          />
-          <label class="form-check-label" for="debugModeCheckbox"
-            >Enable Debug Logs</label
-          >
+      <div id="configPopup">
+        <div class="input-group mb-1">
+          <div class="form-check form-switch">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="debugModeCheckbox"
+            />
+            <label class="form-check-label" for="debugModeCheckbox"
+              >Enable Debug Logs</label
+            >
+          </div>
         </div>
-      </div>
-      <div class="mb-1">
-        <label class="form-label margin-bottom-1px">* API URL</label>
-        <div class="d-flex">
+        <div class="mb-1">
+          <label class="form-label margin-bottom-1px">* API URL</label>
+          <div class="d-flex">
+            <input
+              type="text"
+              class="form-control flex-grow-1"
+              id="apiUrlInput"
+              placeholder="Enter OpenAI API URL"
+            />
+            <button
+              class="btn btn-success ms-2 btn-sm"
+              id="testConnectionButton"
+            >
+              Test
+            </button>
+          </div>
+          <span id="apiUrlStorage" class="storage-value"></span>
+          <div
+            id="apiConnectionTestStatus"
+            class="alert alert-light"
+            role="alert"
+          >
+            &nbsp;
+          </div>
+        </div>
+        <div class="mb-1">
+          <label class="form-label margin-bottom-1px">API Token</label>
+          <input type="password" class="form-control" id="apiTokenInput" />
+        </div>
+        <div class="mb-1">
+          <label class="form-label margin-bottom-1px">Model Name</label>
           <input
             type="text"
-            class="form-control flex-grow-1"
-            id="apiUrlInput"
-            placeholder="Enter OpenAI API URL"
+            class="form-control"
+            id="modelNameInput"
+            placeholder="Model Name"
           />
-          <button class="btn btn-success ms-2 btn-sm" id="testConnectionButton">
-            Test
-          </button>
+          <span id="modelNameStorage" class="storage-value"></span>
         </div>
-        <span id="apiUrlStorage" class="storage-value"></span>
-        <div>
-          <span
-            id="apiConnectionTestStatus"
-            class="form-label margin-bottom-1px"
-            >&nbsp;</span
-          >
+        <div class="mb-1">
+          <label class="form-label margin-bottom-1px">* Max Tokens</label>
+          <input
+            type="text"
+            class="form-control"
+            id="maxTokenInput"
+            placeholder="4096"
+          />
+          <span id="maxTokenStorage" class="storage-value"></span>
         </div>
-      </div>
-      <div class="mb-1">
-        <label class="form-label margin-bottom-1px">API Token</label>
-        <input type="password" class="form-control" id="apiTokenInput" />
-      </div>
-      <div class="mb-1">
-        <label class="form-label margin-bottom-1px">Model Name</label>
-        <input
-          type="text"
-          class="form-control"
-          id="modelNameInput"
-          placeholder="Model Name"
-        />
-        <span id="modelNameStorage" class="storage-value"></span>
-      </div>
-      <div class="mb-1">
-        <label class="form-label margin-bottom-1px">* Max Tokens</label>
-        <input
-          type="text"
-          class="form-control"
-          id="maxTokenInput"
-          placeholder="4096"
-        />
-        <span id="maxTokenStorage" class="storage-value"></span>
-      </div>
-      <div class="mb-1">
-        <label class="form-label margin-bottom-1px">* Temperature</label>
-        <input
-          type="text"
-          class="form-control"
-          id="temperatureInput"
-          placeholder="0.7"
-        />
-        <span id="temperatureStorage" class="storage-value"></span>
-      </div>
-      <div class="mb-1">
-        <label class="form-label margin-bottom-1px">* Top P</label>
-        <input
-          type="text"
-          class="form-control"
-          id="topPInput"
-          placeholder="0.9"
-        />
-        <span id="topPStorage" class="storage-value"></span>
+        <div class="mb-1">
+          <label class="form-label margin-bottom-1px">* Temperature</label>
+          <input
+            type="text"
+            class="form-control"
+            id="temperatureInput"
+            placeholder="0.7"
+          />
+          <span id="temperatureStorage" class="storage-value"></span>
+        </div>
+        <div class="mb-1">
+          <label class="form-label margin-bottom-1px">* Top P</label>
+          <input
+            type="text"
+            class="form-control"
+            id="topPInput"
+            placeholder="0.9"
+          />
+          <span id="topPStorage" class="storage-value"></span>
+        </div>
+
+        <div class="mb-1">
+          <label class="form-label margin-bottom-1px">Stored Prompt 1</label>
+          <input
+            type="text"
+            class="form-control"
+            id="storedPrompt1Input"
+            placeholder="Translate it."
+          />
+          <span id="storedPrompt1Storage" class="storage-value"></span>
+        </div>
+
+        <div class="mb-1">
+          <label class="form-label margin-bottom-1px">Stored Prompt 2</label>
+          <input
+            type="text"
+            class="form-control"
+            id="storedPrompt2Input"
+            placeholder="Summarize it."
+          />
+          <span id="storedPrompt2Storage" class="storage-value"></span>
+        </div>
+
+        <div class="mb-1">
+          <label class="form-label margin-bottom-1px">Stored Prompt 3</label>
+          <input
+            type="text"
+            class="form-control"
+            id="storedPrompt3Input"
+            placeholder="Explain it."
+          />
+          <span id="storedPrompt3Storage" class="storage-value"></span>
+        </div>
+
+        <div class="mb-1">
+          <label class="form-label margin-bottom-1px">Stored Prompt 4</label>
+          <input
+            type="text"
+            class="form-control"
+            id="storedPrompt4Input"
+            placeholder="Tell me more."
+          />
+          <span id="storedPrompt4Storage" class="storage-value"></span>
+        </div>
+        <div class="mb-1">
+          <label class="form-label margin-bottom-1px">Stored Prompt 5</label>
+          <input
+            type="text"
+            class="form-control"
+            id="storedPrompt5Input"
+            placeholder="What is it?"
+          />
+          <span id="storedPrompt5Storage" class="storage-value"></span>
+        </div>
+        <button class="btn btn-success btn-sm" id="saveApiUrlButton">
+          Save
+        </button>
       </div>
 
-      <div class="mb-1">
-        <label class="form-label margin-bottom-1px">Stored Prompt 1</label>
-        <input
-          type="text"
-          class="form-control"
-          id="storedPrompt1Input"
-          placeholder="Translate it."
-        />
-        <span id="storedPrompt1Storage" class="storage-value"></span>
-      </div>
+      <div
+        id="markdownContent"
+        class="border p-3 mb-1 bg-white overflow-auto markdown-content"
+      ></div>
 
-      <div class="mb-1">
-        <label class="form-label margin-bottom-1px">Stored Prompt 2</label>
-        <input
-          type="text"
-          class="form-control"
-          id="storedPrompt2Input"
-          placeholder="Summarize it."
-        />
-        <span id="storedPrompt2Storage" class="storage-value"></span>
+      <div class="d-flex justify-content-between align-items-center mt-1">
+        <footer id="status" class="flex-grow-1">Ready.</footer>
+        <button
+          class="btn btn-danger btn-sm"
+          id="cancelButton"
+          style="display: none"
+        >
+          Stop
+        </button>
       </div>
-
-      <div class="mb-1">
-        <label class="form-label margin-bottom-1px">Stored Prompt 3</label>
-        <input
-          type="text"
-          class="form-control"
-          id="storedPrompt3Input"
-          placeholder="Explain it."
-        />
-        <span id="storedPrompt3Storage" class="storage-value"></span>
-      </div>
-
-      <div class="mb-1">
-        <label class="form-label margin-bottom-1px">Stored Prompt 4</label>
-        <input
-          type="text"
-          class="form-control"
-          id="storedPrompt4Input"
-          placeholder="Tell me more."
-        />
-        <span id="storedPrompt4Storage" class="storage-value"></span>
-      </div>
-      <div class="mb-1">
-        <label class="form-label margin-bottom-1px">Stored Prompt 5</label>
-        <input
-          type="text"
-          class="form-control"
-          id="storedPrompt5Input"
-          placeholder="What is it?"
-        />
-        <span id="storedPrompt5Storage" class="storage-value"></span>
-      </div>
-      <button class="btn btn-success btn-sm" id="saveApiUrlButton">Save</button>
-    </div>
-
-    <div
-      id="markdownContent"
-      class="border p-3 mb-1 bg-white overflow-auto"
-      style="height: 200px"
-    ></div>
-    <div class="d-flex justify-content-between align-items-center mt-1">
-      <footer id="status" class="flex-grow-1">Ready.</footer>
-      <button
-        class="btn btn-danger btn-sm"
-        id="cancelButton"
-        style="display: none"
-      >
-        Stop
-      </button>
     </div>
 
     <!-- Optional JavaScript -->
@@ -336,5 +375,6 @@
     <script type="module" src="scripts/markdown.js"></script>
     <script type="module" src="scripts/prompts.js"></script>
     <script type="module" src="scripts/utils.js"></script>
+    <script type="module" src="scripts/injector.js"></script>
   </body>
 </html>
