@@ -4,8 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Smart Web Assistant</title>
+    <link href="lib/foundation.min.css" rel="stylesheet" />
     <link href="lib/bootstrap.min.css" rel="stylesheet" />
     <link href="lib/all.min.css" rel="stylesheet" />
+
     <style>
       body {
         min-width: 300px;
@@ -83,6 +85,20 @@
       }
       #apiConnectionTestStatus {
         display: none; /* Hide the alert by default */
+      }
+      pre {
+        background-color: #f4f4f4; /* Light grey background */
+        border: 1px solid #ccc; /* Lighter border color for subtlety */
+        /* change border-left to color of button-success */
+        border-left: 2px solid #198754; /* Vibrant left border for emphasis */
+        color: #333; /* Darker text for better readability */
+        font-family: "Courier New", monospace; /* Classic monospace font */
+        font-size: 12px; /* Slightly larger text for clarity */
+        margin-bottom: 10px; /* More bottom margin to separate from other elements */
+        overflow: auto; /* Ensures long lines are scrollable */
+        padding: 10px; /* More padding for better text alignment */
+        width: auto; /* Auto width based on the container */
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
       }
     </style>
   </head>
@@ -365,7 +381,6 @@
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
     <script src="lib/jquery.min.js"></script>
-    <script src="lib/popper.min.js"></script>
     <script src="lib/bootstrap.min.js"></script>
     <script src="lib/showdown.min.js"></script>
     <script type="module" src="popup.js"></script>

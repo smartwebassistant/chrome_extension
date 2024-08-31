@@ -75,21 +75,21 @@ export function fetchOpenAI (system_prompt, user_prompt) {
       const payloadString = JSON.stringify (payload);
 
       // Copy the API request payload to the clipboard if debug mode is enabled
-      if (document.getElementById ('debugModeCheckbox').checked) {
-        if (navigator.clipboard) {
-          navigator.clipboard
-            .writeText (payloadString)
-            .then (() => {
-              updateStatus ('Payload copied to clipboard.', LOG_LEVELS.DEBUG);
-            })
-            .catch (err => {
-              updateStatus ('Failed to copy payload to clipboard.');
-              console.error ('Clipboard write failed:', err);
-            });
-        } else {
-          updateStatus ('Clipboard API not available.');
-        }
-      }
+      // if (document.getElementById ('debugModeCheckbox').checked) {
+      //   if (navigator.clipboard) {
+      //     navigator.clipboard
+      //       .writeText (payloadString)
+      //       .then (() => {
+      //         updateStatus ('Payload copied to clipboard.', LOG_LEVELS.DEBUG);
+      //       })
+      //       .catch (err => {
+      //         updateStatus ('Failed to copy payload to clipboard.');
+      //         console.error ('Clipboard write failed:', err);
+      //       });
+      //   } else {
+      //     updateStatus ('Clipboard API not available.');
+      //   }
+      // }
 
       // Define the requestOptions including the AbortController's signal
       const requestOptions = {
@@ -117,7 +117,7 @@ export function fetchOpenAI (system_prompt, user_prompt) {
             .then (function pump({done, value}) {
               if (done) {
                 updateStatus (`Stream completed.`);
-                displayMarkdown ();
+                displayMarkdown (true);
                 cancelButton.style.display = 'none'; // Hide cancel button
                 return;
               }
