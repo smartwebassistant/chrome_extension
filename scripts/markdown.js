@@ -1,7 +1,7 @@
 // markdown.js
+const converter = new showdown.Converter ();
+const markdownContent = document.getElementById ('markdownContent');
 export function displayMarkdown () {
-  const converter = new showdown.Converter ();
-
   const html = converter.makeHtml (markdownContent.innerHTML);
   markdownContent.innerHTML = html;
 }
