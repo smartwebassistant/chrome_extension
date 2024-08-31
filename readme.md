@@ -60,4 +60,4 @@ Contributions to the Smart Web Assistant are welcome. Please ensure to follow th
 See the [LICENSE.md](LICENSE) file for details.
 
 ## Support
-For support, please open an issue in the GitHub repository or contact the development team via email.
+For support, please open an issue in the [GitHub repository](https://github.com/your-repository) or contact the development team via email at [smartwebassistant@gmail.com](mailto:smartwebassistant@gmail.com).
