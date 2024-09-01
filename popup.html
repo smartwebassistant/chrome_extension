@@ -4,11 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Smart Web Assistant</title>
-    <link href="lib/foundation.min.css" rel="stylesheet" />
     <link href="lib/bootstrap.min.css" rel="stylesheet" />
     <link href="lib/all.min.css" rel="stylesheet" />
 
     <style>
+      table {
+        width: 100%; /* Sets the table to take the full width of its container */
+        border-collapse: collapse; /* Removes space between borders */
+      }
+
+      th,
+      td {
+        padding: 8px; /* Adds space inside each cell */
+        text-align: center; /* Centers text horizontally */
+        border-bottom: 1px solid #ddd; /* Adds a horizontal line under each row */
+      }
+
+      th {
+        background-color: #f2f2f2; /* Sets a background color for headers */
+        color: black; /* Sets the text color for headers */
+      }
+
+      tr:hover {
+        background-color: #f5f5f5;
+      } /* Changes background on row hover */
+
       body {
         min-width: 300px;
         font-size: 14px; /* Specifically reduce font size for buttons */
@@ -103,7 +123,7 @@
     </style>
   </head>
   <body>
-    <div class="container-fluid">
+    <div class="container">
       <nav class="navbar navbar-light bg-light">
         <span class="navbar-brand mb-0 h1">Smart Web Assistant</span>
         <div
