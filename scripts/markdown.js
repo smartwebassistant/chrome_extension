@@ -44,8 +44,19 @@ export function displayMarkdown (forceDisplay = false) {
     'Displaying Markdown content...' + contentBuffer,
     LOG_LEVELS.DEBUG
   );
-  const html = converter.makeHtml (markdownContent.innerHTML);
-  markdownContent.innerHTML = html;
+  const html = converter.makeHtml (contentBuffer);
+
+  // find out the last html tag in the innerHTML, truncate the text after that and append the new html
+  const lastTagIndex = markdownContent.innerHTML.lastIndexOf ('</');
+  if (lastTagIndex > 0) {
+    markdownContent.innerHTML = markdownContent.innerHTML.substring (
+      0,
+      lastTagIndex
+    );
+  } else {
+    markdownContent.innerHTML = '';
+  }
+  markdownContent.innerHTML += html;
   contentBuffer = ''; // Clear the content buffer
 }
 
