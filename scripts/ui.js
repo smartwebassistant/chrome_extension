@@ -68,6 +68,8 @@ export function initUI () {
       markdownContent.style.height = '480px'; // Adjust the height as needed
       console.log ('Adjusted markdownContent height for iframe usage.');
     }
+
+    document.body.style.width = '100%'; // Adjust the width as needed
   }
 
   const submitCustomPromptButton = document.getElementById (
