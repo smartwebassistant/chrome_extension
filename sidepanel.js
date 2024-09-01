@@ -1,5 +1,3 @@
-import {consoleLog, LOG_LEVELS} from './scripts/utils';
-
 document.addEventListener ('DOMContentLoaded', () => {
   const button = document.getElementById ('togglePopupButton');
   button.addEventListener ('click', () => {
