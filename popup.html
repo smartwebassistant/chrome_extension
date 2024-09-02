@@ -106,7 +106,7 @@
         background-color: #f4f4f4; /* Light grey background */
         border: 1px solid #ccc; /* Lighter border color for subtlety */
         /* change border-left to color of button-success */
-        border-left: 2px solid #198754; /* Vibrant left border for emphasis */
+        /*border-left: 2px solid #198754; /* Vibrant left border for emphasis */
         color: #333; /* Darker text for better readability */
         font-family: "Courier New", monospace; /* Classic monospace font */
         font-size: 12px; /* Slightly larger text for clarity */
@@ -117,6 +117,35 @@
         box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
         white-space: pre-wrap; /* Wraps the text within the pre element */
         word-break: break-word; /* Ensures that words break and wrap to the next line */
+        position: relative;
+        padding-top: 30px;
+      }
+      .div-pointer {
+        cursor: pointer;
+        display: flex; /* Ensures contents of div-pointer are aligned properly */
+        align-items: center; /* Center align the items vertically */
+      }
+      .code-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 30px;
+        line-height: 30px;
+        background-color: #f8f9fa;
+        border-bottom: 1px solid #ccc;
+        padding: 0 10px;
+        font-family: monospace;
+        color: #333;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      code {
+        display: block;
+        white-space: pre-wrap;
+        font-family: monospace;
       }
     </style>
   </head>
