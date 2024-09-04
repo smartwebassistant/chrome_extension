@@ -133,7 +133,15 @@ export function initUI () {
         'apiUrlStorage'
       ).textContent = `(Stored: ${result.apiUrl || 'None'})`;
 
-      apiTokenInput.value = result.apiToken || '';
+      // Prepend six asterisks to the last 4 characters of the apiToken
+      let tokenDisplay = result.apiToken
+        ? result.apiToken.slice (0, 4) + '***' + result.apiToken.slice (-4)
+        : '';
+      apiTokenInput.value = result.apiToken;
+      document.getElementById (
+        'apiTokenStorage'
+      ).textContent = `(Masked Token: ${tokenDisplay})`;
+
       modelNameInput.value = result.modelName || 'gpt-4o';
       document.getElementById (
         'modelNameStorage'
@@ -234,15 +242,33 @@ export function initUI () {
         document.getElementById (
           'apiUrlStorage'
         ).textContent = `(Stored: ${apiUrlInput.value})`;
+
+        // Extract and conditionally format the apiToken for display
+        if (apiTokenInput.value.trim ()) {
+          // Check if the input is effectively non-empty after trimming
+          // If not empty, format with '@******' and the last 4 chars
+          document.getElementById (
+            'apiTokenStorage'
+          ).textContent = `(Stored: @******${apiTokenInput.value
+            .trim ()
+            .slice (-4)})`;
+        } else {
+          // If empty, set display to indicate no stored token
+          document.getElementById ('apiTokenStorage').textContent = `(Stored:)`;
+        }
+
         document.getElementById (
           'modelNameStorage'
         ).textContent = `(Stored: ${modelNameInput.value})`;
+
         document.getElementById (
           'maxTokenStorage'
         ).textContent = `(Stored: ${maxTokenInput.value})`;
+
         document.getElementById (
           'temperatureStorage'
         ).textContent = `(Stored: ${temperatureInput.value})`;
+
         document.getElementById (
           'topPStorage'
         ).textContent = `(Stored: ${topPInput.value})`;
@@ -316,10 +342,11 @@ export function initUI () {
 
   testConnectionButton.addEventListener ('click', () => {
     const apiUrl = apiUrlInput.value;
+    const apiToken = apiTokenInput.value;
     if (!isValidUrl (apiUrl)) {
       updateStatus ('Please enter a valid API URL.');
       return;
     }
-    testApiConnection (apiUrl);
+    testApiConnection (apiUrl, apiToken);
   });
 }
