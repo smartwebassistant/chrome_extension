@@ -1,13 +1,15 @@
 chrome.runtime.onMessage.addListener (function (request, sender, sendResponse) {
   if (request.action === 'getText') {
-    if (window.location.href.startsWith ('https://docs.google.com')) {
-      sendResponse ({text: getDocText ()});
-    } else {
-      var mainContentText = document.getElementById ('main-content')
-        ? document.getElementById ('main-content').innerText
-        : document.body.innerText;
-      sendResponse ({text: mainContentText});
-    }
+    //if (window.location.href.startsWith ('https://docs.google.com')) {
+    //  sendResponse ({text: getDocText ()});
+    //} else {
+
+    var mainContentText = document.getElementById ('main-content')
+      ? document.getElementById ('main-content').innerText
+      : document.body.innerText;
+    sendResponse ({text: mainContentText});
+
+    //}
   }
 });
 
