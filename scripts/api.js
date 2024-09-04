@@ -90,7 +90,6 @@ export function fetchOpenAI (system_prompt, user_prompt) {
       //     updateStatus ('Clipboard API not available.');
       //   }
       // }
-
       // Define the requestOptions including the AbortController's signal
       const requestOptions = {
         method: 'POST',
@@ -224,16 +223,22 @@ function updateConnectionTestStatus (message, success) {
   }
 }
 
-export function testApiConnection (apiUrl) {
+export function testApiConnection (apiUrl, apiToken) {
   const controller = new AbortController ();
   const timeoutId = setTimeout (() => controller.abort (), 30000); // 30 seconds timeout
 
   updateConnectionTestStatus ('Testing connection...');
+  //print api url and first 4 characters **** last 4 characters of api token in debug log
+  consoleLog (
+    `Testing connection... ${apiUrl} ${apiToken.substring (0, 4)}****${apiToken.slice (-4)}`,
+    LOG_LEVELS.DEBUG
+  );
 
   fetch (apiUrl, {
     method: 'GET', // adjust as necessary for your API
     headers: {
       'Content-Type': 'application/json',
+      Authorization: `Bearer ${apiToken}`,
     },
     signal: controller.signal,
   })
