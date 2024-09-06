@@ -34,6 +34,10 @@ export const ID_TOP_P_INPUT = 'topPInput';
 export const ID_SUBMIT_CUSTOM_PROMPT_BUTTON = 'submitCustomPromptButton';
 export const ID_SAVE_API_URL_BUTTON = 'saveApiUrlButton';
 export const ID_TEST_CONNECTION_BUTTON = 'testConnectionButton';
+export const ID_API_CONNECTION_TEST_STATUS = 'apiConnectionTestStatusDiv';
+export const ID_INCLUDE_WEB_CONTENT_CHECKBOX = 'includeWebContentCheckbox';
+export const ID_DEBUG_MODE_CHECKBOX = 'debugModeCheckbox';
+export const ID_STATUS_FOOTER = 'statusFooter';
 
 export const ID_API_URL_STORAGE_SPAN = 'apiUrlStorage';
 export const ID_API_TOKEN_STORAGE_SPAN = 'apiTokenStorage';

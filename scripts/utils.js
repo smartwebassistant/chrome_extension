@@ -1,3 +1,4 @@
+import {ID_DEBUG_MODE_CHECKBOX, ID_STATUS_FOOTER} from './constants.js';
 // Log levels
 export const LOG_LEVELS = {
   ERROR: 1,
@@ -6,18 +7,18 @@ export const LOG_LEVELS = {
 };
 // Update the status display in the bottom
 export function updateStatus (message, level = LOG_LEVELS.INFO) {
-  const isDebugMode = document.getElementById ('debugModeCheckbox').checked;
+  const isDebugMode = document.getElementById (ID_DEBUG_MODE_CHECKBOX).checked;
   if (!isDebugMode && level === LOG_LEVELS.DEBUG) {
     return; // Ignore debug messages unless debug mode is enabled
   }
   // let user know the status of each operation
-  const statusDisplay = document.getElementById ('status');
+  const statusDisplay = document.getElementById (ID_STATUS_FOOTER);
   statusDisplay.textContent = message;
 }
 
 // Console log with log levels, if debug mode is enabled
 export function consoleLog (message, level = LOG_LEVELS.INFO) {
-  const isDebugMode = document.getElementById ('debugModeCheckbox').checked;
+  const isDebugMode = document.getElementById (ID_DEBUG_MODE_CHECKBOX).checked;
   if (!isDebugMode && level === LOG_LEVELS.DEBUG) {
     return; // Ignore debug messages unless debug mode is enabled
   }

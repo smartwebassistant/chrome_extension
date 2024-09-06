@@ -99,7 +99,7 @@
       .form-check-input:checked::before {
         background-color: #198754; /* Green background for the part that slides */
       }
-      #apiConnectionTestStatus {
+      #apiConnectionTestStatusDiv {
         display: none; /* Hide the alert by default */
       }
       pre {
@@ -298,7 +298,7 @@
           </div>
           <span id="apiUrlStorage" class="storage-value"></span>
           <div
-            id="apiConnectionTestStatus"
+            id="apiConnectionTestStatusDiv"
             class="alert alert-light"
             role="alert"
           >
@@ -415,7 +415,7 @@
       ></div>
 
       <div class="d-flex justify-content-between align-items-center mt-1">
-        <footer id="status" class="flex-grow-1">Ready.</footer>
+        <footer id="statusFooter" class="flex-grow-1">Ready.</footer>
         <button
           class="btn btn-danger btn-sm"
           id="cancelButton"
