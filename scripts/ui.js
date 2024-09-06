@@ -29,8 +29,9 @@ export function initUI () {
     // Hide the toggle sidebar button if in an iframe
     if (toggleSidebarButton) {
       toggleSidebarButton.style.display = 'none';
-      console.log (
-        'Toggle sidebar button hidden because it is inside an iframe.'
+      consoleLog (
+        'Toggle sidebar button hidden because it is inside an iframe.',
+        LOG_LEVELS.DEBUG
       );
     }
   }
@@ -66,7 +67,10 @@ export function initUI () {
     // This code runs if the page is in an iframe
     if (markdownContent) {
       markdownContent.style.height = '480px'; // Adjust the height as needed
-      console.log ('Adjusted markdownContent height for iframe usage.');
+      consoleLog (
+        'Adjusted markdownContent height for iframe usage.',
+        LOG_LEVELS.DEBUG
+      );
     }
 
     document.body.style.width = '100%'; // Adjust the width as needed
