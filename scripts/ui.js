@@ -34,6 +34,16 @@ import {
   ID_STORED_PROMPT_INPUT,
   ID_STORED_PROMPT_BUTTON,
   ID_STORED_PROMPT_STORAGE,
+  SIDE_PANEL_HTML,
+  STORAGE_KEY_LAST_CUSTOM_PROMPT,
+  STORAGE_KEY_SELECTED_LANGUAGE,
+  STORAGE_STORED_PROMPT_PREFIX,
+  ID_API_URL_STORAGE_SPAN,
+  ID_API_TOKEN_STORAGE_SPAN,
+  ID_MODEL_NAME_STORAGE_SPAN,
+  ID_MAX_TOKEN_STORAGE_SPAN,
+  ID_TEMPERATURE_STORAGE_SPAN,
+  ID_TOP_P_STORAGE_SPAN,
 } from './constants.js';
 
 export function initUI () {
@@ -89,7 +99,7 @@ export function initUI () {
       // Set options for the side panel
       await chrome.sidePanel.setOptions ({
         tabId,
-        path: 'sidepanel.html',
+        path: SIDE_PANEL_HTML,
         enabled: true,
       });
       window.close (); // Closes the popup after opening the side panel
@@ -99,9 +109,52 @@ export function initUI () {
     }
   });
 
-  const languageSelect = document.getElementById ('languageSelect');
+  // 3. shortcuts for stored prompt inputs
+  const numberOfPrompts = 5; // This can be adjusted based on the actual number of prompts you have
 
-  const markdownContent = document.getElementById ('markdownContent');
+  const storedPromptButtons = Array.from ({length: numberOfPrompts}, (_, i) =>
+    document.getElementById (ID_STORED_PROMPT_BUTTON (i + 1))
+  );
+
+  const storedPromptInputs = Array.from ({length: numberOfPrompts}, (_, i) =>
+    document.getElementById (ID_STORED_PROMPT_INPUT (i + 1))
+  );
+
+  const storedPromptStorages = Array.from ({length: numberOfPrompts}, (_, i) =>
+    document.getElementById (ID_STORED_PROMPT_STORAGE (i + 1))
+  );
+
+  // 4. customized prompt input
+  const customPromptInput = document.getElementById (ID_CUSTOM_PROMPT_INPUT);
+  // Load the last used custom prompt from local storage
+  const lastCustomPrompt = localStorage.getItem (
+    STORAGE_KEY_LAST_CUSTOM_PROMPT
+  );
+  if (lastCustomPrompt) {
+    // Checks if lastCustomPrompt is not null and not an empty string
+    customPromptInput.value = lastCustomPrompt.trim ();
+  }
+
+  // 5. submit custom prompt button
+  const submitCustomPromptButton = document.getElementById (
+    ID_SUBMIT_CUSTOM_PROMPT_BUTTON
+  );
+
+  // 6. language select
+  const languageSelect = document.getElementById (ID_LANGUAGE_SELECT);
+  const defaultLanguage =
+    localStorage.getItem (STORAGE_KEY_SELECTED_LANGUAGE) || DEFAULT_LANGUAGE;
+
+  // Set the default selected language from local storage or default to English
+  languageSelect.value = defaultLanguage;
+
+  // Event listener to update local storage when the user changes the selection
+  languageSelect.addEventListener ('change', function () {
+    localStorage.setItem (STORAGE_KEY_SELECTED_LANGUAGE, this.value);
+  });
+
+  // 7. mark down content
+  const markdownContent = document.getElementById (ID_MARKDOWN_CONTENT);
   // I am using iframe to include popup.html in sidepanel.html to reuse the same code
   // in sidepanel,increase the height of the iframe to fit the content
   // Check if the current page is loaded within an iframe
@@ -118,65 +171,32 @@ export function initUI () {
     document.body.style.width = '100%'; // Adjust the width as needed
   }
 
-  const submitCustomPromptButton = document.getElementById (
-    'submitCustomPromptButton'
-  );
-  const storedPromptButtons = [
-    document.getElementById ('storedPrompt1Button'),
-    document.getElementById ('storedPrompt2Button'),
-    document.getElementById ('storedPrompt3Button'),
-    document.getElementById ('storedPrompt4Button'),
-    document.getElementById ('storedPrompt5Button'),
-  ];
-  const storedPromptInputs = [
-    document.getElementById ('storedPrompt1Input'),
-    document.getElementById ('storedPrompt2Input'),
-    document.getElementById ('storedPrompt3Input'),
-    document.getElementById ('storedPrompt4Input'),
-    document.getElementById ('storedPrompt5Input'),
-  ];
-  const storedPromptStorages = [
-    document.getElementById ('storedPrompt1Storage'),
-    document.getElementById ('storedPrompt2Storage'),
-    document.getElementById ('storedPrompt3Storage'),
-    document.getElementById ('storedPrompt4Storage'),
-    document.getElementById ('storedPrompt5Storage'),
-  ];
-
-  const customPromptInput = document.getElementById ('customPromptInput');
-  // Load the last used custom prompt from local storage
-  const lastCustomPrompt = localStorage.getItem ('lastCustomPrompt');
-  if (lastCustomPrompt) {
-    // Checks if lastCustomPrompt is not null and not an empty string
-    customPromptInput.value = lastCustomPrompt.trim ();
-  }
-
-  const apiUrlInput = document.getElementById ('apiUrlInput');
-  const apiTokenInput = document.getElementById ('apiTokenInput');
-  const modelNameInput = document.getElementById ('modelNameInput');
-  const maxTokenInput = document.getElementById ('maxTokenInput');
-  const temperatureInput = document.getElementById ('temperatureInput');
-  const topPInput = document.getElementById ('topPInput');
+  // 8. configuration settings
+  const apiUrlInput = document.getElementById (ID_API_URL_INPUT);
+  const apiTokenInput = document.getElementById (ID_API_TOKEN_INPUT);
+  const modelNameInput = document.getElementById (ID_MODEL_NAME_INPUT);
+  const maxTokenInput = document.getElementById (ID_MAX_TOKEN_INPUT);
+  const temperatureInput = document.getElementById (ID_TEMPERATURE_INPUT);
+  const topPInput = document.getElementById (ID_TOP_P_INPUT);
   // Load settings from local storage
   chrome.storage.local.get (
     [
-      'apiUrl',
-      'apiToken',
-      'modelName',
-      'maxToken',
-      'temperature',
-      'topP',
-      'storedPrompt1',
-      'storedPrompt2',
-      'storedPrompt3',
-      'storedPrompt4',
-      'storedPrompt5',
+      STORAGE_API_URL,
+      STORAGE_API_TOKEN,
+      STORAGE_MODEL_NAME,
+      STORAGE_MAX_TOKEN,
+      STORAGE_TEMPERATURE,
+      STORAGE_TOP_P,
+      ...Array.from (
+        {length: 5},
+        (_, i) => `${STORAGE_STORED_PROMPT_PREFIX}${i + 1}`
+      ),
     ],
     function (result) {
-      apiUrlInput.value =
-        result.apiUrl || 'https://api.openai.com/v1/chat/completions';
+      // console.log('Value currently is ' + result.apiUrl);
+      apiUrlInput.value = result.apiUrl || DEFAULT_API_URL;
       document.getElementById (
-        'apiUrlStorage'
+        ID_API_URL_STORAGE_SPAN
       ).textContent = `(Stored: ${result.apiUrl || 'None'})`;
 
       // Prepend six asterisks to the first 4 chars *** last 4 characters of the apiToken
@@ -185,27 +205,27 @@ export function initUI () {
         : '';
       apiTokenInput.value = result.apiToken;
       document.getElementById (
-        'apiTokenStorage'
+        ID_API_TOKEN_STORAGE_SPAN
       ).textContent = `(Masked Token: ${tokenDisplay})`;
 
-      modelNameInput.value = result.modelName || 'gpt-4o';
+      modelNameInput.value = result.modelName || DEFAULT_MODEL_NAME;
       document.getElementById (
-        'modelNameStorage'
+        ID_MODEL_NAME_STORAGE_SPAN
       ).textContent = `(Stored: ${result.modelName || 'None'})`;
 
-      maxTokenInput.value = result.maxToken || 4096;
+      maxTokenInput.value = result.maxToken || DEFAULT_MAX_TOKENS;
       document.getElementById (
-        'maxTokenStorage'
+        ID_MAX_TOKEN_STORAGE_SPAN
       ).textContent = `(Stored: ${result.maxToken || 'None'})`;
 
-      temperatureInput.value = result.temperature || 0.7;
+      temperatureInput.value = result.temperature || DEFAULT_TEMPERATURE;
       document.getElementById (
-        'temperatureStorage'
+        ID_TEMPERATURE_STORAGE_SPAN
       ).textContent = `(Stored: ${result.temperature || 'None'})`;
 
-      topPInput.value = result.topP || 0.9;
+      topPInput.value = result.topP || DEFAULT_TOP_P;
       document.getElementById (
-        'topPStorage'
+        ID_TOP_P_STORAGE_SPAN
       ).textContent = `(Stored: ${result.topP || 'None'})`;
 
       // Load stored prompts from local storage in a loop
@@ -232,8 +252,10 @@ export function initUI () {
     }
   );
 
-  const saveApiUrlButton = document.getElementById ('saveApiUrlButton');
-  const testConnectionButton = document.getElementById ('testConnectionButton');
+  const saveApiUrlButton = document.getElementById (ID_SAVE_API_URL_BUTTON);
+  const testConnectionButton = document.getElementById (
+    ID_TEST_CONNECTION_BUTTON
+  );
   // Save configuration settings
   saveApiUrlButton.addEventListener ('click', () => {
     // Check if required fields are not empty
@@ -286,7 +308,7 @@ export function initUI () {
       },
       () => {
         document.getElementById (
-          'apiUrlStorage'
+          ID_API_URL_STORAGE_SPAN
         ).textContent = `(Stored: ${apiUrlInput.value})`;
 
         // Extract and conditionally format the apiToken for display
@@ -294,29 +316,31 @@ export function initUI () {
           // Check if the input is effectively non-empty after trimming
           // If not empty, format with first 4 chars '***' and the last 4 chars
           document.getElementById (
-            'apiTokenStorage'
+            ID_API_TOKEN_STORAGE_SPAN
           ).textContent = `(Stored: ${apiTokenInput.value
             .trim ()
             .slice (0, 4)}***${apiTokenInput.value.trim ().slice (-4)})`;
         } else {
           // If empty, set display to indicate no stored token
-          document.getElementById ('apiTokenStorage').textContent = `(Stored:)`;
+          document.getElementById (
+            ID_API_TOKEN_STORAGE_SPAN
+          ).textContent = `(Stored: None)`;
         }
 
         document.getElementById (
-          'modelNameStorage'
+          ID_MODEL_NAME_STORAGE_SPAN
         ).textContent = `(Stored: ${modelNameInput.value})`;
 
         document.getElementById (
-          'maxTokenStorage'
+          ID_MAX_TOKEN_STORAGE_SPAN
         ).textContent = `(Stored: ${maxTokenInput.value})`;
 
         document.getElementById (
-          'temperatureStorage'
+          ID_TEMPERATURE_STORAGE_SPAN
         ).textContent = `(Stored: ${temperatureInput.value})`;
 
         document.getElementById (
-          'topPStorage'
+          ID_TOP_P_STORAGE_SPAN
         ).textContent = `(Stored: ${topPInput.value})`;
 
         // Loop through stored prompts to update both storage text and button title
@@ -345,17 +369,6 @@ export function initUI () {
     );
   });
 
-  const defaultLanguage =
-    localStorage.getItem ('selectedLanguage') || 'English';
-
-  // Set the default selected language from local storage or default to English
-  languageSelect.value = defaultLanguage;
-
-  // Event listener to update local storage when the user changes the selection
-  languageSelect.addEventListener ('change', function () {
-    localStorage.setItem ('selectedLanguage', this.value);
-  });
-
   storedPromptButtons.forEach ((button, index) => {
     button.addEventListener ('click', () => {
       const promptInput = storedPromptInputs[index];
@@ -380,7 +393,7 @@ export function initUI () {
       return;
     }
 
-    localStorage.setItem ('lastCustomPrompt', customPrompt);
+    localStorage.setItem (STORAGE_KEY_LAST_CUSTOM_PROMPT, customPrompt);
     consoleLog ('Custom prompt saved:' + customPrompt, LOG_LEVELS.DEBUG);
 
     handlePromptSubmission (customPrompt, selectedLanguage);

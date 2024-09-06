@@ -62,7 +62,7 @@
         font-size: 10px; /* Specifically reduce font size for buttons */
       }
 
-      #configPopup {
+      #configPopupDiv {
         display: none; /* Controlled via JavaScript to show/hide */
       }
       .form-control {
@@ -165,7 +165,7 @@
             style="width: 20px; height: 20px"
           />
         </div>
-        <div id="config" class="div-pointer" title="Settings">
+        <div id="configButton" class="div-pointer" title="Settings">
           <img
             src="images/gear.svg"
             alt="Settings"
@@ -267,7 +267,7 @@
           >Web Content As Query Context</label
         >
       </div>
-      <div id="configPopup">
+      <div id="configPopupDiv">
         <div class="input-group mb-1">
           <div class="form-check form-switch">
             <input
@@ -410,7 +410,7 @@
       </div>
 
       <div
-        id="markdownContent"
+        id="markdownContentTextArea"
         class="border p-3 mb-1 bg-white overflow-auto markdown-content"
       ></div>
 
