@@ -3,26 +3,68 @@
 import {updateStatus, isValidUrl, consoleLog, LOG_LEVELS} from './utils.js';
 import {testApiConnection} from './api.js';
 import {handlePromptSubmission} from './prompts.js';
+import {
+  DEFAULT_API_URL,
+  DEFAULT_MODEL_NAME,
+  DEFAULT_MAX_TOKENS,
+  DEFAULT_TEMPERATURE,
+  DEFAULT_TOP_P,
+  STORAGE_API_URL,
+  STORAGE_API_TOKEN,
+  STORAGE_MODEL_NAME,
+  STORAGE_MAX_TOKEN,
+  STORAGE_TEMPERATURE,
+  STORAGE_TOP_P,
+  DEFAULT_LANGUAGE,
+  ID_CONFIG_BUTTON,
+  ID_CONFIG_POPUP,
+  ID_MARKDOWN_CONTENT,
+  ID_TOGGLE_SIDEBAR_BUTTON,
+  ID_LANGUAGE_SELECT,
+  ID_CUSTOM_PROMPT_INPUT,
+  ID_API_URL_INPUT,
+  ID_API_TOKEN_INPUT,
+  ID_MODEL_NAME_INPUT,
+  ID_MAX_TOKEN_INPUT,
+  ID_TEMPERATURE_INPUT,
+  ID_TOP_P_INPUT,
+  ID_SUBMIT_CUSTOM_PROMPT_BUTTON,
+  ID_SAVE_API_URL_BUTTON,
+  ID_TEST_CONNECTION_BUTTON,
+  ID_STORED_PROMPT_INPUT,
+  ID_STORED_PROMPT_BUTTON,
+  ID_STORED_PROMPT_STORAGE,
+} from './constants.js';
 
 export function initUI () {
   //1. Button to show or hide the configuration popup
-  const configButton = document.getElementById ('config');
-  const configPopup = document.getElementById ('configPopup');
+  const configButton = document.getElementById (ID_CONFIG_BUTTON);
+  const configPopup = document.getElementById (ID_CONFIG_POPUP);
   // Show or hide the configuration popup, when config pop is shown, markdown content is hidden
+
+  function showConfigPopup () {
+    // Show the config popup and hide the markdown content
+    configPopup.style.display = 'block';
+    markdownContent.style.display = 'none';
+  }
+
+  function hideConfigPopup () {
+    // Hide the config popup and show the markdown content
+    configPopup.style.display = 'none';
+    markdownContent.style.display = 'block';
+  }
   configButton.addEventListener ('click', () => {
     if (configPopup.style.display === 'block') {
-      // If configPopup is currently shown, hide it and show markdownContent
-      configPopup.style.display = 'none';
-      markdownContent.style.display = 'block';
+      hideConfigPopup ();
     } else {
-      // If configPopup is currently hidden, show it and hide markdownContent
-      configPopup.style.display = 'block';
-      markdownContent.style.display = 'none';
+      showConfigPopup ();
     }
   });
 
   //2. button to toggle the sidebar, it won't show up in the sidepanel
-  const toggleSidebarButton = document.getElementById ('toggleSidebarButton');
+  const toggleSidebarButton = document.getElementById (
+    ID_TOGGLE_SIDEBAR_BUTTON
+  );
 
   // hide it in an iframe
   if (window.self !== window.top) {
