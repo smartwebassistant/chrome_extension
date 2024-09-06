@@ -1,4 +1,5 @@
 import {consoleLog, LOG_LEVELS} from './utils.js';
+import {ID_MARKDOWN_CONTENT} from './constants.js';
 // markdown.js
 
 // Define the 'codeblocks' extension to make the code blocks more readable
@@ -29,7 +30,7 @@ const converter = new showdown.Converter ({
 });
 
 // Get the markdown content element
-const markdownContent = document.getElementById ('markdownContent');
+const markdownContent = document.getElementById (ID_MARKDOWN_CONTENT);
 // Buffer to hold Markdown content (chunks from stream) until ready for conversion
 let contentBuffer = '';
 
