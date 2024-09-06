@@ -244,7 +244,7 @@ export function testApiConnection (apiUrl, apiToken) {
     .then (response => {
       clearTimeout (timeoutId);
 
-      if (response.ok || (response.status >= 405 && response.status < 500)) {
+      if (response.ok || (response.status >= 404 && response.status < 500)) {
         // Considering 2xx and 4xx as successful cases
         updateConnectionTestStatus (`Connection successful!`, true);
         consoleLog (
