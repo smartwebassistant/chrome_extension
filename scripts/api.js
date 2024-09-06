@@ -111,82 +111,81 @@ export function fetchOpenAI (system_prompt, user_prompt) {
           const reader = response.body.getReader ();
           initMarkdown ();
           updateStatus (`Status : ${statusCode}. Waiting for response...`);
-          reader
-            .read ()
-            .then (function pump({done, value}) {
-              if (done) {
-                updateStatus (`Stream completed.`);
-                displayMarkdown (true);
-                cancelButton.style.display = 'none'; // Hide cancel button
+          let buffer = '';
+
+          function processChunk (text) {
+            consoleLog ('Buffer: ' + buffer, LOG_LEVELS.DEBUG);
+            buffer += text; // Append new text to buffer
+            let parts = buffer.split ('\n'); // Split by lines
+            // Process all lines except the last one, which might be incomplete
+            consoleLog (`${parts.length} Parts found`, LOG_LEVELS.DEBUG);
+            parts.slice (0, -1).forEach (line => {
+              line = line.trim ();
+              // if line length is 0, skip
+              if (line.length === 0) {
                 return;
               }
-              const chunk = new TextDecoder ('utf-8').decode (value);
-              consoleLog ('Received chunk:' + chunk, LOG_LEVELS.DEBUG);
-              if (chunk.startsWith ('ping')) {
-                consoleLog ('Received ping:' + chunk, LOG_LEVELS.DEBUG);
-                updateStatus ('ping received.');
-              }
-
-              if (!chunk.startsWith ('data:')) {
-                consoleLog (
-                  'Chunk does not start with "data:"' + chunk,
-                  LOG_LEVELS.DEBUG
-                );
-              }
-
-              try {
-                //if there are multiple daata: in the chunk, split it loop through each data: and process it
-                let list = [];
-                list = chunk.split ('data:');
-                consoleLog (
-                  `Received ${list.length} chunks.`,
-                  LOG_LEVELS.DEBUG
-                );
-                list.forEach (function (item) {
-                  if (item) {
-                    const obj = JSON.parse (item);
-                    if (
-                      obj.choices &&
-                      obj.choices[0] &&
-                      obj.choices[0].delta &&
-                      obj.choices[0].delta.content
-                    ) {
-                      updateStatus ('Stream received data.');
-                      const content = obj.choices[0].delta.content;
-                      consoleLog (
-                        'Received content:' + content,
-                        LOG_LEVELS.DEBUG
-                      );
-                      appendMarkdown (content);
-                      if (content.includes ('\n')) {
-                        displayMarkdown ();
-                      }
-                    } else {
-                      consoleLog (
-                        'Received correct chunk format but no data:',
-                        chunk,
-                        LOG_LEVELS.DEBUG
-                      );
+              if (line.startsWith ('data:')) {
+                try {
+                  let content = line.slice (5);
+                  if (content.trim () === '[DONE]') {
+                    consoleLog ('Received Done', LOG_LEVELS.DEBUG);
+                    return;
+                  }
+                  const json = JSON.parse (content); // Parse JSON after 'data:'
+                  updateStatus ('Stream received data.');
+                  if (
+                    json.choices &&
+                    json.choices[0] &&
+                    json.choices[0].delta &&
+                    json.choices[0].delta.content
+                  ) {
+                    const content = json.choices[0].delta.content;
+                    consoleLog (
+                      'Received content: ' + content,
+                      LOG_LEVELS.DEBUG
+                    );
+                    appendMarkdown (content);
+                    if (content.includes ('\n')) {
+                      displayMarkdown ();
                     }
                   }
-                });
-              } catch (error) {
-                console.error ('Error processing JSON:', error);
-                updateStatus ('Error processing chunk:', error);
-              }
-              return reader.read ().then (pump);
-            })
-            .catch (error => {
-              console.error ('Error during fetch or reading:', error);
-              if (error.name === 'AbortError') {
-                updateStatus ('Request was cancelled.');
-              }
-              if (requestCancelled) {
-                updateStatus ('Request was cancelled.');
+                } catch (error) {
+                  console.error ('Error parsing JSON:', error);
+                }
+              } else if (line.startsWith ('ping:')) {
+                consoleLog ('Received ping:' + chunk, LOG_LEVELS.DEBUG);
+                updateStatus ('ping received.');
               } else {
-                updateStatus (`API call has failed: ${error.message}`);
+                console.error (
+                  'Unexpected line:' + line + '. length:' + line.length
+                );
               }
             });
+
+            // Preserve the last, potentially incomplete line in the buffer
+            buffer = parts.pop ();
+          }
+
+          reader.read ().then (function pump({done, value}) {
+            if (done) {
+              updateStatus (`Stream completed.`);
+              displayMarkdown (true);
+              cancelButton.style.display = 'none'; // Hide cancel button
+              return;
+            }
+            const chunk = new TextDecoder ('utf-8').decode (value);
+            consoleLog ('Received chunk:' + chunk, LOG_LEVELS.DEBUG);
+
+            if (!chunk.startsWith ('data:')) {
+              consoleLog (
+                'Chunk does not start with "data:"' + chunk,
+                LOG_LEVELS.DEBUG
+              );
+            }
+            processChunk (chunk);
+            return reader.read ().then (pump);
+          });
         });
       } catch (error) {
         if (error.name === 'AbortError') {
