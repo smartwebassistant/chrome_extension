@@ -2,10 +2,11 @@ import {updateStatus, LOG_LEVELS} from './utils.js';
 import {fetchOpenAI} from './api.js';
 import {extractWebpageText} from './contentExtraction.js';
 import {consoleLog} from './utils.js';
+import {ID_INCLUDE_WEB_CONTENT_CHECKBOX} from './constants.js';
 
 export function handlePromptSubmission (prompt, language, currentController) {
   const includeWebContent = document.getElementById (
-    'includeWebContentCheckbox'
+    ID_INCLUDE_WEB_CONTENT_CHECKBOX
   ).checked;
   const systemPrompt = `Output response in ${language} language and markdown format. The prompt is:`;
   // print debug log in console

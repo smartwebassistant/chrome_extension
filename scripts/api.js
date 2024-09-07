@@ -1,6 +1,7 @@
 // api.js
 import {updateStatus, consoleLog, LOG_LEVELS} from './utils.js';
 import {initMarkdown, appendMarkdown, displayMarkdown} from './markdown.js';
+import {ID_API_CONNECTION_TEST_STATUS} from './constants.js';
 
 let currentController = null;
 let requestCancelled = true;
@@ -205,7 +206,7 @@ export function fetchOpenAI (system_prompt, user_prompt) {
 }
 
 function updateConnectionTestStatus (message, success) {
-  const statusDisplay = document.getElementById ('apiConnectionTestStatus');
+  const statusDisplay = document.getElementById (ID_API_CONNECTION_TEST_STATUS);
   statusDisplay.textContent = message;
 
   // Clear existing alert classes and set visibility
@@ -244,7 +245,7 @@ export function testApiConnection (apiUrl, apiToken) {
     .then (response => {
       clearTimeout (timeoutId);
 
-      if (response.ok || (response.status >= 405 && response.status < 500)) {
+      if (response.ok || (response.status >= 404 && response.status < 500)) {
         // Considering 2xx and 4xx as successful cases
         updateConnectionTestStatus (`Connection successful!`, true);
         consoleLog (
