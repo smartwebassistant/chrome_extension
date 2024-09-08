@@ -267,6 +267,75 @@
           >Web Content As Query Context</label
         >
       </div>
+      <div style="display: flex">
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="outputFormat"
+            id="outputFormatTextRadio"
+            value="text"
+          />
+          <label class="form-check-label" for="outputFormatTextRadio">
+            <img
+              src="images/filetype-html.svg"
+              alt="text"
+              title="Output response as Text"
+            />
+          </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="outputFormat"
+            id="outputFormatMarkdownRadio"
+            value="markdown"
+            checked
+          />
+          <label class="form-check-label" for="outputFormatMarkdownRadio">
+            <img
+              src="images/filetype-md.svg"
+              alt="Markdown"
+              title="Output response in Markdown format"
+            />
+          </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="outputFormat"
+            id="outputFormatTableRadio"
+            value="table"
+          />
+          <label class="form-check-label" for="outputFormatTableRadio">
+            <img
+              src="images/table.svg"
+              alt="Table"
+              title="Output response as a table"
+            />
+          </label>
+        </div>
+        <div class="form-check form-check-inline">
+          <input
+            class="form-check-input"
+            type="radio"
+            name="outputFormat"
+            id="outputFormatJsonRadio"
+            value="json"
+          />
+          <label class="form-check-label" for="outputFormatJsonRadio">
+            <img
+              src="images/filetype-json.svg"
+              alt="JSON"
+              title="Output response in JSON format"
+            />
+          </label>
+        </div>
+        <div>Output</div>
+      </div>
+
       <div id="configPopupDiv">
         <div class="input-group mb-1">
           <div class="form-check form-switch">

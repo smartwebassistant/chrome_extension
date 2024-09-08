@@ -161,7 +161,7 @@ export function initUI () {
   if (window.self !== window.top) {
     // This code runs if the page is in an iframe
     if (markdownContent) {
-      markdownContent.style.height = '480px'; // Adjust the height as needed
+      markdownContent.style.height = '460px'; // Adjust the height as needed
       consoleLog (
         'Adjusted markdownContent height for iframe usage.',
         LOG_LEVELS.DEBUG

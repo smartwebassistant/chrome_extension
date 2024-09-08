@@ -39,6 +39,12 @@ export const ID_INCLUDE_WEB_CONTENT_CHECKBOX = 'includeWebContentCheckbox';
 export const ID_DEBUG_MODE_CHECKBOX = 'debugModeCheckbox';
 export const ID_STATUS_FOOTER = 'statusFooter';
 
+export const ID_OUTPUT_FORMAT_TEXT_RADIO = 'outputFormatTextRadio';
+export const ID_OUTPUT_FORMAT_MARKDOWN_RADIO = 'outputFormatMarkdownRadio';
+export const ID_OUTPUT_FORMAT_TABLE_RADIO = 'outputFormatTableRadio';
+
+export const ID_OUTPUT_FORMAT_JSON_RADIO = 'outputFormatJsonRadio';
+
 export const ID_API_URL_STORAGE_SPAN = 'apiUrlStorage';
 export const ID_API_TOKEN_STORAGE_SPAN = 'apiTokenStorage';
 export const ID_MODEL_NAME_STORAGE_SPAN = 'modelNameStorage';
