@@ -161,7 +161,7 @@ export function initUI () {
   if (window.self !== window.top) {
     // This code runs if the page is in an iframe
     if (markdownContent) {
-      markdownContent.style.height = '480px'; // Adjust the height as needed
+      markdownContent.style.height = '460px'; // Adjust the height as needed
       consoleLog (
         'Adjusted markdownContent height for iframe usage.',
         LOG_LEVELS.DEBUG
@@ -178,6 +178,28 @@ export function initUI () {
   const maxTokenInput = document.getElementById (ID_MAX_TOKEN_INPUT);
   const temperatureInput = document.getElementById (ID_TEMPERATURE_INPUT);
   const topPInput = document.getElementById (ID_TOP_P_INPUT);
+
+  // Helper function to mask the API key for display
+  function maskApiKey (apiKey) {
+    if (typeof apiKey !== 'string' || !apiKey) {
+      return 'None'; // Return empty if no key is provided or if it's not a string
+    }
+
+    const keyLength = apiKey.length;
+
+    if (keyLength === 1) {
+      // Return the single character unmasked
+      return apiKey;
+    } else if (keyLength === 2 || keyLength === 3) {
+      // Mask the first character and show the second
+      return '*' + apiKey.slice (1);
+    } else {
+      // For keys with more than 3 characters, mask all but the last 3 characters
+      const numAsterisks = Math.min (6, keyLength - 3);
+      return '*'.repeat (numAsterisks) + apiKey.slice (-3);
+    }
+  }
+
   // Load settings from local storage
   chrome.storage.local.get (
     [
@@ -199,10 +221,10 @@ export function initUI () {
         ID_API_URL_STORAGE_SPAN
       ).textContent = `(Stored: ${result.apiUrl || 'None'})`;
 
-      // Prepend six asterisks to the first 4 chars *** last 4 characters of the apiToken
+      // masked token display, example ****123
       let tokenDisplay = result.apiToken
-        ? result.apiToken.slice (0, 4) + '***' + result.apiToken.slice (-4)
-        : '';
+        ? maskApiKey (result.apiToken)
+        : 'None';
       apiTokenInput.value = result.apiToken;
       document.getElementById (
         ID_API_TOKEN_STORAGE_SPAN
@@ -317,9 +339,7 @@ export function initUI () {
           // If not empty, format with first 4 chars '***' and the last 4 chars
           document.getElementById (
             ID_API_TOKEN_STORAGE_SPAN
-          ).textContent = `(Stored: ${apiTokenInput.value
-            .trim ()
-            .slice (0, 4)}***${apiTokenInput.value.trim ().slice (-4)})`;
+          ).textContent = `(Stored: ${maskApiKey (apiTokenInput.value)})`;
         } else {
           // If empty, set display to indicate no stored token
           document.getElementById (
