@@ -8,6 +8,7 @@ import {
   ID_OUTPUT_FORMAT_JSON_RADIO,
   ID_OUTPUT_FORMAT_MARKDOWN_RADIO,
   ID_OUTPUT_FORMAT_TABLE_RADIO,
+  ID_DISABLE_SYSTEM_ROLE_CHECKBOX,
 } from './constants.js';
 
 export function handlePromptSubmission (prompt, language, currentController) {
@@ -73,21 +74,48 @@ export function handlePromptSubmission (prompt, language, currentController) {
     \n`;
   }
 
-  const systemPrompt = `${outputFormat} Output response in ${language} language. The prompt is:`;
+  const systemPrompt = `
+  As an advanced language model, you must strictly adhere to the following rules when answering any question:
+
+    Format Requirement:
+    All output must be in Markdown format. This includes appropriate use of headers, lists, code blocks, and other Markdown elements.
+
+    Language Requirement:
+    All answers must be provided in ${language}, regardless of the language of the question.
+
+    Answer Structure:
+    Begin with a concise answer to the question. Then, if applicable, provide relevant details or explanations from the context. Finally, if necessary, point out any limitations or shortcomings in the context.
+
+    Honesty:
+    If you are unsure or unable to answer a question, please state this honestly. Do not attempt to fabricate information.
+
+    Always follow these rules to ensure your answers are both accurate and compliant with the requirements.
+  `;
+  const outputLanguage = `The output language should be in ${language}. \n\n`;
   // print debug log in console
   consoleLog (`prompt: ${prompt}`, LOG_LEVELS.DEBUG);
   consoleLog (`language: ${language}`, LOG_LEVELS.DEBUG);
   consoleLog (`currentController: ${currentController}`, LOG_LEVELS.DEBUG);
+
+  // if ID_DISABLE_SYSTEM_ROLE_CHECKBOX
+  const disableSystemRole = document.getElementById (
+    ID_DISABLE_SYSTEM_ROLE_CHECKBOX
+  ).checked;
 
   if (includeWebContent) {
     // If including webpage content
     chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
       if (tabs[0] && tabs[0].id) {
         extractWebpageText (tabs[0].id, text => {
+          const userPrompt = `Please read the content of the following web page.
+    Based on the information on that page, answer the following question: ${prompt}. Below is the text extracted from the web page.
+    \n\n ${text} \n\n`;
+
           // Replace the prompt in your fetchOpenAI call with the custom prompt
           fetchOpenAI (
-            ``,
-            `${systemPrompt} ${prompt}. below is the text of the web page: ${text}.`,
+            // if disableSystemRole is checked, use userPrompt only
+            disableSystemRole ? '' : systemPrompt,
+            disableSystemRole ? `${systemPrompt} ${userPrompt}` : userPrompt,
             currentController
           ).catch (error => {
             consoleLog (
@@ -104,8 +132,10 @@ export function handlePromptSubmission (prompt, language, currentController) {
     // If not including webpage content
 
     fetchOpenAI (
-      '',
-      `${systemPrompt} ${prompt}.`,
+      disableSystemRole ? '' : systemPrompt,
+      disableSystemRole
+        ? `${systemPrompt} ${outputLanguage} ${prompt}`
+        : `${outputLanguage} ${prompt}`,
       currentController
     ).catch (error => {
       updateStatus ('Failed to process custom prompt.' + error.message);
