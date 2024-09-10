@@ -37,6 +37,8 @@ export const ID_TEST_CONNECTION_BUTTON = 'testConnectionButton';
 export const ID_API_CONNECTION_TEST_STATUS = 'apiConnectionTestStatusDiv';
 export const ID_INCLUDE_WEB_CONTENT_CHECKBOX = 'includeWebContentCheckbox';
 export const ID_DEBUG_MODE_CHECKBOX = 'debugModeCheckbox';
+// disableSystemRoleCheckbox
+export const ID_DISABLE_SYSTEM_ROLE_CHECKBOX = 'disableSystemRoleCheckbox';
 export const ID_STATUS_FOOTER = 'statusFooter';
 
 export const ID_OUTPUT_FORMAT_TEXT_RADIO = 'outputFormatTextRadio';

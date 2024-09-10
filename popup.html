@@ -263,77 +263,25 @@
           id="includeWebContentCheckbox"
           checked
         />
-        <label class="form-check-label" for="includeWebContentCheckbox"
-          >Web Content As Query Context</label
+        <label
+          class="form-check-label"
+          for="includeWebContentCheckbox"
+          title="The text of the active tab will be included in the query context. If disabled, only the custom prompt will be used."
+          >Web content as query context</label
         >
       </div>
-      <div style="display: flex; display: none">
-        <div class="form-check form-check-inline">
-          <input
-            class="form-check-input"
-            type="radio"
-            name="outputFormat"
-            id="outputFormatTextRadio"
-            value="text"
-          />
-          <label class="form-check-label" for="outputFormatTextRadio">
-            <img
-              src="images/filetype-html.svg"
-              alt="text"
-              title="Output response as Text"
-            />
-          </label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input
-            class="form-check-input"
-            type="radio"
-            name="outputFormat"
-            id="outputFormatMarkdownRadio"
-            value="markdown"
-            checked
-          />
-          <label class="form-check-label" for="outputFormatMarkdownRadio">
-            <img
-              src="images/filetype-md.svg"
-              alt="Markdown"
-              title="Output response in Markdown format"
-            />
-          </label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input
-            class="form-check-input"
-            type="radio"
-            name="outputFormat"
-            id="outputFormatTableRadio"
-            value="table"
-          />
-          <label class="form-check-label" for="outputFormatTableRadio">
-            <img
-              src="images/table.svg"
-              alt="Table"
-              title="Output response as a table"
-            />
-          </label>
-        </div>
-        <div class="form-check form-check-inline">
-          <input
-            class="form-check-input"
-            type="radio"
-            name="outputFormat"
-            id="outputFormatJsonRadio"
-            value="json"
-          />
-          <label class="form-check-label" for="outputFormatJsonRadio">
-            <img
-              src="images/filetype-json.svg"
-              alt="JSON"
-              title="Output response in JSON format"
-            />
-          </label>
-        </div>
-        <div>Output</div>
+      <div class="form-check form-switch">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="disableSystemRoleCheckbox"
+        />
+        <label
+          class="form-check-label"
+          for="disableSystemRoleCheckbox"
+          title="Some models like Mixtral or Gemma does not support system role, so you can disable it to make it compatible with those models."
+          >Disable system role for compatibility</label
+        >
       </div>
 
       <div id="configPopupDiv">
@@ -349,7 +297,79 @@
             >
           </div>
         </div>
-        <div class="mb-1">
+        <div style="display: none">
+          <div class="border-top h6 pt-1 pb-1">Output Format</div>
+          <div class="form-check form-check-inline">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="outputFormat"
+              id="outputFormatMarkdownRadio"
+              value="markdown"
+              checked
+            />
+            <label class="form-check-label" for="outputFormatMarkdownRadio">
+              <img
+                src="images/filetype-md.svg"
+                alt="Markdown"
+                title="To instruct the LLM to output response in Markdown format"
+              />
+            </label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="outputFormat"
+              id="outputFormatTextRadio"
+              value="text"
+            />
+            <label class="form-check-label" for="outputFormatTextRadio">
+              <img
+                src="images/filetype-html.svg"
+                alt="text"
+                title="To instruct the LLM to output response as Text"
+              />
+            </label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="outputFormat"
+              id="outputFormatTableRadio"
+              value="table"
+            />
+            <label class="form-check-label" for="outputFormatTableRadio">
+              <img
+                src="images/table.svg"
+                alt="Table"
+                title="To instruct the LLM to output response as a table"
+              />
+            </label>
+          </div>
+          <div class="form-check form-check-inline">
+            <input
+              class="form-check-input"
+              type="radio"
+              name="outputFormat"
+              id="outputFormatJsonRadio"
+              value="json"
+            />
+            <label class="form-check-label" for="outputFormatJsonRadio">
+              <img
+                src="images/filetype-json.svg"
+                alt="JSON"
+                title="To instruct the LLM to output response in JSON format"
+              />
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <div class="mb-1 border-top h6 pt-1 pb-1" style="display: none">
+            Settings
+          </div>
           <label class="form-label margin-bottom-1px">* API URL</label>
           <div class="d-flex">
             <input
