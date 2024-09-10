@@ -503,7 +503,7 @@
         class="border p-3 mb-1 bg-white overflow-auto markdown-content"
       ></div>
 
-      <div class="d-flex justify-content-between align-items-center mt-1">
+<!--       <div class="d-flex justify-content-between align-items-center mt-1">
         <footer id="statusFooter" class="flex-grow-1">Ready.</footer>
         <button
           class="btn btn-danger btn-sm"
@@ -513,7 +513,20 @@
           Stop
         </button>
       </div>
-    </div>
+    </div> -->
+
+    <footer class="footer mt-auto py-1 bg-body-tertiary">
+      <div class="container d-flex justify-content-between align-items-center">
+        <span class="text-body-secondary" id="statusFooter">Ready.</span>
+        <button
+          class="btn btn-danger btn-sm"
+          id="cancelButton"
+          style="display: none"
+        >
+          Stop
+        </button>
+      </div>
+    </footer>
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
