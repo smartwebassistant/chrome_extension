@@ -109,6 +109,16 @@ export function fetchOpenAI (system_prompt, user_prompt) {
         requestCancelled = false;
         fetch (settings.apiUrl, requestOptions).then (response => {
           const statusCode = response.status; // Capture the HTTP status code
+          if (!response.ok) {
+            console.error (
+              `API call failed: ${statusCode} ${response.statusText}`
+            );
+            updateStatus (
+              `API call failed: ${statusCode} ${response.statusText}`
+            );
+            cancelButton.style.display = 'none'; // Hide cancel button
+            return;
+          }
           const reader = response.body.getReader ();
           initMarkdown ();
           updateStatus (`Status : ${statusCode}. Waiting for response...`);
