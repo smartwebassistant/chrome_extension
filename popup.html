@@ -8,123 +8,192 @@
     <link href="lib/all.min.css" rel="stylesheet" />
 
     <style>
+      body,
+      html {
+        height: 100%;
+        /* Full height of the viewport */
+        margin: 0;
+        /* Remove default margin */
+      }
       table {
-        width: 100%; /* Sets the table to take the full width of its container */
-        border-collapse: collapse; /* Removes space between borders */
+        width: 100%;
+        /* Sets the table to take the full width of its container */
+        border-collapse: collapse;
+        /* Removes space between borders */
       }
 
       th,
       td {
-        padding: 8px; /* Adds space inside each cell */
-        text-align: center; /* Centers text horizontally */
-        border-bottom: 1px solid #ddd; /* Adds a horizontal line under each row */
+        padding: 8px;
+        /* Adds space inside each cell */
+        text-align: center;
+        /* Centers text horizontally */
+        border-bottom: 1px solid #ddd;
+        /* Adds a horizontal line under each row */
       }
 
       th {
-        background-color: #f2f2f2; /* Sets a background color for headers */
-        color: black; /* Sets the text color for headers */
+        background-color: #f2f2f2;
+        /* Sets a background color for headers */
+        color: black;
+        /* Sets the text color for headers */
       }
 
       tr:hover {
         background-color: #f5f5f5;
-      } /* Changes background on row hover */
+      }
+
+      /* Changes background on row hover */
 
       .navbar-brand {
-        flex-grow: 1; /* Ensures the brand takes up all available space, pushing buttons to the right */
+        flex-grow: 1;
+        /* Ensures the brand takes up all available space, pushing buttons to the right */
       }
+
       /* Remove rounded corners */
       .form-select {
         border-radius: 0 !important;
-        font-size: 12px; /* Specifically reduce font size for buttons */
+        font-size: 12px;
+        /* Specifically reduce font size for buttons */
       }
+
       .row + .row {
-        margin-top: 5px; /* Reduced margin between rows */
+        margin-top: 5px;
+        /* Reduced margin between rows */
       }
+
       .div-pointer {
-        cursor: pointer; /* header SVG divs, This will change the cursor to a hand when the mouse hovers over the element */
+        cursor: pointer;
+        /* header SVG divs, This will change the cursor to a hand when the mouse hovers over the element */
       }
 
       .form-select {
-        padding: 2px; /* Reduce select padding */
-        font-size: 12px; /* Specifically reduce font size for buttons */
+        padding: 2px;
+        /* Reduce select padding */
+        font-size: 12px;
+        /* Specifically reduce font size for buttons */
       }
+
       #header {
         background-color: #007bff;
         color: white;
         padding: 2px;
         margin-bottom: 1px;
       }
+
       .input-group-text {
         width: 90px;
-        font-size: 12px; /* Specifically reduce font size for buttons */
+        font-size: 12px;
+        /* Specifically reduce font size for buttons */
       }
+
       .storage-value {
-        font-size: 10px; /* Specifically reduce font size for buttons */
+        font-size: 10px;
+        /* Specifically reduce font size for buttons */
       }
 
       #configPopupDiv {
-        display: none; /* Controlled via JavaScript to show/hide */
+        display: none;
+        /* Controlled via JavaScript to show/hide */
       }
+
       .form-control {
-        max-width: 100%; /* Ensures input does not exceed its container */
-        width: 70%; /* Adjust this to reduce input field width as needed */
+        max-width: 100%;
+        /* Ensures input does not exceed its container */
+        width: 70%;
+        /* Adjust this to reduce input field width as needed */
         border-radius: 0 !important;
-        font-size: 12px; /* Specifically reduce font size for buttons */
+        font-size: 12px;
+        /* Specifically reduce font size for buttons */
       }
+
       span {
-        color: #c0c0c0; /* This light grey color is commonly used to indicate disabled elements */
+        color: #c0c0c0;
+        /* This light grey color is commonly used to indicate disabled elements */
       }
+
       .margin-bottom-1px {
-        margin-bottom: 1px !important; /* Use !important to override Bootstrap or other CSS margins */
+        margin-bottom: 1px !important;
+        /* Use !important to override Bootstrap or other CSS margins */
       }
+
       .input-group-text {
-        height: 100%; /* Make input group text match the height of adjacent controls */
+        height: 100%;
+        /* Make input group text match the height of adjacent controls */
         display: flex;
       }
+
       .markdown-content {
-        height: 200px;
+        flex-grow: 1;
+        /* Takes up all available space */
+        overflow: auto;
+        /* Adds scroll if content overflows */
       }
+
       /* This targets the switch's track */
       .form-check-input:checked {
-        background-color: #198754; /* Bootstrap's success green color */
-        border-color: #198754; /* Ensure the border is also green */
+        background-color: #198754;
+        /* Bootstrap's success green color */
+        border-color: #198754;
+        /* Ensure the border is also green */
       }
 
       /* This targets the thumb of the switch */
       .form-check-input:checked + .form-check-label::before {
-        background-color: #ffffff; /* Typically, you want the thumb to be white */
+        background-color: #ffffff;
+        /* Typically, you want the thumb to be white */
       }
 
       /* For browsers that use pseudo-elements for the switch's appearance */
       .form-check-input:checked::before {
-        background-color: #198754; /* Green background for the part that slides */
+        background-color: #198754;
+        /* Green background for the part that slides */
       }
+
       #apiConnectionTestStatusDiv {
-        display: none; /* Hide the alert by default */
+        display: none;
+        /* Hide the alert by default */
       }
+
       pre {
-        background-color: #f4f4f4; /* Light grey background */
-        border: 1px solid #ccc; /* Lighter border color for subtlety */
+        background-color: #f4f4f4;
+        /* Light grey background */
+        border: 1px solid #ccc;
+        /* Lighter border color for subtlety */
         /* change border-left to color of button-success */
         /*border-left: 2px solid #198754; /* Vibrant left border for emphasis */
-        color: #333; /* Darker text for better readability */
-        font-family: "Courier New", monospace; /* Classic monospace font */
-        font-size: 12px; /* Slightly larger text for clarity */
-        margin-bottom: 10px; /* More bottom margin to separate from other elements */
-        overflow: auto; /* Ensures long lines are scrollable */
-        padding: 10px; /* More padding for better text alignment */
-        width: auto; /* Auto width based on the container */
-        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
-        white-space: pre-wrap; /* Wraps the text within the pre element */
-        word-break: break-word; /* Ensures that words break and wrap to the next line */
+        color: #333;
+        /* Darker text for better readability */
+        font-family: "Courier New", monospace;
+        /* Classic monospace font */
+        font-size: 12px;
+        /* Slightly larger text for clarity */
+        margin-bottom: 10px;
+        /* More bottom margin to separate from other elements */
+        overflow: auto;
+        /* Ensures long lines are scrollable */
+        padding: 10px;
+        /* More padding for better text alignment */
+        width: auto;
+        /* Auto width based on the container */
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.1);
+        /* Subtle shadow for depth */
+        white-space: pre-wrap;
+        /* Wraps the text within the pre element */
+        word-break: break-word;
+        /* Ensures that words break and wrap to the next line */
         position: relative;
         padding-top: 30px;
       }
+
       .div-pointer {
         cursor: pointer;
-        display: flex; /* Ensures contents of div-pointer are aligned properly */
-        align-items: center; /* Center align the items vertically */
+        display: flex;
+        /* Ensures contents of div-pointer are aligned properly */
+        align-items: center;
+        /* Center align the items vertically */
       }
+
       .code-header {
         display: flex;
         justify-content: space-between;
@@ -142,6 +211,7 @@
         color: #333;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
       }
+
       code {
         display: block;
         white-space: pre-wrap;
@@ -149,8 +219,12 @@
       }
     </style>
   </head>
-  <body style="width: 300px; font-size: small">
-    <div class="container">
+
+  <body style="width: 300px; min-height: 500px; font-size: small">
+    <div
+      class="container"
+      style="display: flex; flex-direction: column; height: 100%"
+    >
       <nav class="navbar navbar-light bg-light">
         <span class="navbar-brand mb-0 h1">Smart Web Assistant</span>
         <div
@@ -503,7 +577,7 @@
         class="border p-3 mb-1 bg-white overflow-auto markdown-content"
       ></div>
 
-      <div class="d-flex justify-content-between align-items-center mt-1">
+      <!--       <div class="d-flex justify-content-between align-items-center mt-1">
         <footer id="statusFooter" class="flex-grow-1">Ready.</footer>
         <button
           class="btn btn-danger btn-sm"
@@ -512,7 +586,21 @@
         >
           Stop
         </button>
-      </div>
+      </div>-->
+      <footer class="footer mt-auto py-1 bg-body-tertiary">
+        <div
+          class="container d-flex justify-content-between align-items-center"
+        >
+          <span class="text-body" id="statusFooter">Ready.</span>
+          <button
+            class="btn btn-danger btn-sm"
+            id="cancelButton"
+            style="display: none"
+          >
+            Stop
+          </button>
+        </div>
+      </footer>
     </div>
 
     <!-- Optional JavaScript -->
