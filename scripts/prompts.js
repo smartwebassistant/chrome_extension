@@ -1,9 +1,8 @@
 //prompts.js
 // This file contains the functions that handle the submission of prompts
-import {updateStatus, LOG_LEVELS} from './utils.js';
+import {updateStatus, consoleLog, LOG_LEVELS} from './utils.js';
 import {fetchOpenAI} from './api.js';
-import {extractWebpageText} from './contentExtraction.js';
-import {consoleLog} from './utils.js';
+import {extractWebpageText, extractElementText} from './contentExtraction.js';
 import {ID_INCLUDE_WEB_CONTENT_CHECKBOX} from './constants.js';
 import {
   ID_OUTPUT_FORMAT_TEXT_RADIO,
@@ -11,6 +10,7 @@ import {
   ID_OUTPUT_FORMAT_MARKDOWN_RADIO,
   ID_OUTPUT_FORMAT_TABLE_RADIO,
   ID_DISABLE_SYSTEM_ROLE_CHECKBOX,
+  ID_SMART_WRITER_CHECKBOX,
 } from './constants.js';
 
 export function handlePromptSubmission (prompt, language, currentController) {
@@ -132,16 +132,44 @@ export function handlePromptSubmission (prompt, language, currentController) {
     });
   } else {
     // If not including webpage content
+    const smartWriter = document.getElementById (ID_SMART_WRITER_CHECKBOX)
+      .checked;
+    if (smartWriter) {
+      consoleLog ('smartWriter is checked', LOG_LEVELS.DEBUG);
+      chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
+        if (tabs[0] && tabs[0].id) {
+          extractElementText (tabs[0].id, text => {
+            const userPrompt = `${prompt}. Below is the text.
+      \n\n ${text} \n\n`;
 
-    fetchOpenAI (
-      disableSystemRole ? '' : systemPrompt,
-      disableSystemRole
-        ? `${systemPrompt} ${outputLanguage} ${prompt}`
-        : `${outputLanguage} ${prompt}`,
-      currentController
-    ).catch (error => {
-      updateStatus ('Failed to process custom prompt.' + error.message);
-    });
+            // Replace the prompt in your fetchOpenAI call with the custom prompt
+            fetchOpenAI (
+              // if disableSystemRole is checked, use userPrompt only
+              '',
+              userPrompt,
+              currentController
+            ).catch (error => {
+              consoleLog (
+                'Failed to process custom prompt.' + error.message,
+                LOG_LEVELS.ERROR
+              );
+              updateStatus ('Failed to process custom prompt.' + error.message);
+            });
+          });
+          updateStatus ('Calling API, wait for response');
+        }
+      });
+    } else {
+      fetchOpenAI (
+        disableSystemRole ? '' : systemPrompt,
+        disableSystemRole
+          ? `${systemPrompt} ${outputLanguage} ${prompt}`
+          : `${outputLanguage} ${prompt}`,
+        currentController
+      ).catch (error => {
+        updateStatus ('Failed to process custom prompt.' + error.message);
+      });
+    }
   }
   updateStatus ('Submitting prompt: ' + prompt);
 }
