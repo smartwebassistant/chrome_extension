@@ -1,3 +1,5 @@
+//prompts.js
+// This file contains the functions that handle the submission of prompts
 import {updateStatus, LOG_LEVELS} from './utils.js';
 import {fetchOpenAI} from './api.js';
 import {extractWebpageText} from './contentExtraction.js';
