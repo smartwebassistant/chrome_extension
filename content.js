@@ -61,13 +61,14 @@ function handleClick (event) {
   let element = event.target;
 
   // Traverse up the DOM tree to find a parent element with an ID, stopping at the <body> tag
-  while (element && element.tagName !== 'BODY' && !element.id) {
-    element = element.parentNode;
-  }
+  // while (element && element.tagName !== 'BODY' && !element.id) {
+  //   element = element.parentNode;
+  // }
 
-  // Check if an element with an ID has been found
-  if (element && element.id) {
-    console.log ('Clicked element ID:', element.id);
+  // Check if an element has been found
+  if (element) {
+    writingContent = element.innerText;
+    console.log ('Clicked element:', element);
     // Add a red border to the element
     element.style.border = '2px solid green';
     setupTextChangeListener (element);

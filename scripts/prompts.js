@@ -145,8 +145,10 @@ export function handlePromptSubmission (prompt, language, currentController) {
             // Replace the prompt in your fetchOpenAI call with the custom prompt
             fetchOpenAI (
               // if disableSystemRole is checked, use userPrompt only
-              '',
-              userPrompt,
+              disableSystemRole ? '' : outputLanguage,
+              disableSystemRole
+                ? `${outputLanguage} ${userPrompt}`
+                : userPrompt,
               currentController
             ).catch (error => {
               consoleLog (
