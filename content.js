@@ -117,6 +117,7 @@ function handleClick (event) {
     aiCallButton.title = 'Chat Completion';
     aiCallButton.addEventListener ('click', e => {
       e.stopPropagation ();
+      console.log ('chatCompletion action triggered');
       chrome.runtime.sendMessage (
         {
           action: 'chatCompletion',
@@ -140,6 +141,25 @@ function handleClick (event) {
     overwriteButton.title = 'Overwrite with AI Response';
     overwriteButton.addEventListener ('click', e => {
       e.stopPropagation ();
+
+      const currentText = element.innerText.trim ();
+      if (currentText) {
+        if (
+          confirm (
+            `Do you want to overwrite the following text with an AI response?\n\n${currentText.substring (0, 100)}${currentText.length > 100 ? '...' : ''}`
+          )
+        ) {
+          sendOverwriteRequest (element);
+        } else {
+          console.log ('Overwrite cancelled by user');
+        }
+      } else {
+        sendOverwriteRequest (element);
+      }
+    });
+    buttonsContainer.appendChild (overwriteButton);
+
+    function sendOverwriteRequest (element) {
       chrome.runtime.sendMessage (
         {
           action: 'overwriteText',
@@ -153,11 +173,13 @@ function handleClick (event) {
           console.log ('Overwrite response:', response);
           if (response && response.newText) {
             element.innerText = response.newText;
+          } else if (response && response.error) {
+            console.error ('Error in overwrite:', response.error);
+            alert (`Failed to overwrite text: ${response.error}`);
           }
         }
       );
-    });
-    buttonsContainer.appendChild (overwriteButton);
+    }
 
     // Close button
     const closeButton = document.createElement ('button');

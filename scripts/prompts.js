@@ -11,7 +11,48 @@ import {
   ID_OUTPUT_FORMAT_TABLE_RADIO,
   ID_DISABLE_SYSTEM_ROLE_CHECKBOX,
   ID_MAGIC_CLICK_CHECKBOX,
+  ID_CUSTOM_PROMPT_INPUT,
+  ID_LANGUAGE_SELECT,
+  ID_MARKDOWN_CONTENT,
 } from './constants.js';
+
+chrome.runtime.onMessage.addListener ((request, sender, sendResponse) => {
+  if (request.action === 'handleChatCompletion') {
+    consoleLog ('Chat completion request received', LOG_LEVELS.DEBUG);
+    handleChatCompletion (request.data, sender, sendResponse);
+  } else if (request.action === 'handleOverwriteText') {
+    consoleLog ('Overwrite text request received', LOG_LEVELS.DEBUG);
+    handleOverwriteText (request.data, sender, sendResponse);
+  }
+});
+
+function handleChatCompletion (request, sender, sendResponse) {
+  const {elementInfo} = request;
+  // get prompt from customized prompt
+  const prompt = document.getElementById (ID_CUSTOM_PROMPT_INPUT).value;
+  const language = document.getElementById (ID_LANGUAGE_SELECT).value;
+
+  handlePromptSubmission (prompt, language)
+    .then (result => {
+      sendResponse ({result: result});
+    })
+    .catch (error => {
+      consoleLog (
+        'Error in chat completion: ' + error.message,
+        LOG_LEVELS.ERROR
+      );
+    });
+}
+
+function handleOverwriteText (request, sendResponse) {
+  // Request markdown content from the popup
+  consoleLog ('Overwrite text request received', LOG_LEVELS.DEBUG);
+  const markdownContent = document.getElementById (ID_MARKDOWN_CONTENT).value;
+  if (markdownContent) {
+    // Overwrite the text in the chat box with the markdown content
+    sendResponse ({content: markdownContent});
+  }
+}
 
 export function handlePromptSubmission (prompt, language, currentController) {
   const includeWebContent = document.getElementById (
