@@ -47,6 +47,9 @@ import {
   ID_MAGIC_CLICK_CHECKBOX,
   ID_INCLUDE_WEB_CONTENT_CHECKBOX,
 } from './constants.js';
+import {createLogger} from './logger.js';
+
+const logger = createLogger ();
 
 export function initUI () {
   //1. Button to show or hide the configuration popup
@@ -56,12 +59,14 @@ export function initUI () {
 
   function showConfigPopup () {
     // Show the config popup and hide the markdown content
+    logger.debug ('show config popup');
     configPopup.style.display = 'block';
     markdownContent.style.display = 'none';
   }
 
   function hideConfigPopup () {
     // Hide the config popup and show the markdown content
+    logger.debug ('hide config popup');
     configPopup.style.display = 'none';
     markdownContent.style.display = 'block';
   }
