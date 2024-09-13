@@ -1,7 +1,8 @@
-import {updateStatus, LOG_LEVELS} from './utils.js';
+//prompts.js
+// This file contains the functions that handle the submission of prompts
+import {updateStatus, consoleLog, LOG_LEVELS} from './utils.js';
 import {fetchOpenAI} from './api.js';
-import {extractWebpageText} from './contentExtraction.js';
-import {consoleLog} from './utils.js';
+import {extractWebpageText, extractElementText} from './contentExtraction.js';
 import {ID_INCLUDE_WEB_CONTENT_CHECKBOX} from './constants.js';
 import {
   ID_OUTPUT_FORMAT_TEXT_RADIO,
@@ -9,7 +10,55 @@ import {
   ID_OUTPUT_FORMAT_MARKDOWN_RADIO,
   ID_OUTPUT_FORMAT_TABLE_RADIO,
   ID_DISABLE_SYSTEM_ROLE_CHECKBOX,
+  ID_MAGIC_CLICK_CHECKBOX,
+  ID_CUSTOM_PROMPT_INPUT,
+  ID_LANGUAGE_SELECT,
+  ID_MARKDOWN_CONTENT,
 } from './constants.js';
+
+chrome.runtime.onMessage.addListener ((request, sender, sendResponse) => {
+  if (request.action === 'handleChatCompletion') {
+    consoleLog ('Chat completion request received', LOG_LEVELS.DEBUG);
+    handleChatCompletion (request.data, sender, sendResponse);
+  } else if (request.action === 'handleOverwriteTextRequest') {
+    consoleLog ('Overwrite text request received', LOG_LEVELS.DEBUG);
+    handleOverwriteTextRequest (request.data, sender, sendResponse);
+  }
+  return true;
+});
+
+function handleChatCompletion (request, sender, sendResponse) {
+  const {elementInfo} = request;
+  // get prompt from customized prompt
+  const prompt = document.getElementById (ID_CUSTOM_PROMPT_INPUT).value;
+  const language = document.getElementById (ID_LANGUAGE_SELECT).value;
+
+  handlePromptSubmission (prompt, language)
+    .then (result => {
+      sendResponse ({result: result});
+    })
+    .catch (error => {
+      consoleLog (
+        'Error in chat completion: ' + error.message,
+        LOG_LEVELS.ERROR
+      );
+    });
+}
+
+function handleOverwriteTextRequest (request, sender, sendResponse) {
+  // Request markdown content from the popup
+  consoleLog ('Overwrite text request received', LOG_LEVELS.DEBUG);
+  const markdownContent = document.getElementById (ID_MARKDOWN_CONTENT)
+    .innerText;
+  if (markdownContent) {
+    // Overwrite the text in the chat box with the markdown content
+    sendResponse ({content: markdownContent});
+    consoleLog ('Overwrite text response was sent', LOG_LEVELS.DEBUG);
+  } else {
+    sendResponse ({error: 'No markdown content found'});
+    console.error ('No markdown content found');
+  }
+}
 
 export function handlePromptSubmission (prompt, language, currentController) {
   const includeWebContent = document.getElementById (
@@ -130,16 +179,46 @@ export function handlePromptSubmission (prompt, language, currentController) {
     });
   } else {
     // If not including webpage content
+    const magicClick = document.getElementById (ID_MAGIC_CLICK_CHECKBOX)
+      .checked;
+    if (magicClick) {
+      consoleLog ('magicClick is checked', LOG_LEVELS.DEBUG);
+      chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
+        if (tabs[0] && tabs[0].id) {
+          extractElementText (tabs[0].id, text => {
+            const userPrompt = `${prompt}. Below is the text.
+      \n\n ${text} \n\n`;
 
-    fetchOpenAI (
-      disableSystemRole ? '' : systemPrompt,
-      disableSystemRole
-        ? `${systemPrompt} ${outputLanguage} ${prompt}`
-        : `${outputLanguage} ${prompt}`,
-      currentController
-    ).catch (error => {
-      updateStatus ('Failed to process custom prompt.' + error.message);
-    });
+            // Replace the prompt in your fetchOpenAI call with the custom prompt
+            fetchOpenAI (
+              // if disableSystemRole is checked, use userPrompt only
+              disableSystemRole ? '' : outputLanguage,
+              disableSystemRole
+                ? `${outputLanguage} ${userPrompt}`
+                : userPrompt,
+              currentController
+            ).catch (error => {
+              consoleLog (
+                'Failed to process custom prompt.' + error.message,
+                LOG_LEVELS.ERROR
+              );
+              updateStatus ('Failed to process custom prompt.' + error.message);
+            });
+          });
+          updateStatus ('Calling API, wait for response');
+        }
+      });
+    } else {
+      fetchOpenAI (
+        disableSystemRole ? '' : systemPrompt,
+        disableSystemRole
+          ? `${systemPrompt} ${outputLanguage} ${prompt}`
+          : `${outputLanguage} ${prompt}`,
+        currentController
+      ).catch (error => {
+        updateStatus ('Failed to process custom prompt.' + error.message);
+      });
+    }
   }
   updateStatus ('Submitting prompt: ' + prompt);
 }

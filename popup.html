@@ -347,13 +347,13 @@
         <input
           class="form-check-input"
           type="checkbox"
-          id="disableSystemRoleCheckbox"
+          id="magicClickCheckbox"
         />
         <label
           class="form-check-label"
-          for="disableSystemRoleCheckbox"
-          title="Some models like Mixtral or Gemma does not support system role, so you can disable it to make it compatible with those models."
-          >Disable system role for compatibility</label
+          for="magicClickCheckbox"
+          title="Select the text on the page and click the buttons for magic to happen."
+          >Magic Click</label
         >
       </div>
 
@@ -369,6 +369,19 @@
               >Enable Debug Logs</label
             >
           </div>
+        </div>
+        <div class="form-check form-switch">
+          <input
+            class="form-check-input"
+            type="checkbox"
+            id="disableSystemRoleCheckbox"
+          />
+          <label
+            class="form-check-label"
+            for="disableSystemRoleCheckbox"
+            title="Some models like Mixtral or Gemma does not support system role, so you can disable it to make it compatible with those models."
+            >Disable system role for compatibility</label
+          >
         </div>
         <div style="display: none">
           <div class="border-top h6 pt-1 pb-1">Output Format</div>

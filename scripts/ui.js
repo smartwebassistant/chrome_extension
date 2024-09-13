@@ -44,6 +44,8 @@ import {
   ID_MAX_TOKEN_STORAGE_SPAN,
   ID_TEMPERATURE_STORAGE_SPAN,
   ID_TOP_P_STORAGE_SPAN,
+  ID_MAGIC_CLICK_CHECKBOX,
+  ID_INCLUDE_WEB_CONTENT_CHECKBOX,
 } from './constants.js';
 
 export function initUI () {
@@ -151,6 +153,35 @@ export function initUI () {
   // Event listener to update local storage when the user changes the selection
   languageSelect.addEventListener ('change', function () {
     localStorage.setItem (STORAGE_KEY_SELECTED_LANGUAGE, this.value);
+  });
+
+  // 6.1 magic click checkbox
+  const magicClickCheckbox = document.getElementById (ID_MAGIC_CLICK_CHECKBOX);
+  //once the checkbox is enabled, send selectElement message to content.js
+  let wasDisabledByMagicClick = false;
+  magicClickCheckbox.addEventListener ('change', function () {
+    const checked = this.checked;
+    const includeWebContentCheckbox = document.getElementById (
+      ID_INCLUDE_WEB_CONTENT_CHECKBOX
+    );
+    if (checked) {
+      // disable the include web content checkbox
+      wasDisabledByMagicClick = true;
+      includeWebContentCheckbox.checked = false;
+
+      chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
+        chrome.tabs.sendMessage (tabs[0].id, {action: 'selectElement'});
+      });
+    } else {
+      if (wasDisabledByMagicClick) {
+        // enable the include web content checkbox
+        includeWebContentCheckbox.checked = true;
+      }
+      wasDisabledByMagicClick = false;
+      chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
+        chrome.tabs.sendMessage (tabs[0].id, {action: 'stopSelectingElement'});
+      });
+    }
   });
 
   // 7. mark down content

@@ -74,24 +74,6 @@ export function fetchOpenAI (system_prompt, user_prompt) {
 
       // Convert payload to JSON string
       const payloadString = JSON.stringify (payload);
-
-      // Copy the API request payload to the clipboard if debug mode is enabled
-      // if (document.getElementById ('debugModeCheckbox').checked) {
-      //   if (navigator.clipboard) {
-      //     navigator.clipboard
-      //       .writeText (payloadString)
-      //       .then (() => {
-      //         updateStatus ('Payload copied to clipboard.', LOG_LEVELS.DEBUG);
-      //       })
-      //       .catch (err => {
-      //         updateStatus ('Failed to copy payload to clipboard.');
-      //         console.error ('Clipboard write failed:', err);
-      //       });
-      //   } else {
-      //     updateStatus ('Clipboard API not available.');
-      //   }
-      // }
-      // Define the requestOptions including the AbortController's signal
       const requestOptions = {
         method: 'POST',
         headers: {
@@ -200,9 +182,6 @@ export function fetchOpenAI (system_prompt, user_prompt) {
         });
       } catch (error) {
         if (error.name === 'AbortError') {
-          updateStatus ('Request was cancelled.');
-        }
-        if (requestCancelled) {
           updateStatus ('Request was cancelled.');
         } else {
           console.error ('Error during fetch or reading:', error);
