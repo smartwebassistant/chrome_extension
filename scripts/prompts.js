@@ -10,7 +10,7 @@ import {
   ID_OUTPUT_FORMAT_MARKDOWN_RADIO,
   ID_OUTPUT_FORMAT_TABLE_RADIO,
   ID_DISABLE_SYSTEM_ROLE_CHECKBOX,
-  ID_SMART_WRITER_CHECKBOX,
+  ID_MAGIC_CLICK_CHECKBOX,
 } from './constants.js';
 
 export function handlePromptSubmission (prompt, language, currentController) {
@@ -132,10 +132,10 @@ export function handlePromptSubmission (prompt, language, currentController) {
     });
   } else {
     // If not including webpage content
-    const smartWriter = document.getElementById (ID_SMART_WRITER_CHECKBOX)
+    const magicClick = document.getElementById (ID_MAGIC_CLICK_CHECKBOX)
       .checked;
-    if (smartWriter) {
-      consoleLog ('smartWriter is checked', LOG_LEVELS.DEBUG);
+    if (magicClick) {
+      consoleLog ('magicClick is checked', LOG_LEVELS.DEBUG);
       chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
         if (tabs[0] && tabs[0].id) {
           extractElementText (tabs[0].id, text => {

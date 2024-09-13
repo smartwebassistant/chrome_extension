@@ -37,8 +37,8 @@ export const ID_TEST_CONNECTION_BUTTON = 'testConnectionButton';
 export const ID_API_CONNECTION_TEST_STATUS = 'apiConnectionTestStatusDiv';
 export const ID_INCLUDE_WEB_CONTENT_CHECKBOX = 'includeWebContentCheckbox';
 export const ID_DEBUG_MODE_CHECKBOX = 'debugModeCheckbox';
-//smartWriterCheckbox
-export const ID_SMART_WRITER_CHECKBOX = 'smartWriterCheckbox';
+//magicClickCheckbox
+export const ID_MAGIC_CLICK_CHECKBOX = 'magicClickCheckbox';
 // disableSystemRoleCheckbox
 export const ID_DISABLE_SYSTEM_ROLE_CHECKBOX = 'disableSystemRoleCheckbox';
 export const ID_STATUS_FOOTER = 'statusFooter';
