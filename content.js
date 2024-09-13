@@ -162,7 +162,7 @@ function handleClick (event) {
     function sendOverwriteRequest (element) {
       chrome.runtime.sendMessage (
         {
-          action: 'overwriteText',
+          action: 'overwriteTextRequest',
           elementInfo: {
             id: element.id,
             classes: Array.from (element.classList),
@@ -171,8 +171,8 @@ function handleClick (event) {
         },
         response => {
           console.log ('Overwrite response:', response);
-          if (response && response.newText) {
-            element.innerText = response.newText;
+          if (response && response.content) {
+            element.innerHTML = response.content;
           } else if (response && response.error) {
             console.error ('Error in overwrite:', response.error);
             alert (`Failed to overwrite text: ${response.error}`);

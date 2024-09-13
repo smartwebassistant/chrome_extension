@@ -20,10 +20,11 @@ chrome.runtime.onMessage.addListener ((request, sender, sendResponse) => {
   if (request.action === 'handleChatCompletion') {
     consoleLog ('Chat completion request received', LOG_LEVELS.DEBUG);
     handleChatCompletion (request.data, sender, sendResponse);
-  } else if (request.action === 'handleOverwriteText') {
+  } else if (request.action === 'handleOverwriteTextRequest') {
     consoleLog ('Overwrite text request received', LOG_LEVELS.DEBUG);
-    handleOverwriteText (request.data, sender, sendResponse);
+    handleOverwriteTextRequest (request.data, sender, sendResponse);
   }
+  return true;
 });
 
 function handleChatCompletion (request, sender, sendResponse) {
@@ -44,13 +45,18 @@ function handleChatCompletion (request, sender, sendResponse) {
     });
 }
 
-function handleOverwriteText (request, sendResponse) {
+function handleOverwriteTextRequest (request, sender, sendResponse) {
   // Request markdown content from the popup
   consoleLog ('Overwrite text request received', LOG_LEVELS.DEBUG);
-  const markdownContent = document.getElementById (ID_MARKDOWN_CONTENT).value;
+  const markdownContent = document.getElementById (ID_MARKDOWN_CONTENT)
+    .innerText;
   if (markdownContent) {
     // Overwrite the text in the chat box with the markdown content
     sendResponse ({content: markdownContent});
+    consoleLog ('Overwrite text response was sent', LOG_LEVELS.DEBUG);
+  } else {
+    sendResponse ({error: 'No markdown content found'});
+    console.error ('No markdown content found');
   }
 }
 
