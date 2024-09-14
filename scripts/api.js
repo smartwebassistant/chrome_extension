@@ -1,22 +1,26 @@
-// api.js
-import {updateStatus, consoleLog, LOG_LEVELS} from './utils.js';
+import {updateStatus} from './utils.js';
 import {initMarkdown, appendMarkdown, displayMarkdown} from './markdown.js';
 import {ID_API_CONNECTION_TEST_STATUS} from './constants.js';
+import {createLogger} from './logger.js';
+
+// api.js
+
+const logger = createLogger ();
 
 let currentController = null;
 let requestCancelled = true;
 
 cancelButton.addEventListener ('click', () => {
-  consoleLog ('Cancelling the request...', LOG_LEVELS.DEBUG);
+  logger.debug ('Cancelling the request...');
   if (currentController && currentController instanceof AbortController) {
-    consoleLog ('Request aborted.', LOG_LEVELS.DEBUG);
+    logger.debug ('Request aborted.');
     currentController.abort ();
     currentController = null;
     requestCancelled = true;
     updateStatus ('Request cancelled.');
     cancelButton.style.display = 'none';
   } else {
-    consoleLog ('No request to cancel.', LOG_LEVELS.DEBUG);
+    logger.debug ('No request to cancel.');
   }
 });
 
@@ -28,15 +32,15 @@ cancelButton.addEventListener ('click', () => {
  */
 export function fetchOpenAI (system_prompt, user_prompt) {
   //print debug log in console
-  consoleLog (`system_prompt: ${system_prompt}`, LOG_LEVELS.DEBUG);
-  consoleLog (`user_prompt: ${user_prompt}`, LOG_LEVELS.DEBUG);
+  logger.debug (`system_prompt: ${system_prompt}`);
+  logger.debug (`user_prompt: ${user_prompt}`);
 
   // Get settings from local storage
   chrome.storage.local.get (
     ['apiUrl', 'apiToken', 'modelName', 'maxToken', 'temperature', 'topP'],
     async function (settings) {
       if (chrome.runtime.lastError) {
-        console.error ('Error fetching settings:', chrome.runtime.lastError);
+        logger.error ('Error fetching settings:', chrome.runtime.lastError);
         updateStatus ('Failed to load settings. Please try again.');
         return;
       }
@@ -84,7 +88,7 @@ export function fetchOpenAI (system_prompt, user_prompt) {
         signal: currentController.signal,
       };
 
-      updateStatus ('Calling API ' + settings.apiUrl, LOG_LEVELS.DEBUG);
+      updateStatus ('Calling API ' + settings.apiUrl);
       cancelButton.style.display = 'block'; // Show cancel button
 
       try {
@@ -92,7 +96,7 @@ export function fetchOpenAI (system_prompt, user_prompt) {
         fetch (settings.apiUrl, requestOptions).then (response => {
           const statusCode = response.status; // Capture the HTTP status code
           if (!response.ok) {
-            console.error (
+            logger.error (
               `API call failed: ${statusCode} ${response.statusText}`
             );
             updateStatus (
@@ -107,11 +111,11 @@ export function fetchOpenAI (system_prompt, user_prompt) {
           let buffer = '';
 
           function processChunk (text) {
-            consoleLog ('Buffer: ' + buffer, LOG_LEVELS.DEBUG);
+            logger.debug ('Buffer: ' + buffer);
             buffer += text; // Append new text to buffer
             let parts = buffer.split ('\n'); // Split by lines
             // Process all lines except the last one, which might be incomplete
-            consoleLog (`${parts.length} Parts found`, LOG_LEVELS.DEBUG);
+            logger.debug (`${parts.length} Parts found`);
             parts.slice (0, -1).forEach (line => {
               line = line.trim ();
               // if line length is 0, skip
@@ -122,7 +126,7 @@ export function fetchOpenAI (system_prompt, user_prompt) {
                 try {
                   let content = line.slice (5);
                   if (content.trim () === '[DONE]') {
-                    consoleLog ('Received Done', LOG_LEVELS.DEBUG);
+                    logger.debug ('Received Done');
                     return;
                   }
                   const json = JSON.parse (content); // Parse JSON after 'data:'
@@ -134,23 +138,20 @@ export function fetchOpenAI (system_prompt, user_prompt) {
                     json.choices[0].delta.content
                   ) {
                     const content = json.choices[0].delta.content;
-                    consoleLog (
-                      'Received content: ' + content,
-                      LOG_LEVELS.DEBUG
-                    );
+                    logger.debug ('Received content: ' + content);
                     appendMarkdown (content);
                     if (content.includes ('\n')) {
                       displayMarkdown ();
                     }
                   }
                 } catch (error) {
-                  console.error ('Error parsing JSON:', error);
+                  logger.error ('Error parsing JSON:', error);
                 }
               } else if (line.startsWith ('ping:')) {
-                consoleLog ('Received ping:' + chunk, LOG_LEVELS.DEBUG);
+                logger.debug ('Received ping:' + chunk);
                 updateStatus ('ping received.');
               } else {
-                console.error (
+                logger.error (
                   'Unexpected line:' + line + '. length:' + line.length
                 );
               }
@@ -168,13 +169,10 @@ export function fetchOpenAI (system_prompt, user_prompt) {
               return;
             }
             const chunk = new TextDecoder ('utf-8').decode (value);
-            consoleLog ('Received chunk:' + chunk, LOG_LEVELS.DEBUG);
+            logger.debug ('Received chunk:' + chunk);
 
             if (!chunk.startsWith ('data:')) {
-              consoleLog (
-                'Chunk does not start with "data:"' + chunk,
-                LOG_LEVELS.DEBUG
-              );
+              logger.debug ('Chunk does not start with "data:"' + chunk);
             }
             processChunk (chunk);
             return reader.read ().then (pump);
@@ -184,7 +182,7 @@ export function fetchOpenAI (system_prompt, user_prompt) {
         if (error.name === 'AbortError') {
           updateStatus ('Request was cancelled.');
         } else {
-          console.error ('Error during fetch or reading:', error);
+          logger.error ('Error during fetch or reading:', error);
           updateStatus (`API call failed: ${error.message}`);
         }
         cancelButton.style.display = 'none'; // Hide cancel button
@@ -218,9 +216,8 @@ export function testApiConnection (apiUrl, apiToken) {
 
   updateConnectionTestStatus ('Testing connection...');
   //print api url and first 4 characters **** last 4 characters of api token in debug log
-  consoleLog (
-    `Testing connection... ${apiUrl} ${apiToken.substring (0, 4)}****${apiToken.slice (-4)}`,
-    LOG_LEVELS.DEBUG
+  logger.debug (
+    `Testing connection... ${apiUrl} ${apiToken.substring (0, 4)}****${apiToken.slice (-4)}`
   );
 
   fetch (apiUrl, {
@@ -237,9 +234,8 @@ export function testApiConnection (apiUrl, apiToken) {
       if (response.ok || (response.status >= 404 && response.status < 500)) {
         // Considering 2xx and 4xx as successful cases
         updateConnectionTestStatus (`Connection successful!`, true);
-        consoleLog (
-          `Connection successful!${response.status} ${response.statusText}`,
-          LOG_LEVELS.DEBUG
+        logger.debug (
+          `Connection successful!${response.status} ${response.statusText}`
         );
       } else if (response.status >= 500) {
         // Handling server errors separately

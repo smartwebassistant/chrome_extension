@@ -1,6 +1,7 @@
 // contentExtraction.js
-import {consoleLog, LOG_LEVELS} from './utils.js';
 import {updateStatus} from './utils.js';
+import {createLogger} from './logger.js';
+const logger = createLogger ();
 
 export function extractWebpageText (tabId, processFunction) {
   updateStatus ('Extracting text from the webpage...');
@@ -9,7 +10,7 @@ export function extractWebpageText (tabId, processFunction) {
       handleResponseError ('Extraction');
       return;
     }
-    consoleLog ('Response: ' + response, LOG_LEVELS.DEBUG);
+    logger.debug ('Response: ' + response);
     processFunction (response.text);
   });
 }
@@ -23,7 +24,7 @@ export function extractElementText (tabId, processFunction) {
       handleResponseError ('Extraction');
       return;
     }
-    consoleLog ('Response: ' + response, LOG_LEVELS.DEBUG);
+    logger.debug ('Response: ' + response);
     processFunction (response.text);
   });
 }
