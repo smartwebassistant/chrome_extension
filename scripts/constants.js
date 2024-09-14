@@ -36,7 +36,6 @@ export const ID_SAVE_API_URL_BUTTON = 'saveApiUrlButton';
 export const ID_TEST_CONNECTION_BUTTON = 'testConnectionButton';
 export const ID_API_CONNECTION_TEST_STATUS = 'apiConnectionTestStatusDiv';
 export const ID_INCLUDE_WEB_CONTENT_CHECKBOX = 'includeWebContentCheckbox';
-export const ID_DEBUG_MODE_CHECKBOX = 'debugModeCheckbox';
 //magicClickCheckbox
 export const ID_MAGIC_CLICK_CHECKBOX = 'magicClickCheckbox';
 // disableSystemRoleCheckbox

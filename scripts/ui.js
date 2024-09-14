@@ -1,8 +1,8 @@
 //ui.js
 
-import {updateStatus, isValidUrl, consoleLog, LOG_LEVELS} from './utils.js';
 import {testApiConnection} from './api.js';
 import {handlePromptSubmission} from './prompts.js';
+import {updateStatus} from './utils.js';
 import {
   DEFAULT_API_URL,
   DEFAULT_MODEL_NAME,
@@ -88,9 +88,8 @@ export function initUI () {
     // Hide the toggle sidebar button if in an iframe
     if (toggleSidebarButton) {
       toggleSidebarButton.style.display = 'none';
-      consoleLog (
-        'Toggle sidebar button hidden because it is inside an iframe.',
-        LOG_LEVELS.DEBUG
+      logger.debug (
+        'Toggle sidebar button hidden because it is inside an iframe.'
       );
     }
   }
@@ -198,10 +197,7 @@ export function initUI () {
     // This code runs if the page is in an iframe
     if (markdownContent) {
       markdownContent.style.height = '460px'; // Adjust the height as needed
-      consoleLog (
-        'Adjusted markdownContent height for iframe usage.',
-        LOG_LEVELS.DEBUG
-      );
+      logger.debug ('Adjusted markdownContent height for iframe usage.');
     }
 
     document.body.style.width = '100%'; // Adjust the width as needed
@@ -450,7 +446,7 @@ export function initUI () {
     }
 
     localStorage.setItem (STORAGE_KEY_LAST_CUSTOM_PROMPT, customPrompt);
-    consoleLog ('Custom prompt saved:' + customPrompt, LOG_LEVELS.DEBUG);
+    logger.debug ('Custom prompt saved:' + customPrompt);
 
     handlePromptSubmission (customPrompt, selectedLanguage);
   });

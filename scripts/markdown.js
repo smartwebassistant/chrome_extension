@@ -1,5 +1,7 @@
-import {consoleLog, LOG_LEVELS} from './utils.js';
 import {ID_MARKDOWN_CONTENT} from './constants.js';
+import {createLogger} from './logger.js';
+
+const logger = createLogger ();
 // markdown.js
 
 // Define the 'codeblocks' extension to make the code blocks more readable
@@ -48,10 +50,7 @@ export function displayMarkdown (forceDisplay = false) {
       return; // Don't display incomplete tables
     }
   }
-  consoleLog (
-    'Displaying Markdown content...' + contentBuffer,
-    LOG_LEVELS.DEBUG
-  );
+  logger.debug ('Displaying Markdown content...' + contentBuffer);
 
   // Because the LLM takes time to finish outputing the texts, have to use stream to display each chunk while receiving
   // So the chunk will be appended to innerHTML so that it will show up in <div id="markdownContent"> but in raw markdown format
@@ -93,7 +92,7 @@ function isNotCompleteBlock (buffer) {
   // Check for unmatched code block ticks
   const codeTicks = (buffer.match (/```/g) || []).length;
   return codeTicks % 2 !== 0; // Returns true if there's an odd number of ticks
-  consoleLog ('Incomplete code block detected.' + buffer, LOG_LEVELS.DEBUG);
+  logger.debug ('Incomplete code block detected.' + buffer);
 }
 
 // Function to determine if the buffer contains an incomplete table
