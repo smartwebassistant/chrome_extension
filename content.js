@@ -144,17 +144,34 @@ function handleClick (event) {
     const dropdownMenu = document.createElement ('div');
     dropdownMenu.className = 'dropdown-menu';
 
-    const actions = ['Summarize', 'Explain', 'Translate'];
-    actions.forEach (action => {
-      const dropdownItem = document.createElement ('div');
-      dropdownItem.className = 'dropdown-item';
-      dropdownItem.textContent = action;
-      dropdownItem.addEventListener ('click', e => {
-        e.stopPropagation ();
-        handleAIAction (action, element);
-        hideAllDropdowns ();
-      });
-      dropdownMenu.appendChild (dropdownItem);
+    // Request stored prompts from background script
+    chrome.runtime.sendMessage ({action: 'getStoredPrompts'}, function (
+      response
+    ) {
+      if (response && response.prompts) {
+        response.prompts.forEach ((prompt, index) => {
+          if (prompt && prompt.trim () !== '') {
+            const dropdownItem = document.createElement ('div');
+            dropdownItem.className = 'dropdown-item';
+            dropdownItem.textContent = truncateText (prompt, 10);
+            dropdownItem.title = prompt; // Full text on hover
+            dropdownItem.addEventListener ('click', e => {
+              e.stopPropagation ();
+              handleAIAction (prompt, element);
+              hideAllDropdowns ();
+            });
+            dropdownMenu.appendChild (dropdownItem);
+          }
+        });
+      }
+
+      // If no stored prompts, add a default option
+      if (dropdownMenu.children.length === 0) {
+        const defaultItem = document.createElement ('div');
+        defaultItem.className = 'dropdown-item';
+        defaultItem.textContent = 'No stored prompts';
+        dropdownMenu.appendChild (defaultItem);
+      }
     });
 
     buttonsContainer.appendChild (dropdownMenu);
@@ -172,31 +189,7 @@ function handleClick (event) {
 
     buttonsContainer.appendChild (aiCallButton);
 
-    // Overwrite Text button
-    const overwriteButton = document.createElement ('button');
-    overwriteButton.className = 'floating-button overwrite';
-    overwriteButton.innerHTML = '⤵️';
-    overwriteButton.title = 'Overwrite with AI Response';
-    overwriteButton.addEventListener ('click', e => {
-      e.stopPropagation ();
-
-      const currentText = element.innerText.trim ();
-      if (currentText) {
-        if (
-          confirm (
-            `Do you want to overwrite the following text with an AI response?\n\n${currentText.substring (0, 100)}${currentText.length > 100 ? '...' : ''}`
-          )
-        ) {
-          sendOverwriteRequest (element);
-        } else {
-          console.log ('Overwrite cancelled by user');
-        }
-      } else {
-        sendOverwriteRequest (element);
-      }
-    });
-    buttonsContainer.appendChild (overwriteButton);
-
+    // Overwrite button
     function sendOverwriteRequest (element) {
       chrome.runtime.sendMessage (
         {
@@ -283,6 +276,10 @@ function handleAIAction (action, element) {
   );
 }
 
+// Function to truncate text
+function truncateText (text, maxLength) {
+  return text.length > maxLength ? text.substr (0, maxLength) + '...' : text;
+}
 // Register the event listener
 
 console.log ('Content script loaded');

@@ -1,6 +1,7 @@
 //ui.js
 
 import {testApiConnection} from './api.js';
+import {isValidUrl} from './utils.js';
 import {handlePromptSubmission} from './prompts.js';
 import {updateStatus} from './utils.js';
 import {
