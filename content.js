@@ -1,7 +1,7 @@
 console.log ('Content script loading');
 let writingContent = '';
 
-// Create and append styles
+// Update the style definition
 const style = document.createElement ('style');
 style.textContent = `
   .floating-buttons {
@@ -22,6 +22,31 @@ style.textContent = `
     display: flex;
     align-items: center;
     justify-content: center;
+    position: relative;
+  }
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    background-color: #ffffff;
+    border: 1px solid #198754;
+    border-radius: 4px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    display: none;
+    z-index: 10001;
+    margin-top: 5px;
+  }
+  .dropdown-menu.show {
+    display: block;
+  }
+  .dropdown-item {
+    padding: 5px 10px;
+    cursor: pointer;
+    white-space: nowrap;
+    color: #333;
+  }
+  .dropdown-item:hover {
+    background-color: #f0f0f0;
   }
 `;
 document.head.appendChild (style);
@@ -110,28 +135,41 @@ function handleClick (event) {
     const buttonsContainer = document.createElement ('div');
     buttonsContainer.className = 'floating-buttons';
 
-    // AI Call button
+    // In the handleClick function, update the AI Call button and dropdown creation
     const aiCallButton = document.createElement ('button');
     aiCallButton.className = 'floating-button chatCompletion';
     aiCallButton.innerHTML = '💭';
     aiCallButton.title = 'Chat Completion';
+
+    const dropdownMenu = document.createElement ('div');
+    dropdownMenu.className = 'dropdown-menu';
+
+    const actions = ['Summarize', 'Explain', 'Translate'];
+    actions.forEach (action => {
+      const dropdownItem = document.createElement ('div');
+      dropdownItem.className = 'dropdown-item';
+      dropdownItem.textContent = action;
+      dropdownItem.addEventListener ('click', e => {
+        e.stopPropagation ();
+        handleAIAction (action, element);
+        hideAllDropdowns ();
+      });
+      dropdownMenu.appendChild (dropdownItem);
+    });
+
+    buttonsContainer.appendChild (dropdownMenu);
+
     aiCallButton.addEventListener ('click', e => {
       e.stopPropagation ();
-      console.log ('chatCompletion action triggered');
-      chrome.runtime.sendMessage (
-        {
-          action: 'chatCompletion',
-          elementInfo: {
-            id: element.id,
-            classes: Array.from (element.classList),
-            text: element.innerText,
-          },
-        },
-        response => {
-          console.log ('chat completion response:', response);
-        }
-      );
+      hideAllDropdowns ();
+      dropdownMenu.classList.toggle ('show');
+
+      // Position the dropdown relative to the button
+      const buttonRect = aiCallButton.getBoundingClientRect ();
+      dropdownMenu.style.top = `20px`;
+      dropdownMenu.style.left = `0px`;
     });
+
     buttonsContainer.appendChild (aiCallButton);
 
     // Overwrite Text button
@@ -218,6 +256,31 @@ function handleClick (event) {
   // Optional: Remove this event listener after the click
   // document.removeEventListener('click', handleClick, false);
   // console.log('Click event listener removed');
+}
+
+function hideAllDropdowns () {
+  document.querySelectorAll ('.dropdown-menu').forEach (menu => {
+    menu.classList.remove ('show');
+  });
+}
+
+function handleAIAction (action, element) {
+  console.log (`${action} action triggered`);
+  chrome.runtime.sendMessage (
+    {
+      action: 'chatCompletion',
+      subAction: action.toLowerCase (),
+      elementInfo: {
+        id: element.id,
+        classes: Array.from (element.classList),
+        text: element.innerText,
+      },
+    },
+    response => {
+      console.log (`${action} response:`, response);
+      // Handle the response here (e.g., display it to the user)
+    }
+  );
 }
 
 // Register the event listener
