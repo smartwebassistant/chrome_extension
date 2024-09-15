@@ -72,5 +72,33 @@ chrome.runtime.onMessage.addListener ((request, sender, sendResponse) => {
     );
     logger.debug ('Overwrite text response was sent to extension');
     return true;
+  } else if (request.action === 'getStoredPrompts') {
+    const keys = [
+      'storedPrompt1',
+      'storedPrompt2',
+      'storedPrompt3',
+      'storedPrompt4',
+      'storedPrompt5',
+    ];
+
+    chrome.storage.local.get (keys, function (result) {
+      if (chrome.runtime.lastError) {
+        logger.error (
+          'Error fetching stored prompts:',
+          chrome.runtime.lastError
+        );
+        sendResponse ({prompts: []});
+        return;
+      }
+
+      const storedPrompts = keys
+        .map (key => result[key])
+        .filter (prompt => prompt && prompt.trim () !== '');
+
+      logger.debug ('Stored prompts:', storedPrompts);
+      sendResponse ({prompts: storedPrompts});
+    });
+
+    return true; // Indicates that the response is sent asynchronously
   }
 });

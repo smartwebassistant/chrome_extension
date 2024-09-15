@@ -4,7 +4,6 @@ export const createLogger = (function () {
   function getCallerInfo () {
     const err = new Error ();
     const stack = err.stack.split ('\n').map (line => line.trim ());
-    console.log (stack);
     let callerInfo = {fileName: 'unknown', functionName: 'anonymous'};
 
     // Find the last line in the stack that refers to our extension

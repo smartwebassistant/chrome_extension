@@ -30,12 +30,13 @@ chrome.runtime.onMessage.addListener ((request, sender, sendResponse) => {
 });
 
 function handleChatCompletion (request, sender, sendResponse) {
-  const {elementInfo} = request;
   // get prompt from customized prompt
-  const prompt = document.getElementById (ID_CUSTOM_PROMPT_INPUT).value;
+  logger.debug ('Chat completion request received' + request);
+  prompt = request.subAction;
   const language = document.getElementById (ID_LANGUAGE_SELECT).value;
+  const context = request.elementInfo.text;
 
-  handlePromptSubmission (prompt, language)
+  handlePromptSubmission (prompt, language, context)
     .then (result => {
       sendResponse ({result: result});
     })
@@ -59,7 +60,12 @@ function handleOverwriteTextRequest (request, sender, sendResponse) {
   }
 }
 
-export function handlePromptSubmission (prompt, language, currentController) {
+export function handlePromptSubmission (
+  prompt,
+  language,
+  context,
+  currentController
+) {
   const includeWebContent = document.getElementById (
     ID_INCLUDE_WEB_CONTENT_CHECKBOX
   ).checked;
@@ -180,26 +186,24 @@ export function handlePromptSubmission (prompt, language, currentController) {
     if (magicClick) {
       logger.debug ('magicClick is checked');
       chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
-        if (tabs[0] && tabs[0].id) {
-          extractElementText (tabs[0].id, text => {
-            const userPrompt = `${prompt}. Below is the text.
-      \n\n ${text} \n\n`;
+        {
+          const userPrompt = `${prompt}. Below is the context.
+      \n\n ${context} \n\n`;
+          // replace the prompts in custom prompt input
+          document.getElementById (ID_CUSTOM_PROMPT_INPUT).value = prompt;
 
-            // Replace the prompt in your fetchOpenAI call with the custom prompt
-            fetchOpenAI (
-              // if disableSystemRole is checked, use userPrompt only
-              disableSystemRole ? '' : outputLanguage,
-              disableSystemRole
-                ? `${outputLanguage} ${userPrompt}`
-                : userPrompt,
-              currentController
-            ).catch (error => {
-              logger.error ('Failed to process custom prompt.' + error.message);
-              updateStatus ('Failed to process custom prompt.' + error.message);
-            });
+          // Replace the prompt in your fetchOpenAI call with the custom prompt
+          fetchOpenAI (
+            // if disableSystemRole is checked, use userPrompt only
+            disableSystemRole ? '' : outputLanguage,
+            disableSystemRole ? `${outputLanguage} ${userPrompt}` : userPrompt,
+            currentController
+          ).catch (error => {
+            logger.error ('Failed to process custom prompt.' + error.message);
+            updateStatus ('Failed to process custom prompt.' + error.message);
           });
-          updateStatus ('Calling API, wait for response');
         }
+        updateStatus ('Calling API, wait for response');
       });
     } else {
       fetchOpenAI (
