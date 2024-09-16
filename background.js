@@ -40,7 +40,7 @@ const logger = (function () {
 }) ();
 
 logger.log ('Background script loaded...');
-
+// Add a listener for the extension button click
 chrome.action.onClicked.addListener (tab => {
   chrome.scripting.executeScript ({
     target: {tabId: tab.id},
@@ -101,4 +101,25 @@ chrome.runtime.onMessage.addListener ((request, sender, sendResponse) => {
 
     return true; // Indicates that the response is sent asynchronously
   }
+});
+
+// Listen for when the extension icon is clicked
+chrome.action.onClicked.addListener (tab => {
+  if (!tab.url.match (/^http/)) {
+    return;
+  } // Ignore non-http(s) pages
+
+  chrome.scripting.executeScript (
+    {
+      target: {tabId: tab.id},
+      files: ['content.js'],
+    },
+    () => {
+      if (chrome.runtime.lastError) {
+        logger.error ('Script injection failed:', chrome.runtime.lastError);
+      } else {
+        logger.log ('Content script injected successfully');
+      }
+    }
+  );
 });

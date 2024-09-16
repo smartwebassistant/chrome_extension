@@ -126,10 +126,12 @@ function handleClick (event) {
     // Add a red border to the element
     element.style.border = '2px solid green';
     setupTextChangeListener (element);
-    // Remove the border after 1 second
-    // setTimeout (() => {
-    //   element.style.border = '';
-    // }, 1000);
+
+    if (isElementEditable (element)) {
+      element.style.border = '1px solid green';
+    } else {
+      element.style.border = '1px solid red';
+    }
 
     // Create floating buttons
     const buttonsContainer = document.createElement ('div');
@@ -310,5 +312,47 @@ function truncateText (text, maxLength) {
   return text.length > maxLength ? text.substr (0, maxLength) + '...' : text;
 }
 // Register the event listener
+
+function isElementEditable (element) {
+  // Check if the element is an input, textarea, or has contenteditable attribute
+  if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+    // Check if the input is not readonly and not disabled
+    return !element.readOnly && !element.disabled;
+  }
+
+  // Check for contenteditable attribute
+  if (element.hasAttribute ('contenteditable')) {
+    return element.getAttribute ('contenteditable') !== 'false';
+  }
+
+  // Check if it's inside an editable iframe
+  if (element.tagName === 'IFRAME') {
+    try {
+      return element.contentDocument.designMode === 'on';
+    } catch (e) {
+      // If we can't access the iframe's content, assume it's not editable
+      return false;
+    }
+  }
+
+  // Check if it's in a document with designMode on
+  if (element.ownerDocument && element.ownerDocument.designMode === 'on') {
+    return true;
+  }
+
+  // For other elements, check if they're in an editable container
+  let parent = element.parentElement;
+  while (parent) {
+    if (
+      parent.hasAttribute ('contenteditable') &&
+      parent.getAttribute ('contenteditable') !== 'false'
+    ) {
+      return true;
+    }
+    parent = parent.parentElement;
+  }
+
+  return false;
+}
 
 console.log ('Content script loaded');
