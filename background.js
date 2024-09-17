@@ -12,14 +12,6 @@ const logger = createLogger ();
 // Main Logic of background.js
 logger.log ('Background script loaded...');
 
-// Listen for when the extension icon is clicked, then inject the content script
-chrome.action.onClicked.addListener (tab => {
-  chrome.scripting.executeScript ({
-    target: {tabId: tab.id},
-    files: ['content.js'],
-  });
-});
-
 // Create context menu when the extension is installed or updated
 chrome.runtime.onInstalled.addListener (details => {
   console.log ('Extension installed or updated. Reason:', details.reason);
