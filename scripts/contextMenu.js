@@ -168,7 +168,6 @@ function handleAIReadAction (menuItemId, selectedText, tabId) {
     response => {
       if (response) {
         const context = response.context;
-        const isElementHighlighted = response.isElementHighlighted;
 
         chrome.storage.local.get ([menuItemId, 'lastCustomPrompt'], result => {
           const prompt = menuItemId === 'customPrompt'
@@ -179,7 +178,6 @@ function handleAIReadAction (menuItemId, selectedText, tabId) {
             action: 'aiReadAction',
             prompt: prompt,
             context: context,
-            isElementHighlighted: isElementHighlighted,
           });
         });
       }

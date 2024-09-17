@@ -1,5 +1,4 @@
 console.log ('Content script loading');
-let writingContent = '';
 
 // Update the style definition
 const style = document.createElement ('style');
@@ -59,6 +58,7 @@ document.addEventListener (
   'contextmenu',
   function (e) {
     lastRightClickedElement = e.target;
+    highlightElement (lastRightClickedElement);
   },
   true
 );
@@ -149,14 +149,8 @@ function handleClick (event) {
     writingContent = element.innerText;
     console.log ('Clicked element:', element);
     // Add a red border to the element
-    element.style.border = '2px solid green';
+    highlightElement (element);
     setupTextChangeListener (element);
-
-    if (isElementEditable (element)) {
-      element.style.border = '1px solid green';
-    } else {
-      element.style.border = '1px solid red';
-    }
 
     // Create floating buttons
     const buttonsContainer = document.createElement ('div');
@@ -293,11 +287,6 @@ function handleClick (event) {
     document.body.appendChild (buttonsContainer);
 
     setupTextChangeListener (element);
-
-    // Remove the border and buttons after 5 seconds
-    setTimeout (() => {
-      element.style.border = '';
-    }, 2000);
   } else {
     console.error ('No parent element found');
   }
@@ -314,18 +303,18 @@ function hideAllDropdowns () {
 }
 
 function handleGetContextForAIRead (selectedText, sendResponse) {
-  if (selectedText) {
+  // selectedText and also more than 2 words
+  if (selectedText && selectedText.split (' ').length > 2) {
     // Use case 1: Selected text
-    sendResponse ({context: selectedText, isElementHighlighted: false});
+    sendResponse ({context: selectedText});
   } else if (lastRightClickedElement) {
     // Use case 2: No selected text, use element's innerText
     highlightElement (lastRightClickedElement);
     sendResponse ({
       context: lastRightClickedElement.innerText,
-      isElementHighlighted: true,
     });
   } else {
-    sendResponse ({context: '', isElementHighlighted: false});
+    sendResponse ({context: ''});
   }
 }
 
@@ -333,8 +322,6 @@ function handleGetContextForAIWrite (sendResponse) {
   if (isElementEditable (lastRightClickedElement)) {
     // Use case 3: Writable element, use entire page text
     sendResponse ({context: document.body.innerText});
-  } else {
-    sendResponse ({context: ''});
   }
 }
 
@@ -372,9 +359,6 @@ function handleAIReadAction (prompt, context, isElementHighlighted) {
       console.log (`AI Read action response:`, response);
       if (response && response.result) {
         showResultModal (response.result);
-        if (isElementHighlighted) {
-          removeHighlight ();
-        }
       }
     }
   );
@@ -431,34 +415,20 @@ function handleAIWriteAction (context) {
 
 function highlightElement (element) {
   if (highlightedElement) {
-    removeHighlight ();
+    removeHighlight (highlightedElement);
   }
   highlightedElement = element;
-  element.style.outline = '2px solid red';
-  element.style.outlineOffset = '2px';
+  element.style.border = '1px solid green';
+
+  // Remove the border and buttons after 5 seconds
+  setTimeout (() => {
+    element.style.border = '';
+  }, 2000);
 }
 
-function removeHighlight () {
-  if (highlightedElement) {
-    highlightedElement.style.outline = '';
-    highlightedElement.style.outlineOffset = '';
-    highlightedElement = null;
-  }
-}
-
-function replaceSelectedText (newText) {
-  const activeElement = document.activeElement;
-  if (isElementEditable (activeElement)) {
-    const start = activeElement.selectionStart;
-    const end = activeElement.selectionEnd;
-    const text = activeElement.value || activeElement.textContent;
-    const before = text.substring (0, start);
-    const after = text.substring (end, text.length);
-    activeElement.value = activeElement.textContent = before + newText + after;
-    activeElement.selectionStart = activeElement.selectionEnd =
-      start + newText.length;
-  } else {
-    console.error ('Unable to replace text: No editable element focused');
+function removeHighlight (element) {
+  if (element) {
+    element.style.border = '';
   }
 }
 

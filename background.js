@@ -87,7 +87,7 @@ chrome.runtime.onMessage.addListener ((request, sender, sendResponse) => {
       data: request,
     });
     logger.debug ('Chat completion request was sent to extension');
-    return false;
+    return true;
   } else if (request.action === 'overwriteTextRequest') {
     logger.debug ('Overwrite text request received from content.js', request);
     chrome.runtime.sendMessage (
