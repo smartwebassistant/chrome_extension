@@ -1,5 +1,5 @@
-import {ID_MARKDOWN_CONTENT} from './constants.js';
-import {createLogger} from './logger.js';
+import {ID_MARKDOWN_CONTENT} from '../scripts/constants.js';
+import {createLogger} from '../scripts/logger.js';
 
 const logger = createLogger ();
 // markdown.js
