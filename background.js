@@ -6,44 +6,8 @@ import {
   updateAIReadSubmenus,
 } from './scripts/contextMenu.js';
 
-const logger = (function () {
-  const FILE_NAME = 'background.js';
-
-  function getCallerFunctionName () {
-    const err = new Error ();
-    const stack = err.stack.split ('\n');
-    // The calling function is typically the third item in the stack
-    const callerLine = stack[2];
-    // Extract function name using regex
-    const match = callerLine.match (/at (\w+)/);
-    return match ? match[1] : 'anonymous';
-  }
-
-  function formatMessage (level, functionName, message) {
-    return `[${FILE_NAME}][${functionName}][${level.toUpperCase ()}]: ${message}`;
-  }
-
-  function log (level, message, ...args) {
-    const functionName = getCallerFunctionName ();
-    const formattedMessage = formatMessage (level, functionName, message);
-    console[level] (formattedMessage, ...args);
-  }
-
-  return {
-    debug: function (message, ...args) {
-      log ('debug', message, ...args);
-    },
-    log: function (message, ...args) {
-      log ('info', message, ...args);
-    },
-    warn: function (message, ...args) {
-      log ('warn', message, ...args);
-    },
-    error: function (message, ...args) {
-      log ('error', message, ...args);
-    },
-  };
-}) ();
+import {createLogger} from './scripts/logger.js';
+const logger = createLogger ();
 
 // Main Logic of background.js
 logger.log ('Background script loaded...');
