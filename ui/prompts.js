@@ -1,8 +1,11 @@
 //prompts.js
 // This file contains the functions that handle the submission of prompts
-import {fetchOpenAI} from './api.js';
-import {extractWebpageText, extractElementText} from './contentExtraction.js';
-import {ID_INCLUDE_WEB_CONTENT_CHECKBOX} from './constants.js';
+import {fetchOpenAI} from '../scripts/api.js';
+import {
+  extractWebpageText,
+  extractElementText,
+} from '../background/contentExtraction.js';
+import {ID_INCLUDE_WEB_CONTENT_CHECKBOX} from '../scripts/constants.js';
 import {
   ID_OUTPUT_FORMAT_TEXT_RADIO,
   ID_OUTPUT_FORMAT_JSON_RADIO,
@@ -13,9 +16,9 @@ import {
   ID_CUSTOM_PROMPT_INPUT,
   ID_LANGUAGE_SELECT,
   ID_MARKDOWN_CONTENT,
-} from './constants.js';
-import {createLogger} from './logger.js';
-import {updateStatus} from './utils.js';
+} from '../scripts/constants.js';
+import {createLogger} from '../scripts/logger.js';
+import {updateStatus} from '../scripts/utils.js';
 const logger = createLogger ();
 
 chrome.runtime.onMessage.addListener ((request, sender, sendResponse) => {

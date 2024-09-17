@@ -1,5 +1,5 @@
 // contextMenu.js
-import {createLogger} from './logger.js';
+import {createLogger} from '../scripts/logger.js';
 const logger = createLogger ();
 
 export function createContextMenu (tab) {

@@ -59,4 +59,4 @@ export const ID_STORED_PROMPT_INPUT = index => `storedPrompt${index}Input`;
 export const ID_STORED_PROMPT_BUTTON = index => `storedPrompt${index}Button`;
 export const ID_STORED_PROMPT_STORAGE = index => `storedPrompt${index}Storage`;
 
-export const SIDE_PANEL_HTML = 'sidepanel.html';
+export const SIDE_PANEL_HTML = 'ui/sidepanel.html';

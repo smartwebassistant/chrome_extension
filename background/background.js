@@ -4,9 +4,9 @@ import {
   createContextMenu,
   handleContextMenuClick,
   updateAIReadSubmenus,
-} from './scripts/contextMenu.js';
+} from './contextMenu.js';
 
-import {createLogger} from './scripts/logger.js';
+import {createLogger} from '../scripts/logger.js';
 const logger = createLogger ();
 
 // Main Logic of background.js

@@ -1,9 +1,9 @@
 //ui.js
 
-import {testApiConnection} from './api.js';
-import {isValidUrl} from './utils.js';
+import {testApiConnection} from '../scripts/api.js';
+import {isValidUrl} from '../scripts/utils.js';
 import {handlePromptSubmission} from './prompts.js';
-import {updateStatus} from './utils.js';
+import {updateStatus} from '../scripts/utils.js';
 import {
   DEFAULT_API_URL,
   DEFAULT_MODEL_NAME,
@@ -47,8 +47,8 @@ import {
   ID_TOP_P_STORAGE_SPAN,
   ID_MAGIC_CLICK_CHECKBOX,
   ID_INCLUDE_WEB_CONTENT_CHECKBOX,
-} from './constants.js';
-import {createLogger} from './logger.js';
+} from '../scripts/constants.js';
+import {createLogger} from '../scripts/logger.js';
 
 const logger = createLogger ();
 

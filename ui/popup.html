@@ -4,8 +4,8 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Smart Web Assistant</title>
-    <link href="lib/bootstrap.min.css" rel="stylesheet" />
-    <link href="lib/all.min.css" rel="stylesheet" />
+    <link href="../lib/bootstrap.min.css" rel="stylesheet" />
+    <link href="../lib/all.min.css" rel="stylesheet" />
 
     <style>
       body,
@@ -234,14 +234,14 @@
           style="padding-right: 5px"
         >
           <img
-            src="images/layout-sidebar-reverse.svg"
+            src="../images/layout-sidebar-reverse.svg"
             alt="Toggle SidePanel"
             style="width: 20px; height: 20px"
           />
         </div>
         <div id="configButton" class="div-pointer" title="Settings">
           <img
-            src="images/gear.svg"
+            src="../images/gear.svg"
             alt="Settings"
             style="width: 20px; height: 20px"
           />
@@ -384,7 +384,7 @@
             />
             <label class="form-check-label" for="outputFormatMarkdownRadio">
               <img
-                src="images/filetype-md.svg"
+                src="../images/filetype-md.svg"
                 alt="Markdown"
                 title="To instruct the LLM to output response in Markdown format"
               />
@@ -400,7 +400,7 @@
             />
             <label class="form-check-label" for="outputFormatTextRadio">
               <img
-                src="images/filetype-html.svg"
+                src="../images/filetype-html.svg"
                 alt="text"
                 title="To instruct the LLM to output response as Text"
               />
@@ -416,7 +416,7 @@
             />
             <label class="form-check-label" for="outputFormatTableRadio">
               <img
-                src="images/table.svg"
+                src="../images/table.svg"
                 alt="Table"
                 title="To instruct the LLM to output response as a table"
               />
@@ -432,7 +432,7 @@
             />
             <label class="form-check-label" for="outputFormatJsonRadio">
               <img
-                src="images/filetype-json.svg"
+                src="../images/filetype-json.svg"
                 alt="JSON"
                 title="To instruct the LLM to output response in JSON format"
               />
@@ -605,16 +605,15 @@
 
     <!-- Optional JavaScript -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="lib/jquery.min.js"></script>
-    <script src="lib/bootstrap.min.js"></script>
-    <script src="lib/showdown-2.1.0.min.js"></script>
+    <script src="../lib/jquery.min.js"></script>
+    <script src="../lib/bootstrap.min.js"></script>
+    <script src="../lib/showdown-2.1.0.min.js"></script>
     <script type="module" src="popup.js"></script>
-    <script type="module" src="scripts/ui.js"></script>
-    <script type="module" src="scripts/api.js"></script>
-    <script type="module" src="scripts/contentExtraction.js"></script>
-    <script type="module" src="scripts/markdown.js"></script>
-    <script type="module" src="scripts/prompts.js"></script>
-    <script type="module" src="scripts/utils.js"></script>
-    <script type="module" src="scripts/injector.js"></script>
+    <script type="module" src="ui.js"></script>
+    <script type="module" src="../scripts/api.js"></script>
+    <script type="module" src="../background/contentExtraction.js"></script>
+    <script type="module" src="../scripts/markdown.js"></script>
+    <script type="module" src="prompts.js"></script>
+    <script type="module" src="../scripts/utils.js"></script>
   </body>
 </html>

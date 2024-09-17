@@ -12,10 +12,10 @@
     "tabs"
   ],
   "action": {
-    "default_popup": "popup.html"
+    "default_popup": "ui/popup.html"
   },
   "background": {
-    "service_worker": "background.js",
+    "service_worker": "background/background.js",
     "type": "module"
   },
   "web_accessible_resources": [
@@ -32,6 +32,6 @@
     }
   ],
   "side_panel": {
-    "default_path": "sidepanel.html"
+    "default_path": "ui/sidepanel.html"
   }
 }

@@ -1,6 +1,6 @@
 // contentExtraction.js
-import {updateStatus} from './utils.js';
-import {createLogger} from './logger.js';
+import {updateStatus} from '../scripts/utils.js';
+import {createLogger} from '../scripts/logger.js';
 const logger = createLogger ();
 
 export function extractWebpageText (tabId, processFunction) {
