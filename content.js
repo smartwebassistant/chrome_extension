@@ -51,6 +51,18 @@ style.textContent = `
 `;
 document.head.appendChild (style);
 
+let lastRightClickedElement = null;
+let highlightedElement = null;
+
+// Add event listener for right-click
+document.addEventListener (
+  'contextmenu',
+  function (e) {
+    lastRightClickedElement = e.target;
+  },
+  true
+);
+
 chrome.runtime.onMessage.addListener (function (request, sender, sendResponse) {
   console.log ('Message received:', request);
   if (request.action === 'getText') {
@@ -79,7 +91,20 @@ chrome.runtime.onMessage.addListener (function (request, sender, sendResponse) {
     } else {
       sendResponse ({text: ''});
     }
+  } else if (request.action === 'getContextForAIRead') {
+    handleGetContextForAIRead (request.selectedText, sendResponse);
+  } else if (request.action === 'getContextForAIWrite') {
+    handleGetContextForAIWrite (sendResponse);
+  } else if (request.action === 'aiReadAction') {
+    handleAIReadAction (
+      request.prompt,
+      request.context,
+      request.isElementHighlighted
+    );
+  } else if (request.action === 'aiWriteAction') {
+    handleAIWriteAction (request.context);
   }
+  return true;
 });
 
 let currentObserver = null;
@@ -288,6 +313,31 @@ function hideAllDropdowns () {
   });
 }
 
+function handleGetContextForAIRead (selectedText, sendResponse) {
+  if (selectedText) {
+    // Use case 1: Selected text
+    sendResponse ({context: selectedText, isElementHighlighted: false});
+  } else if (lastRightClickedElement) {
+    // Use case 2: No selected text, use element's innerText
+    highlightElement (lastRightClickedElement);
+    sendResponse ({
+      context: lastRightClickedElement.innerText,
+      isElementHighlighted: true,
+    });
+  } else {
+    sendResponse ({context: '', isElementHighlighted: false});
+  }
+}
+
+function handleGetContextForAIWrite (sendResponse) {
+  if (isElementEditable (lastRightClickedElement)) {
+    // Use case 3: Writable element, use entire page text
+    sendResponse ({context: document.body.innerText});
+  } else {
+    sendResponse ({context: ''});
+  }
+}
+
 function handleAIAction (action, element) {
   console.log (`${action} action triggered`);
   chrome.runtime.sendMessage (
@@ -305,6 +355,126 @@ function handleAIAction (action, element) {
       // Handle the response here (e.g., display it to the user)
     }
   );
+}
+
+function handleAIReadAction (prompt, context, isElementHighlighted) {
+  const fullPrompt = `${prompt}\n\nText: "${context}"`;
+
+  chrome.runtime.sendMessage (
+    {
+      action: 'chatCompletion',
+      subAction: fullPrompt,
+      elementInfo: {
+        text: context,
+      },
+    },
+    response => {
+      console.log (`AI Read action response:`, response);
+      if (response && response.result) {
+        showResultModal (response.result);
+        if (isElementHighlighted) {
+          removeHighlight ();
+        }
+      }
+    }
+  );
+}
+
+function showResultModal (content) {
+  const modal = document.createElement ('div');
+  modal.style.cssText = `
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: white;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+    z-index: 10000;
+    max-width: 80%;
+    max-height: 80%;
+    overflow: auto;
+  `;
+  modal.innerHTML = `
+    <h3>AI Read Result</h3>
+    <div>${content}</div>
+    <button style="margin-top: 10px;">Close</button>
+  `;
+  document.body.appendChild (modal);
+
+  const closeButton = modal.querySelector ('button');
+  closeButton.addEventListener ('click', () => {
+    document.body.removeChild (modal);
+  });
+}
+
+function handleAIWriteAction (context) {
+  const prompt = `Based on the following context, suggest a reply or continuation:\n\n${context}`;
+
+  chrome.runtime.sendMessage (
+    {
+      action: 'chatCompletion',
+      subAction: prompt,
+      elementInfo: {
+        text: context,
+      },
+    },
+    response => {
+      console.log (`AI Write action response:`, response);
+      if (response && response.result) {
+        insertTextIntoEditableElement (response.result);
+      }
+    }
+  );
+}
+
+function highlightElement (element) {
+  if (highlightedElement) {
+    removeHighlight ();
+  }
+  highlightedElement = element;
+  element.style.outline = '2px solid red';
+  element.style.outlineOffset = '2px';
+}
+
+function removeHighlight () {
+  if (highlightedElement) {
+    highlightedElement.style.outline = '';
+    highlightedElement.style.outlineOffset = '';
+    highlightedElement = null;
+  }
+}
+
+function replaceSelectedText (newText) {
+  const activeElement = document.activeElement;
+  if (isElementEditable (activeElement)) {
+    const start = activeElement.selectionStart;
+    const end = activeElement.selectionEnd;
+    const text = activeElement.value || activeElement.textContent;
+    const before = text.substring (0, start);
+    const after = text.substring (end, text.length);
+    activeElement.value = activeElement.textContent = before + newText + after;
+    activeElement.selectionStart = activeElement.selectionEnd =
+      start + newText.length;
+  } else {
+    console.error ('Unable to replace text: No editable element focused');
+  }
+}
+
+function insertTextIntoEditableElement (text) {
+  if (lastRightClickedElement && isElementEditable (lastRightClickedElement)) {
+    if (lastRightClickedElement.isContentEditable) {
+      lastRightClickedElement.focus ();
+      document.execCommand ('insertText', false, text);
+    } else {
+      lastRightClickedElement.value += text;
+    }
+  } else {
+    alert (
+      "Unable to insert text. Please make sure you're in an editable area."
+    );
+  }
 }
 
 // Function to truncate text
