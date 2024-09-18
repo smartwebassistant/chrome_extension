@@ -1,4 +1,4 @@
-//ui.js
+//ui.js begins here
 
 import {testApiConnection} from '../scripts/api.js';
 import {isValidUrl} from '../scripts/utils.js';
@@ -562,3 +562,5 @@ export function initUI () {
     testApiConnection (apiUrl, apiToken);
   });
 }
+
+// ui.js ends here

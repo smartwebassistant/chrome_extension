@@ -1,3 +1,4 @@
+//sidepanel.js
 document.addEventListener ('DOMContentLoaded', () => {
   // const button = document.getElementById ('togglePopupButton');
   // button.addEventListener ('click', () => {

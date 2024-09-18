@@ -1,3 +1,5 @@
+// constants.js
+
 // String Constants
 export const DEFAULT_API_URL = 'https://api.openai.com/v1/chat/completions';
 export const DEFAULT_MODEL_NAME = 'gpt-4o';

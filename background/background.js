@@ -1,4 +1,5 @@
-// Enhanced logging function for background.js
+// background.js
+//
 
 import {
   createContextMenu,

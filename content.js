@@ -1,3 +1,5 @@
+//content.js begins here
+
 console.log ('Content script loading');
 
 // Update the style definition
@@ -490,3 +492,4 @@ function isElementEditable (element) {
 }
 
 console.log ('Content script loaded');
+//content.js ends here
