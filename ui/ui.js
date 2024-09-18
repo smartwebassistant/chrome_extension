@@ -2,8 +2,9 @@
 
 import {testApiConnection} from '../scripts/api.js';
 import {isValidUrl} from '../scripts/utils.js';
-import {handlePromptSubmission} from './prompts.js';
+import {handlePromptSubmission} from '../services/aiServices.js';
 import {updateStatus} from '../scripts/utils.js';
+import {extractWebpageText} from '../background/contentExtraction.js';
 import {
   DEFAULT_API_URL,
   DEFAULT_MODEL_NAME,
@@ -39,6 +40,7 @@ import {
   STORAGE_KEY_LAST_CUSTOM_PROMPT,
   STORAGE_KEY_SELECTED_LANGUAGE,
   STORAGE_STORED_PROMPT_PREFIX,
+  STORAGE_DISABLE_SYSTEM_ROLE,
   ID_API_URL_STORAGE_SPAN,
   ID_API_TOKEN_STORAGE_SPAN,
   ID_MODEL_NAME_STORAGE_SPAN,
@@ -47,6 +49,8 @@ import {
   ID_TOP_P_STORAGE_SPAN,
   ID_MAGIC_CLICK_CHECKBOX,
   ID_INCLUDE_WEB_CONTENT_CHECKBOX,
+  ID_DISABLE_SYSTEM_ROLE_CHECKBOX,
+  ID_DISABLE_SYSTEM_ROLE_SPAN,
 } from '../scripts/constants.js';
 import {createLogger} from '../scripts/logger.js';
 
@@ -122,14 +126,17 @@ export function initUI () {
   const storedPromptButtons = Array.from ({length: numberOfPrompts}, (_, i) =>
     document.getElementById (ID_STORED_PROMPT_BUTTON (i + 1))
   );
+  logger.debug ('Stored prompt buttons:', storedPromptButtons);
 
   const storedPromptInputs = Array.from ({length: numberOfPrompts}, (_, i) =>
     document.getElementById (ID_STORED_PROMPT_INPUT (i + 1))
   );
+  logger.debug ('Stored prompt inputs:', storedPromptInputs);
 
   const storedPromptStorages = Array.from ({length: numberOfPrompts}, (_, i) =>
     document.getElementById (ID_STORED_PROMPT_STORAGE (i + 1))
   );
+  logger.debug ('Stored prompt storages:', storedPromptStorages);
 
   // 4. customized prompt input
   const customPromptInput = document.getElementById (ID_CUSTOM_PROMPT_INPUT);
@@ -205,6 +212,25 @@ export function initUI () {
   }
 
   // 8. configuration settings
+  const disableSystemPromptCheckbox = document.getElementById (
+    ID_DISABLE_SYSTEM_ROLE_CHECKBOX
+  );
+  // store the disableSystemPromptCheckbox status in local storage when it is changed
+  disableSystemPromptCheckbox.addEventListener ('change', function () {
+    chrome.storage.local.set ({
+      [STORAGE_DISABLE_SYSTEM_ROLE]: this.checked,
+    });
+    const disableSystemRoleSpan = document.getElementById (
+      ID_DISABLE_SYSTEM_ROLE_SPAN
+    );
+    disableSystemRoleSpan.style.display = 'block';
+    // Hide the status message after 2 seconds
+    setTimeout (() => {
+      disableSystemRoleSpan.style.display = 'none';
+    }, 2000);
+    logger.debug ('disableSystemPromptCheckbox status saved to local storage.');
+  });
+
   const apiUrlInput = document.getElementById (ID_API_URL_INPUT);
   const apiTokenInput = document.getElementById (ID_API_TOKEN_INPUT);
   const modelNameInput = document.getElementById (ID_MODEL_NAME_INPUT);
@@ -242,52 +268,70 @@ export function initUI () {
       STORAGE_MAX_TOKEN,
       STORAGE_TEMPERATURE,
       STORAGE_TOP_P,
+      STORAGE_DISABLE_SYSTEM_ROLE,
       ...Array.from (
         {length: 5},
         (_, i) => `${STORAGE_STORED_PROMPT_PREFIX}${i + 1}`
       ),
     ],
     function (result) {
+      // load disableSystemPromptCheckbox status from local storage
+      logger.debug (
+        'disableSystemPromptCheckbox storage value:' +
+          result[STORAGE_DISABLE_SYSTEM_ROLE]
+      );
+      disableSystemPromptCheckbox.checked =
+        result[STORAGE_DISABLE_SYSTEM_ROLE] || false;
+
       // console.log('Value currently is ' + result.apiUrl);
-      apiUrlInput.value = result.apiUrl || DEFAULT_API_URL;
+      logger.debug ('apiUrl storage value:' + result[STORAGE_API_URL]);
+      apiUrlInput.value = result[STORAGE_API_URL] || DEFAULT_API_URL;
       document.getElementById (
         ID_API_URL_STORAGE_SPAN
-      ).textContent = `(Stored: ${result.apiUrl || 'None'})`;
+      ).textContent = `(Stored: ${result[STORAGE_API_URL] || 'None'})`;
 
       // masked token display, example ****123
-      let tokenDisplay = result.apiToken
-        ? maskApiKey (result.apiToken)
+      logger.debug ('apiToken storage value:' + result[STORAGE_API_TOKEN]);
+      let tokenDisplay = result[STORAGE_API_TOKEN]
+        ? maskApiKey (result[STORAGE_API_TOKEN])
         : 'None';
-      apiTokenInput.value = result.apiToken;
+      apiTokenInput.value = result[STORAGE_API_TOKEN];
       document.getElementById (
         ID_API_TOKEN_STORAGE_SPAN
       ).textContent = `(Masked Token: ${tokenDisplay})`;
 
-      modelNameInput.value = result.modelName || DEFAULT_MODEL_NAME;
+      // Set the model name, max tokens, temperature, and top P from local storage
+      logger.debug ('modelName storage value:' + result[STORAGE_MODEL_NAME]);
+      modelNameInput.value = result[STORAGE_MODEL_NAME] || DEFAULT_MODEL_NAME;
       document.getElementById (
         ID_MODEL_NAME_STORAGE_SPAN
-      ).textContent = `(Stored: ${result.modelName || 'None'})`;
+      ).textContent = `(Stored: ${result[STORAGE_MODEL_NAME] || 'None'})`;
 
-      maxTokenInput.value = result.maxToken || DEFAULT_MAX_TOKENS;
+      logger.debug ('maxToken storage value:' + result[STORAGE_MAX_TOKEN]);
+      maxTokenInput.value = result[STORAGE_MAX_TOKEN] || DEFAULT_MAX_TOKENS;
       document.getElementById (
         ID_MAX_TOKEN_STORAGE_SPAN
-      ).textContent = `(Stored: ${result.maxToken || 'None'})`;
+      ).textContent = `(Stored: ${result[STORAGE_MAX_TOKEN] || 'None'})`;
 
-      temperatureInput.value = result.temperature || DEFAULT_TEMPERATURE;
+      logger.debug ('temperature storage value:' + result[STORAGE_TEMPERATURE]);
+      temperatureInput.value =
+        result[STORAGE_TEMPERATURE] || DEFAULT_TEMPERATURE;
       document.getElementById (
         ID_TEMPERATURE_STORAGE_SPAN
-      ).textContent = `(Stored: ${result.temperature || 'None'})`;
+      ).textContent = `(Stored: ${result[STORAGE_TEMPERATURE] || 'None'})`;
 
-      topPInput.value = result.topP || DEFAULT_TOP_P;
+      logger.debug ('topP storage value:' + result[STORAGE_TOP_P]);
+      topPInput.value = result[STORAGE_TOP_P] || DEFAULT_TOP_P;
       document.getElementById (
         ID_TOP_P_STORAGE_SPAN
-      ).textContent = `(Stored: ${result.topP || 'None'})`;
+      ).textContent = `(Stored: ${result[STORAGE_TOP_P] || 'None'})`;
 
       // Load stored prompts from local storage in a loop
       storedPromptInputs.forEach ((input, index) => {
         // Safely get the stored prompt value with a fallback to an empty string if undefined
-        const promptKey = `storedPrompt${index + 1}`;
+        const promptKey = `${STORAGE_STORED_PROMPT_PREFIX}${index + 1}`;
         const promptValue = result[promptKey] || '';
+        logger.debug (`${promptKey} storage value: ${promptValue}`);
 
         // Set the input value
         input.value = promptValue;
@@ -349,12 +393,12 @@ export function initUI () {
     }
     chrome.storage.local.set (
       {
-        apiUrl: apiUrlInput.value,
-        apiToken: apiTokenInput.value,
-        modelName: modelNameInput.value,
-        maxToken: maxTokenInput.value,
-        temperature: temperatureInput.value,
-        topP: topPInput.value,
+        [STORAGE_API_URL]: apiUrlInput.value,
+        [STORAGE_API_TOKEN]: apiTokenInput.value,
+        [STORAGE_MODEL_NAME]: modelNameInput.value,
+        [STORAGE_MAX_TOKEN]: maxTokenInput.value,
+        [STORAGE_TEMPERATURE]: temperatureInput.value,
+        [STORAGE_TOP_P]: topPInput.value,
         storedPrompt1: storedPrompt1Input.value,
         storedPrompt2: storedPrompt2Input.value,
         storedPrompt3: storedPrompt3Input.value,
@@ -433,8 +477,17 @@ export function initUI () {
         return;
       }
       // Set the custom prompt input to the content of the selected stored prompt
+      const context = GetWebPageTextAsQueryContext ();
+      logger.debug (`To submit stored prompt ${index}: promptInput.value`);
+      logger.debug ('Selected language:' + selectedLanguage);
+      logger.debug ('Webpage context:' + context);
+
       customPromptInput.value = promptInput.value;
-      handlePromptSubmission (promptInput.value, selectedLanguage);
+      handlePromptSubmission (
+        promptInput.value,
+        selectedLanguage,
+        GetWebPageTextAsQueryContext ()
+      );
     });
   });
 
@@ -448,9 +501,31 @@ export function initUI () {
 
     localStorage.setItem (STORAGE_KEY_LAST_CUSTOM_PROMPT, customPrompt);
     logger.debug ('Custom prompt saved:' + customPrompt);
+    const context = GetWebPageTextAsQueryContext ();
 
-    handlePromptSubmission (customPrompt, selectedLanguage);
+    logger.debug ('To submit Custom prompt:' + customPrompt);
+    logger.debug ('Selected language:' + selectedLanguage);
+    logger.debug ('Webpage context:' + context);
+    handlePromptSubmission (customPrompt, selectedLanguage, context);
   });
+
+  function GetWebPageTextAsQueryContext () {
+    const includeWebContent = document.getElementById (
+      ID_INCLUDE_WEB_CONTENT_CHECKBOX
+    ).checked;
+    let context = '';
+    if (includeWebContent) {
+      // If including webpage content
+      chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
+        if (tabs[0] && tabs[0].id) {
+          extractWebpageText (tabs[0].id, text => {
+            context = text;
+          });
+        }
+      });
+    }
+    return context;
+  }
 
   testConnectionButton.addEventListener ('click', () => {
     const apiUrl = apiUrlInput.value;

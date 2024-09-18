@@ -1,5 +1,5 @@
 import {updateStatus} from './utils.js';
-import {initMarkdown, appendMarkdown, displayMarkdown} from './markdown.js';
+import {initMarkdown, appendMarkdown, displayMarkdown} from '../ui/markdown.js';
 import {ID_API_CONNECTION_TEST_STATUS} from './constants.js';
 import {createLogger} from './logger.js';
 

@@ -17,6 +17,7 @@ export const STORAGE_TOP_P = 'topP';
 export const STORAGE_KEY_LAST_CUSTOM_PROMPT = 'lastCustomPrompt';
 export const STORAGE_KEY_SELECTED_LANGUAGE = 'selectedLanguage';
 export const STORAGE_STORED_PROMPT_PREFIX = 'storedPrompt'; // Generic prefix for dynamic prompt storage
+export const STORAGE_DISABLE_SYSTEM_ROLE = 'disableSystemRole';
 
 // HTML ID Constants
 export const ID_CONFIG_BUTTON = 'configButton';
@@ -40,6 +41,7 @@ export const ID_INCLUDE_WEB_CONTENT_CHECKBOX = 'includeWebContentCheckbox';
 export const ID_MAGIC_CLICK_CHECKBOX = 'magicClickCheckbox';
 // disableSystemRoleCheckbox
 export const ID_DISABLE_SYSTEM_ROLE_CHECKBOX = 'disableSystemRoleCheckbox';
+export const ID_DISABLE_SYSTEM_ROLE_SPAN = 'disableSystemRoleSpan';
 export const ID_STATUS_FOOTER = 'statusFooter';
 
 export const ID_OUTPUT_FORMAT_TEXT_RADIO = 'outputFormatTextRadio';

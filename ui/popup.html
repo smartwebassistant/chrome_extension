@@ -371,6 +371,12 @@
             >Disable system role for compatibility</label
           >
         </div>
+        <span
+          id="disableSystemRoleSpan"
+          style="display: none"
+          class="storage-value"
+          >Saved to local storage</span
+        >
         <div style="display: none">
           <div class="border-top h6 pt-1 pb-1">Output Format</div>
           <div class="form-check form-check-inline">
@@ -612,8 +618,8 @@
     <script type="module" src="ui.js"></script>
     <script type="module" src="../scripts/api.js"></script>
     <script type="module" src="../background/contentExtraction.js"></script>
-    <script type="module" src="../scripts/markdown.js"></script>
-    <script type="module" src="prompts.js"></script>
+    <script type="module" src="markdown.js"></script>
+    <script type="module" src="../services/aiServices.js"></script>
     <script type="module" src="../scripts/utils.js"></script>
   </body>
 </html>
