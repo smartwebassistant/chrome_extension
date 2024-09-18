@@ -3,11 +3,6 @@
 // This file contains the functions that handle the submission of prompts
 import {fetchOpenAI} from '../scripts/api.js';
 import {
-  extractWebpageText,
-  extractElementText,
-} from '../background/contentExtraction.js';
-import {ID_INCLUDE_WEB_CONTENT_CHECKBOX} from '../scripts/constants.js';
-import {
   ID_OUTPUT_FORMAT_TEXT_RADIO,
   ID_OUTPUT_FORMAT_JSON_RADIO,
   ID_OUTPUT_FORMAT_MARKDOWN_RADIO,
@@ -150,30 +145,6 @@ export function handlePromptSubmission (prompt, language, context) {
     ID_DISABLE_SYSTEM_ROLE_CHECKBOX
   ).checked;
 
-  // if (includeWebContent) {
-  //   // If including webpage content
-  //   chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
-  //     if (tabs[0] && tabs[0].id) {
-  //       extractWebpageText (tabs[0].id, text => {
-  //         const userPrompt = `Please read the content of the following web page.
-  //   Based on the information on that page, answer the following question: ${prompt}. Below is the text extracted from the web page.
-  //   \n\n ${text} \n\n`;
-
-  //         // Replace the prompt in your fetchOpenAI call with the custom prompt
-  //         fetchOpenAI (
-  //           // if disableSystemRole is checked, use userPrompt only
-  //           disableSystemRole ? '' : systemPrompt,
-  //           disableSystemRole ? `${systemPrompt} ${userPrompt}` : userPrompt
-  //         ).catch (error => {
-  //           logger.error ('Failed to process custom prompt.' + error.message);
-  //           updateStatus ('Failed to process custom prompt.' + error.message);
-  //         });
-  //       });
-  //       updateStatus ('Calling API, wait for response');
-  //     }
-  //   });
-  // } else {
-  // If not including webpage content
   const magicClick = document.getElementById (ID_MAGIC_CLICK_CHECKBOX).checked;
   if (magicClick) {
     logger.debug ('magicClick is checked');
