@@ -144,7 +144,7 @@ export function handlePromptSubmission (prompt, language, context) {
   // print debug log in console
   logger.debug (`prompt: ${prompt}`);
   logger.debug (`language: ${language}`);
-  logger.debug (`context: ${context}`);
+  logger.debug (`context: ${context.length}`);
   // if ID_DISABLE_SYSTEM_ROLE_CHECKBOX
   const disableSystemRole = document.getElementById (
     ID_DISABLE_SYSTEM_ROLE_CHECKBOX
@@ -201,7 +201,7 @@ export function handlePromptSubmission (prompt, language, context) {
     if (context && context !== '') {
       const userPrompt = `Please read the content of the following web page.
         Based on the information on that page, answer the following question: ${prompt}. Below is the text extracted from the web page.
-        \n\n ${text} \n\n`;
+        \n\n ${context} \n\n`;
       fetchOpenAI (
         // if disableSystemRole is checked, use userPrompt only
         disableSystemRole ? '' : systemPrompt,

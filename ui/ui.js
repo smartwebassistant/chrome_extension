@@ -466,28 +466,53 @@ export function initUI () {
     );
   });
 
+  function handlePromptSubmissionWithContext (prompt, language) {
+    const includeWebContent = document.getElementById (
+      ID_INCLUDE_WEB_CONTENT_CHECKBOX
+    ).checked;
+
+    if (includeWebContent) {
+      logger.debug ('Including webpage context is enabled.');
+      GetWebPageTextAsQueryContext ()
+        .then (context => {
+          if (!context || context === '') {
+            logger.warn ("Didn't get webpage context which is unexpected.");
+            updateStatus (
+              'Unable to fetch webpage context. Continuing without it.'
+            );
+            context = null;
+          } else {
+            logger.debug ('Webpage context length: ' + context.length);
+          }
+          handlePromptSubmission (prompt, language, context);
+        })
+        .catch (error => {
+          logger.error ('Error getting webpage context:', error);
+          updateStatus (
+            'Error getting webpage context. Continuing without it.'
+          );
+          handlePromptSubmission (prompt, language, null);
+        });
+    } else {
+      handlePromptSubmission (prompt, language, null);
+    }
+  }
+
   storedPromptButtons.forEach ((button, index) => {
     button.addEventListener ('click', () => {
       const promptInput = storedPromptInputs[index];
       const selectedLanguage = languageSelect.value;
       if (!promptInput.value.trim ()) {
+        logger.warn ('No stored prompt is found.');
         updateStatus (
           `No stored prompt is found. Please save your prompt to stored prompt ${index + 1} in Settings.`
         );
         return;
       }
-      // Set the custom prompt input to the content of the selected stored prompt
-      const context = GetWebPageTextAsQueryContext ();
-      logger.debug (`To submit stored prompt ${index}: promptInput.value`);
-      logger.debug ('Selected language:' + selectedLanguage);
-      logger.debug ('Webpage context:' + context);
-
       customPromptInput.value = promptInput.value;
-      handlePromptSubmission (
-        promptInput.value,
-        selectedLanguage,
-        GetWebPageTextAsQueryContext ()
-      );
+      logger.debug (`To submit stored prompt ${index}: ${promptInput.value}`);
+      logger.debug ('Selected language: ' + selectedLanguage);
+      handlePromptSubmissionWithContext (promptInput.value, selectedLanguage);
     });
   });
 
@@ -495,36 +520,36 @@ export function initUI () {
     const customPrompt = customPromptInput.value;
     const selectedLanguage = languageSelect.value;
     if (!customPrompt) {
+      logger.warn ('No custom prompt is found.');
       updateStatus ('Please enter a custom prompt.');
       return;
     }
 
     localStorage.setItem (STORAGE_KEY_LAST_CUSTOM_PROMPT, customPrompt);
-    logger.debug ('Custom prompt saved:' + customPrompt);
-    const context = GetWebPageTextAsQueryContext ();
-
-    logger.debug ('To submit Custom prompt:' + customPrompt);
-    logger.debug ('Selected language:' + selectedLanguage);
-    logger.debug ('Webpage context:' + context);
-    handlePromptSubmission (customPrompt, selectedLanguage, context);
+    logger.debug ('Custom prompt saved: ' + customPrompt);
+    logger.debug ('To submit Custom prompt: ' + customPrompt);
+    logger.debug ('Selected language: ' + selectedLanguage);
+    handlePromptSubmissionWithContext (customPrompt, selectedLanguage);
   });
 
   function GetWebPageTextAsQueryContext () {
-    const includeWebContent = document.getElementById (
-      ID_INCLUDE_WEB_CONTENT_CHECKBOX
-    ).checked;
-    let context = '';
-    if (includeWebContent) {
-      // If including webpage content
+    return new Promise ((resolve, reject) => {
       chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
         if (tabs[0] && tabs[0].id) {
+          const timeoutId = setTimeout (() => {
+            reject (new Error ('Timeout while extracting webpage text'));
+          }, 5000); // 5 second timeout
+
           extractWebpageText (tabs[0].id, text => {
-            context = text;
+            clearTimeout (timeoutId);
+            logger.debug ('Webpage text extracted:' + text.length);
+            resolve (text);
           });
+        } else {
+          reject (new Error ('No active tab found'));
         }
       });
-    }
-    return context;
+    });
   }
 
   testConnectionButton.addEventListener ('click', () => {

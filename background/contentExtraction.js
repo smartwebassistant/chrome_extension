@@ -4,6 +4,7 @@ import {createLogger} from '../scripts/logger.js';
 const logger = createLogger ();
 
 export function extractWebpageText (tabId, processFunction) {
+  logger.debug ('Extracting text from the webpage...');
   updateStatus ('Extracting text from the webpage...');
   chrome.tabs.sendMessage (tabId, {action: 'getText'}, function (response) {
     if (chrome.runtime.lastError || !response) {
@@ -16,6 +17,7 @@ export function extractWebpageText (tabId, processFunction) {
 }
 
 export function extractElementText (tabId, processFunction) {
+  logger.debug ('Extracting text from the selected element...');
   updateStatus ('Extracting text from the selected element...');
   chrome.tabs.sendMessage (tabId, {action: 'getSelectedElementText'}, function (
     response
