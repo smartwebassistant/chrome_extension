@@ -131,11 +131,6 @@ function setupTextChangeListener (element) {
 function handleClick (event) {
   let element = event.target;
 
-  // Traverse up the DOM tree to find a parent element with an ID, stopping at the <body> tag
-  // while (element && element.tagName !== 'BODY' && !element.id) {
-  //   element = element.parentNode;
-  // }
-
   // Remove existing floating buttons
   const existingButtons = document.querySelector ('.floating-buttons');
   if (existingButtons) existingButtons.remove ();
@@ -154,7 +149,7 @@ function handleClick (event) {
 
     // In the handleClick function, update the AI Call button and dropdown creation
     const aiCallButton = document.createElement ('button');
-    aiCallButton.className = 'floating-button chatCompletion';
+    aiCallButton.className = 'floating-button chatCompletionRequest';
     aiCallButton.innerHTML = '💭';
     aiCallButton.title = 'Chat Completion';
 
@@ -162,7 +157,7 @@ function handleClick (event) {
     dropdownMenu.className = 'dropdown-menu';
 
     // Request stored prompts from background script
-    chrome.runtime.sendMessage ({action: 'getStoredPrompts'}, function (
+    chrome.runtime.sendMessage ({action: 'getStoredPromptsRequest'}, function (
       response
     ) {
       if (response && response.prompts) {
@@ -325,7 +320,7 @@ function handleAIAction (action, element) {
   console.log (`${action} action triggered`);
   chrome.runtime.sendMessage (
     {
-      action: 'chatCompletion',
+      action: 'chatCompletionRequest',
       subAction: action,
       elementInfo: {
         id: element.id,
@@ -345,7 +340,7 @@ function handleAIReadAction (prompt, context, isElementHighlighted) {
 
   chrome.runtime.sendMessage (
     {
-      action: 'chatCompletion',
+      action: 'chatCompletionRequest',
       subAction: fullPrompt,
       elementInfo: {
         text: context,
@@ -394,7 +389,7 @@ function handleAIWriteAction (context) {
 
   chrome.runtime.sendMessage (
     {
-      action: 'chatCompletion',
+      action: 'chatCompletionRequest',
       subAction: prompt,
       elementInfo: {
         text: context,

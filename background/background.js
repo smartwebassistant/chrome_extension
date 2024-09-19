@@ -53,88 +53,105 @@ function createContextMenuForCurrentTab () {
 // Add listener for context menu clicks
 chrome.contextMenus.onClicked.addListener (handleContextMenuClick);
 
-// Add listener for storage changes to update the menu
+const PROMPT_KEYS = [
+  'storedPrompt1',
+  'storedPrompt2',
+  'storedPrompt3',
+  'storedPrompt4',
+  'storedPrompt5',
+];
+const ALL_PROMPT_KEYS = [...PROMPT_KEYS, 'lastCustomPrompt'];
+// Listener for storage changes to update the menu
 chrome.storage.onChanged.addListener ((changes, namespace) => {
   if (namespace === 'local') {
-    const relevantKeys = [
-      'storedPrompt1',
-      'storedPrompt2',
-      'storedPrompt3',
-      'storedPrompt4',
-      'storedPrompt5',
-      'lastCustomPrompt',
-    ];
-    const shouldUpdateMenu = relevantKeys.some (key => changes[key]);
+    const shouldUpdateMenu = ALL_PROMPT_KEYS.some (key => changes[key]);
     if (shouldUpdateMenu) {
       updateAIReadSubmenus ();
     }
   }
 });
 
-// Listen for messages from the content script
-chrome.runtime.onMessage.addListener ((request, sender, sendResponse) => {
-  if (request.action === 'chatCompletion') {
-    logger.debug ('Chat completion request received from content.js', request);
-    chrome.runtime.sendMessage ({
-      action: 'handleChatCompletion',
+const ACTIONS = {
+  CHAT_COMPLETION: 'chatCompletionRequest',
+  OVERWRITE_TEXT_REQUEST: 'overwriteTextRequest',
+  GET_STORED_PROMPTS: 'getStoredPromptsRequest',
+  AI_READ_ACTION: 'aiReadAction',
+  AI_WRITE_ACTION: 'aiWriteAction',
+  PERFORM_CHAT_COMPLETION: 'performChatCompletion',
+  PERFORM_OVERWRITE_TEXT: 'performOverwriteText',
+};
+
+// Handler for chat completion requests
+const handleChatCompletionRequest = (request, sender, sendResponse) => {
+  logger.debug ('Chat completion request received:', request);
+  chrome.runtime.sendMessage ({
+    action: ACTIONS.PERFORM_CHAT_COMPLETION,
+    data: request,
+  });
+  logger.debug ('Chat completion request forwarded to extension');
+  return true;
+};
+
+// Handler for overwrite text requests
+const handleOverwriteTextRequest = (request, sender, sendResponse) => {
+  logger.debug ('Overwrite text request received:', request);
+  chrome.runtime.sendMessage (
+    {
+      action: ACTIONS.PERFORM_OVERWRITE_TEXT,
       data: request,
-    });
-    logger.debug ('Chat completion request was sent to extension');
-    return true;
-  } else if (request.action === 'overwriteTextRequest') {
-    logger.debug ('Overwrite text request received from content.js', request);
-    chrome.runtime.sendMessage (
-      {
-        action: 'handleOverwriteTextRequest',
-        data: request,
-      },
-      response => {
-        logger.debug ('Overwrite response received from extension:', response);
-        sendResponse (response);
-        logger.debug ('Overwrite text response was sent to content.js');
-      }
+    },
+    response => {
+      logger.debug ('Overwrite response received:', response);
+      sendResponse (response);
+    }
+  );
+  return true; // Indicates that the response is sent asynchronously
+};
+
+// Handler for fetching stored prompts
+const handleGetStoredPromptsRequest = (request, sender, sendResponse) => {
+  chrome.storage.local.get (PROMPT_KEYS, result => {
+    if (chrome.runtime.lastError) {
+      logger.error ('Error fetching stored prompts:', chrome.runtime.lastError);
+      sendResponse ({prompts: []});
+      return;
+    }
+
+    const storedPrompts = PROMPT_KEYS.map (key => result[key]).filter (
+      prompt => prompt && prompt.trim () !== ''
     );
-    logger.debug ('Overwrite text response was sent to extension');
-    return true;
-  } else if (request.action === 'getStoredPrompts') {
-    const keys = [
-      'storedPrompt1',
-      'storedPrompt2',
-      'storedPrompt3',
-      'storedPrompt4',
-      'storedPrompt5',
-    ];
 
-    chrome.storage.local.get (keys, function (result) {
-      if (chrome.runtime.lastError) {
-        logger.error (
-          'Error fetching stored prompts:',
-          chrome.runtime.lastError
-        );
-        sendResponse ({prompts: []});
-        return;
-      }
+    logger.debug ('Stored prompts:', storedPrompts);
+    sendResponse ({prompts: storedPrompts});
+  });
+  return true;
+};
 
-      const storedPrompts = keys
-        .map (key => result[key])
-        .filter (prompt => prompt && prompt.trim () !== '');
+// Handler for AI actions (read/write)
+const handleAIAction = (request, sender, sendResponse) => {
+  chrome.tabs.sendMessage (sender.tab.id, {
+    action: request.action,
+    prompt: request.prompt,
+    selectedText: request.selectedText,
+  });
+  return true;
+};
 
-      logger.debug ('Stored prompts:', storedPrompts);
-      sendResponse ({prompts: storedPrompts});
-    });
+// Message handlers mapping
+const actionHandlers = {
+  [ACTIONS.CHAT_COMPLETION]: handleChatCompletionRequest,
+  [ACTIONS.OVERWRITE_TEXT_REQUEST]: handleOverwriteTextRequest,
+  [ACTIONS.GET_STORED_PROMPTS]: handleGetStoredPromptsRequest,
+  [ACTIONS.AI_READ_ACTION]: handleAIAction,
+  [ACTIONS.AI_WRITE_ACTION]: handleAIAction,
+};
 
+// Listener for messages from the content script
+chrome.runtime.onMessage.addListener ((request, sender, sendResponse) => {
+  const handler = actionHandlers[request.action];
+  if (handler) {
+    handler (request, sender, sendResponse);
     return true; // Indicates that the response is sent asynchronously
-  } else if (
-    request.action === 'aiReadAction' ||
-    request.action === 'aiWriteAction'
-  ) {
-    // Update listener for AI actions
-    chrome.tabs.sendMessage (sender.tab.id, {
-      action: request.action,
-      prompt: request.prompt,
-      selectedText: request.selectedText,
-    });
-    return true;
   }
 });
 

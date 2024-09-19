@@ -18,17 +18,17 @@ import {updateStatus} from '../scripts/utils.js';
 const logger = createLogger ();
 
 chrome.runtime.onMessage.addListener ((request, sender, sendResponse) => {
-  if (request.action === 'handleChatCompletion') {
+  if (request.action === 'performChatCompletion') {
     logger.debug ('Chat completion request received');
-    handleChatCompletion (request.data, sender, sendResponse);
-  } else if (request.action === 'handleOverwriteTextRequest') {
+    performChatCompletion (request.data, sender, sendResponse);
+  } else if (request.action === 'performOverwriteText') {
     logger.debug ('Overwrite text request received');
-    handleOverwriteTextRequest (request.data, sender, sendResponse);
+    performOverwriteText (request.data, sender, sendResponse);
   }
   return true;
 });
 
-function handleChatCompletion (request, sender, sendResponse) {
+function performChatCompletion (request, sender, sendResponse) {
   // get prompt from customized prompt
   logger.debug ('Chat completion request received' + request);
   prompt = request.subAction;
@@ -44,7 +44,7 @@ function handleChatCompletion (request, sender, sendResponse) {
     });
 }
 
-function handleOverwriteTextRequest (request, sender, sendResponse) {
+function performOverwriteText (request, sender, sendResponse) {
   // Request markdown content from the popup
   logger.debug ('Overwrite text request received');
   const markdownContent = document.getElementById (ID_MARKDOWN_CONTENT)
