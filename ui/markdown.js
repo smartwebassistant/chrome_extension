@@ -125,7 +125,7 @@ function addCopyButtons () {
     button.className = 'div-pointer';
     button.title = 'Copy to clipboard';
     const img = document.createElement ('img');
-    img.src = 'images/copy.svg'; // Initial copy icon
+    img.src = '../images/copy.svg'; // Initial copy icon
     img.alt = 'Copy';
     img.style.width = '12px';
     img.style.height = '12px';
@@ -150,7 +150,12 @@ function copyCodeToClipboard (button, block, img) {
   selection.addRange (range);
   try {
     const successful = document.execCommand ('copy');
-    img.src = successful ? 'images/clipboard-check.svg' : 'images/copy.svg'; // Change icon based on success
+    img.src = successful ? '../images/check2-square.svg' : '../images/copy.svg'; // Change icon based on success
+
+    // Reset the icon after 10 seconds
+    setTimeout (() => {
+      img.src = '../images/copy.svg';
+    }, 10000);
   } catch (err) {
     console.error ('Failed to copy text', err);
   }
