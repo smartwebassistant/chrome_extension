@@ -84,10 +84,15 @@ const ACTIONS = {
 // Handler for chat completion requests
 const handleChatCompletionRequest = (request, sender, sendResponse) => {
   logger.debug ('Chat completion request received:', request);
-  chrome.runtime.sendMessage ({
-    action: ACTIONS.PERFORM_CHAT_COMPLETION,
-    data: request,
-  });
+  chrome.runtime
+    .sendMessage ({
+      action: ACTIONS.PERFORM_CHAT_COMPLETION,
+      data: request,
+    })
+    .then (result => {
+      logger.debug ('Chat completion response received:', response);
+      sendResponse ({result: result});
+    });
   logger.debug ('Chat completion request forwarded to extension');
   return true;
 };
@@ -124,7 +129,6 @@ const handleGetStoredPromptsRequest = (request, sender, sendResponse) => {
     logger.debug ('Stored prompts:', storedPrompts);
     sendResponse ({prompts: storedPrompts});
   });
-  return true;
 };
 
 // Handler for AI actions (read/write)

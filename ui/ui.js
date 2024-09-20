@@ -491,7 +491,6 @@ export function initUI () {
           updateStatus (
             'Error getting webpage context. Continuing without it.'
           );
-          handlePromptSubmission (prompt, language, null);
         });
     } else {
       handlePromptSubmission (prompt, language, null);

@@ -42,6 +42,7 @@ function performChatCompletion (request, sender, sendResponse) {
     .catch (error => {
       logger.error ('Error in chat completion: ' + error.message);
     });
+  return true;
 }
 
 function performOverwriteText (request, sender, sendResponse) {
@@ -139,7 +140,10 @@ export function handlePromptSubmission (prompt, language, context) {
   // print debug log in console
   logger.debug (`prompt: ${prompt}`);
   logger.debug (`language: ${language}`);
-  logger.debug (`context: ${context.length}`);
+  if (context) {
+    // print first 100 characters of context in debug log
+    logger.debug (`context: ${context.substring (0, 100)}`);
+  }
   // if ID_DISABLE_SYSTEM_ROLE_CHECKBOX
   const disableSystemRole = document.getElementById (
     ID_DISABLE_SYSTEM_ROLE_CHECKBOX

@@ -330,6 +330,7 @@ function handleAIAction (action, element) {
     },
     response => {
       console.log (`${action} response:`, response);
+      showResultModal (response.result);
       // Handle the response here (e.g., display it to the user)
     }
   );
