@@ -20,7 +20,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["contextMenu.js"],
+      "resources": ["contextMenu.js", "ui/config-menus/*"],
       "matches": ["<all_urls>"]
     }
   ],

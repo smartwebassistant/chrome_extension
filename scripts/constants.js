@@ -35,7 +35,7 @@ export const ID_MAX_TOKEN_INPUT = 'maxTokenInput';
 export const ID_TEMPERATURE_INPUT = 'temperatureInput';
 export const ID_TOP_P_INPUT = 'topPInput';
 export const ID_SUBMIT_CUSTOM_PROMPT_BUTTON = 'submitCustomPromptButton';
-export const ID_SAVE_API_URL_BUTTON = 'saveApiUrlButton';
+export const ID_SAVE_API_CONFIG_BUTTON = 'saveApiConfigButton';
 export const ID_TEST_CONNECTION_BUTTON = 'testConnectionButton';
 export const ID_API_CONNECTION_TEST_STATUS = 'apiConnectionTestStatusDiv';
 export const ID_INCLUDE_WEB_CONTENT_CHECKBOX = 'includeWebContentCheckbox';
@@ -58,6 +58,9 @@ export const ID_MODEL_NAME_STORAGE_SPAN = 'modelNameStorage';
 export const ID_MAX_TOKEN_STORAGE_SPAN = 'maxTokenStorage';
 export const ID_TEMPERATURE_STORAGE_SPAN = 'temperatureStorage';
 export const ID_TOP_P_STORAGE_SPAN = 'topPStorage';
+export const ID_SAVE_PROMPTS_CONFIG_BUTTON = 'savePromptsConfigButton';
+
+export const ID_CONFIG_DROPDOWN = 'configDropdown';
 
 export const ID_STORED_PROMPT_INPUT = index => `storedPrompt${index}Input`;
 export const ID_STORED_PROMPT_BUTTON = index => `storedPrompt${index}Button`;

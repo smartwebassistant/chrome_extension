@@ -218,6 +218,30 @@
         white-space: pre-wrap;
         font-family: monospace;
       }
+      .dropdown-menu {
+        position: absolute;
+        top: 100%;
+        background-color: #ffffff;
+        border: 1px solid #198754;
+        border-radius: 4px;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+        display: none;
+        z-index: 10001;
+        margin-top: 5px;
+      }
+      .dropdown-menu.show {
+        display: block;
+      }
+      .dropdown-item {
+        padding: 5px 10px;
+        cursor: pointer;
+        white-space: nowrap;
+        color: #333;
+        font-size: small;
+      }
+      .dropdown-item:hover {
+        background-color: #f0f0f0;
+      }
     </style>
   </head>
 
@@ -240,12 +264,15 @@
             style="width: 20px; height: 20px"
           />
         </div>
-        <div id="configButton" class="div-pointer" title="Settings">
-          <img
-            src="../images/gear.svg"
-            alt="Settings"
-            style="width: 20px; height: 20px"
-          />
+        <div class="dropdown" id="configDropdown">
+          <div id="configButton" class="div-pointer" title="Settings">
+            <img
+              src="../images/gear.svg"
+              alt="Settings"
+              style="width: 20px; height: 20px"
+            />
+          </div>
+          <!-- Dropdown menu will be dynamically inserted here -->
         </div>
       </nav>
 
@@ -358,226 +385,7 @@
         >
       </div>
 
-      <div id="configPopupDiv">
-        <div class="form-check form-switch">
-          <input
-            class="form-check-input"
-            type="checkbox"
-            id="disableSystemRoleCheckbox"
-          />
-          <label
-            class="form-check-label"
-            for="disableSystemRoleCheckbox"
-            title="Some models like Mixtral or Gemma does not support system role, so you can disable it to make it compatible with those models."
-            >Disable system role for compatibility</label
-          >
-        </div>
-        <span
-          id="disableSystemRoleSpan"
-          style="display: none"
-          class="storage-value"
-          >Saved to local storage</span
-        >
-        <div style="display: none">
-          <div class="border-top h6 pt-1 pb-1">Output Format</div>
-          <div class="form-check form-check-inline">
-            <input
-              class="form-check-input"
-              type="radio"
-              name="outputFormat"
-              id="outputFormatMarkdownRadio"
-              value="markdown"
-              checked
-            />
-            <label class="form-check-label" for="outputFormatMarkdownRadio">
-              <img
-                src="../images/filetype-md.svg"
-                alt="Markdown"
-                title="To instruct the LLM to output response in Markdown format"
-              />
-            </label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input
-              class="form-check-input"
-              type="radio"
-              name="outputFormat"
-              id="outputFormatTextRadio"
-              value="text"
-            />
-            <label class="form-check-label" for="outputFormatTextRadio">
-              <img
-                src="../images/filetype-html.svg"
-                alt="text"
-                title="To instruct the LLM to output response as Text"
-              />
-            </label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input
-              class="form-check-input"
-              type="radio"
-              name="outputFormat"
-              id="outputFormatTableRadio"
-              value="table"
-            />
-            <label class="form-check-label" for="outputFormatTableRadio">
-              <img
-                src="../images/table.svg"
-                alt="Table"
-                title="To instruct the LLM to output response as a table"
-              />
-            </label>
-          </div>
-          <div class="form-check form-check-inline">
-            <input
-              class="form-check-input"
-              type="radio"
-              name="outputFormat"
-              id="outputFormatJsonRadio"
-              value="json"
-            />
-            <label class="form-check-label" for="outputFormatJsonRadio">
-              <img
-                src="../images/filetype-json.svg"
-                alt="JSON"
-                title="To instruct the LLM to output response in JSON format"
-              />
-            </label>
-          </div>
-        </div>
-
-        <div>
-          <div class="mb-1 border-top h6 pt-1 pb-1" style="display: none">
-            Settings
-          </div>
-          <label class="form-label margin-bottom-1px">* API URL</label>
-          <div class="d-flex">
-            <input
-              type="text"
-              class="form-control flex-grow-1"
-              id="apiUrlInput"
-              placeholder="Enter OpenAI API URL"
-            />
-            <button
-              class="btn btn-success ms-2 btn-sm"
-              id="testConnectionButton"
-            >
-              Test
-            </button>
-          </div>
-          <span id="apiUrlStorage" class="storage-value"></span>
-          <div
-            id="apiConnectionTestStatusDiv"
-            class="alert alert-light"
-            role="alert"
-          >
-            &nbsp;
-          </div>
-        </div>
-        <div class="mb-1">
-          <label class="form-label margin-bottom-1px">API Token</label>
-          <input type="password" class="form-control" id="apiTokenInput" />
-          <span id="apiTokenStorage" class="storage-value"></span>
-        </div>
-        <div class="mb-1">
-          <label class="form-label margin-bottom-1px">Model Name</label>
-          <input
-            type="text"
-            class="form-control"
-            id="modelNameInput"
-            placeholder="Model Name"
-          />
-          <span id="modelNameStorage" class="storage-value"></span>
-        </div>
-        <div class="mb-1">
-          <label class="form-label margin-bottom-1px">* Max Tokens</label>
-          <input
-            type="text"
-            class="form-control"
-            id="maxTokenInput"
-            placeholder="4096"
-          />
-          <span id="maxTokenStorage" class="storage-value"></span>
-        </div>
-        <div class="mb-1">
-          <label class="form-label margin-bottom-1px">* Temperature</label>
-          <input
-            type="text"
-            class="form-control"
-            id="temperatureInput"
-            placeholder="0.7"
-          />
-          <span id="temperatureStorage" class="storage-value"></span>
-        </div>
-        <div class="mb-1">
-          <label class="form-label margin-bottom-1px">* Top P</label>
-          <input
-            type="text"
-            class="form-control"
-            id="topPInput"
-            placeholder="0.9"
-          />
-          <span id="topPStorage" class="storage-value"></span>
-        </div>
-
-        <div class="mb-1">
-          <label class="form-label margin-bottom-1px">Stored Prompt 1</label>
-          <input
-            type="text"
-            class="form-control"
-            id="storedPrompt1Input"
-            placeholder="Translate it."
-          />
-          <span id="storedPrompt1Storage" class="storage-value"></span>
-        </div>
-
-        <div class="mb-1">
-          <label class="form-label margin-bottom-1px">Stored Prompt 2</label>
-          <input
-            type="text"
-            class="form-control"
-            id="storedPrompt2Input"
-            placeholder="Summarize it."
-          />
-          <span id="storedPrompt2Storage" class="storage-value"></span>
-        </div>
-
-        <div class="mb-1">
-          <label class="form-label margin-bottom-1px">Stored Prompt 3</label>
-          <input
-            type="text"
-            class="form-control"
-            id="storedPrompt3Input"
-            placeholder="Explain it."
-          />
-          <span id="storedPrompt3Storage" class="storage-value"></span>
-        </div>
-
-        <div class="mb-1">
-          <label class="form-label margin-bottom-1px">Stored Prompt 4</label>
-          <input
-            type="text"
-            class="form-control"
-            id="storedPrompt4Input"
-            placeholder="Tell me more."
-          />
-          <span id="storedPrompt4Storage" class="storage-value"></span>
-        </div>
-        <div class="mb-1">
-          <label class="form-label margin-bottom-1px">Stored Prompt 5</label>
-          <input
-            type="text"
-            class="form-control"
-            id="storedPrompt5Input"
-            placeholder="What is it?"
-          />
-          <span id="storedPrompt5Storage" class="storage-value"></span>
-        </div>
-        <button class="btn btn-success btn-sm" id="saveApiUrlButton">
-          Save
-        </button>
-      </div>
+      <div id="configPopupDiv"></div>
 
       <div
         id="markdownContentTextArea"
@@ -617,10 +425,16 @@
     <script src="../lib/showdown-2.1.0.min.js"></script>
     <script type="module" src="popup.js"></script>
     <script type="module" src="ui.js"></script>
-    <script type="module" src="../scripts/api.js"></script>
-    <script type="module" src="../background/contentExtraction.js"></script>
     <script type="module" src="markdown.js"></script>
+    <script type="module" src="sidepanel.js"></script>
+    <script type="module" src="./config-menus/api-config.js"></script>
+    <script type="module" src="./config-menus/prompts-config.js"></script>
     <script type="module" src="../services/aiServices.js"></script>
+    <script type="module" src="../scripts/api.js"></script>
+    <script type="module" src="../scripts/constants.js"></script>
+    <script type="module" src="../scripts/logger.js"></script>
     <script type="module" src="../scripts/utils.js"></script>
+    <script type="module" src="../background/contentExtraction.js"></script>
+    <script type="module" src="../background/contextMenu.js"></script>
   </body>
 </html>

@@ -1,22 +1,9 @@
 //ui.js begins here
 
-import {testApiConnection} from '../scripts/api.js';
-import {isValidUrl} from '../scripts/utils.js';
 import {handlePromptSubmission} from '../services/aiServices.js';
 import {updateStatus} from '../scripts/utils.js';
 import {extractWebpageText} from '../background/contentExtraction.js';
 import {
-  DEFAULT_API_URL,
-  DEFAULT_MODEL_NAME,
-  DEFAULT_MAX_TOKENS,
-  DEFAULT_TEMPERATURE,
-  DEFAULT_TOP_P,
-  STORAGE_API_URL,
-  STORAGE_API_TOKEN,
-  STORAGE_MODEL_NAME,
-  STORAGE_MAX_TOKEN,
-  STORAGE_TEMPERATURE,
-  STORAGE_TOP_P,
   DEFAULT_LANGUAGE,
   ID_CONFIG_BUTTON,
   ID_CONFIG_POPUP,
@@ -31,57 +18,146 @@ import {
   ID_TEMPERATURE_INPUT,
   ID_TOP_P_INPUT,
   ID_SUBMIT_CUSTOM_PROMPT_BUTTON,
-  ID_SAVE_API_URL_BUTTON,
-  ID_TEST_CONNECTION_BUTTON,
-  ID_STORED_PROMPT_INPUT,
+  ID_CONFIG_DROPDOWN,
   ID_STORED_PROMPT_BUTTON,
-  ID_STORED_PROMPT_STORAGE,
   SIDE_PANEL_HTML,
   STORAGE_KEY_LAST_CUSTOM_PROMPT,
   STORAGE_KEY_SELECTED_LANGUAGE,
-  STORAGE_STORED_PROMPT_PREFIX,
-  STORAGE_DISABLE_SYSTEM_ROLE,
-  ID_API_URL_STORAGE_SPAN,
-  ID_API_TOKEN_STORAGE_SPAN,
-  ID_MODEL_NAME_STORAGE_SPAN,
-  ID_MAX_TOKEN_STORAGE_SPAN,
-  ID_TEMPERATURE_STORAGE_SPAN,
-  ID_TOP_P_STORAGE_SPAN,
   ID_MAGIC_CLICK_CHECKBOX,
   ID_INCLUDE_WEB_CONTENT_CHECKBOX,
-  ID_DISABLE_SYSTEM_ROLE_CHECKBOX,
-  ID_DISABLE_SYSTEM_ROLE_SPAN,
+  ID_STORED_PROMPT_INPUT,
 } from '../scripts/constants.js';
 import {createLogger} from '../scripts/logger.js';
 
 const logger = createLogger ();
 
-export function initUI () {
-  //1. Button to show or hide the configuration popup
+async function initConfigDropdown () {
+  logger.debug ('Initializing configuration dropdown menu');
+  const configDropdown = document.getElementById (ID_CONFIG_DROPDOWN);
   const configButton = document.getElementById (ID_CONFIG_BUTTON);
-  const configPopup = document.getElementById (ID_CONFIG_POPUP);
-  // Show or hide the configuration popup, when config pop is shown, markdown content is hidden
+  const markdownContent = document.getElementById (ID_MARKDOWN_CONTENT);
 
-  function showConfigPopup () {
-    // Show the config popup and hide the markdown content
-    logger.debug ('show config popup');
-    configPopup.style.display = 'block';
-    markdownContent.style.display = 'none';
-  }
+  // Create dropdown menu
+  const dropdownMenu = document.createElement ('ul');
+  dropdownMenu.className = 'dropdown-menu';
 
-  function hideConfigPopup () {
-    // Hide the config popup and show the markdown content
-    logger.debug ('hide config popup');
-    configPopup.style.display = 'none';
-    markdownContent.style.display = 'block';
+  // load dropdown items from config-menu.json
+  const dropdownItems = await loadDropdownItems ();
+
+  // Create and append dropdown items
+  for (const item of dropdownItems) {
+    logger.debug ('Processing loaded dropdown item:', item);
+    const li = document.createElement ('li');
+    const a = document.createElement ('a');
+    a.className = 'dropdown-item';
+    a.href = '#';
+    a.id = item.id;
+    a.textContent = item.text;
+    a.addEventListener ('click', e => {
+      e.preventDefault ();
+      loadConfigPage (item);
+      hideMarkdownContent ();
+      dropdownMenu.style.display = 'none';
+    });
+    li.appendChild (a);
+    dropdownMenu.appendChild (li);
   }
-  configButton.addEventListener ('click', () => {
-    if (configPopup.style.display === 'block') {
+  logger.debug ('Dropdown items loaded:', dropdownMenu.innerHTML);
+
+  // Append dropdown menu to the dropdown container
+  configDropdown.appendChild (dropdownMenu);
+
+  // Toggle dropdown on configButton click
+  configButton.addEventListener ('click', e => {
+    e.stopPropagation ();
+    const isDisplayed = dropdownMenu.style.display === 'block';
+    dropdownMenu.style.display = isDisplayed ? 'none' : 'block';
+
+    if (markdownContent.style.display === 'none') {
+      showMarkdownContent ();
       hideConfigPopup ();
-    } else {
-      showConfigPopup ();
+    }
+
+    if (!isDisplayed) {
+      const buttonRect = configButton.getBoundingClientRect ();
+      dropdownMenu.style.top = `${buttonRect.bottom}px`;
+      dropdownMenu.style.right = '0px';
     }
   });
+
+  // Close dropdown when clicking outside
+  document.addEventListener ('click', e => {
+    if (!configDropdown.contains (e.target)) {
+      dropdownMenu.style.display = 'none';
+    }
+  });
+}
+
+function showMarkdownContent () {
+  // Show the markdown content and hide the config popup
+  const markdownContent = document.getElementById (ID_MARKDOWN_CONTENT);
+  logger.debug ('show markdown content');
+  markdownContent.style.display = 'block';
+}
+
+function hideMarkdownContent () {
+  // Hide the markdown content and show the config popup
+  const markdownContent = document.getElementById (ID_MARKDOWN_CONTENT);
+  logger.debug ('hide markdown content');
+  markdownContent.style.display = 'none';
+}
+
+function hideConfigPopup () {
+  // Hide the config popup and show the markdown content
+  const configPopupDiv = document.getElementById ('configPopupDiv');
+  configPopupDiv.style.display = 'none';
+}
+
+async function loadDropdownItems () {
+  logger.debug ('Loading dropdown items');
+  try {
+    const response = await fetch ('config-menus/config-menu.json');
+    logger.debug ('menu configs:', response);
+    return await response.json ();
+  } catch (error) {
+    console.error ('Error loading dropdown items:', error);
+    return [];
+  }
+}
+
+async function loadConfigPage (item) {
+  try {
+    if (!item.htmlFile || !item.jsFile || !item.handlerFunction) {
+      throw new Error ('Invalid item properties');
+    }
+    // Load HTML content
+    const htmlResponse = await fetch (`./config-menus/${item.htmlFile}`);
+    const html = await htmlResponse.text ();
+
+    // Insert HTML into configPopupDiv
+    const configPopupDiv = document.getElementById (ID_CONFIG_POPUP);
+    configPopupDiv.innerHTML = html;
+    configPopupDiv.style.display = 'block';
+
+    // Dynamically import JS module and call the handler function
+    const file_path = `./config-menus/${item.jsFile}`;
+    logger.debug ('Loading JS module:', file_path);
+    const module = await import (file_path);
+    if (typeof module[item.handlerFunction] === 'function') {
+      module[item.handlerFunction] ();
+    } else {
+      console.error (
+        `Handler function ${item.handlerFunction} not found in ${item.jsFile}`
+      );
+    }
+  } catch (error) {
+    console.error (`Error loading ${item.jsFile}:`, error);
+  }
+}
+
+export function initUI () {
+  //1. Button to show or hide the configuration popup
+  initConfigDropdown ();
 
   //2. button to toggle the sidebar, it won't show up in the sidepanel
   const toggleSidebarButton = document.getElementById (
@@ -128,15 +204,19 @@ export function initUI () {
   );
   logger.debug ('Stored prompt buttons:', storedPromptButtons);
 
+  // Function to update button title
+  function updateButtonTitle (button, value) {
+    button.title = value ? value.slice (0, 100) : '';
+  }
   const storedPromptInputs = Array.from ({length: numberOfPrompts}, (_, i) =>
     document.getElementById (ID_STORED_PROMPT_INPUT (i + 1))
   );
   logger.debug ('Stored prompt inputs:', storedPromptInputs);
 
-  const storedPromptStorages = Array.from ({length: numberOfPrompts}, (_, i) =>
-    document.getElementById (ID_STORED_PROMPT_STORAGE (i + 1))
-  );
-  logger.debug ('Stored prompt storages:', storedPromptStorages);
+  // const storedPromptStorages = Array.from ({length: numberOfPrompts}, (_, i) =>
+  //   document.getElementById (ID_STORED_PROMPT_STORAGE (i + 1))
+  // );
+  // logger.debug ('Stored prompt storages:', storedPromptStorages);
 
   // 4. customized prompt input
   const customPromptInput = document.getElementById (ID_CUSTOM_PROMPT_INPUT);
@@ -197,10 +277,10 @@ export function initUI () {
   });
 
   // 7. mark down content
-  const markdownContent = document.getElementById (ID_MARKDOWN_CONTENT);
   // I am using iframe to include popup.html in sidepanel.html to reuse the same code
   // in sidepanel,increase the height of the iframe to fit the content
   // Check if the current page is loaded within an iframe
+  const markdownContent = document.getElementById (ID_MARKDOWN_CONTENT);
   if (window.self !== window.top) {
     // This code runs if the page is in an iframe
     if (markdownContent) {
@@ -212,24 +292,6 @@ export function initUI () {
   }
 
   // 8. configuration settings
-  const disableSystemPromptCheckbox = document.getElementById (
-    ID_DISABLE_SYSTEM_ROLE_CHECKBOX
-  );
-  // store the disableSystemPromptCheckbox status in local storage when it is changed
-  disableSystemPromptCheckbox.addEventListener ('change', function () {
-    chrome.storage.local.set ({
-      [STORAGE_DISABLE_SYSTEM_ROLE]: this.checked,
-    });
-    const disableSystemRoleSpan = document.getElementById (
-      ID_DISABLE_SYSTEM_ROLE_SPAN
-    );
-    disableSystemRoleSpan.style.display = 'block';
-    // Hide the status message after 2 seconds
-    setTimeout (() => {
-      disableSystemRoleSpan.style.display = 'none';
-    }, 2000);
-    logger.debug ('disableSystemPromptCheckbox status saved to local storage.');
-  });
 
   const apiUrlInput = document.getElementById (ID_API_URL_INPUT);
   const apiTokenInput = document.getElementById (ID_API_TOKEN_INPUT);
@@ -239,232 +301,140 @@ export function initUI () {
   const topPInput = document.getElementById (ID_TOP_P_INPUT);
 
   // Helper function to mask the API key for display
-  function maskApiKey (apiKey) {
-    if (typeof apiKey !== 'string' || !apiKey) {
-      return 'None'; // Return empty if no key is provided or if it's not a string
-    }
+  // function maskApiKey (apiKey) {
+  //   if (typeof apiKey !== 'string' || !apiKey) {
+  //     return 'None'; // Return empty if no key is provided or if it's not a string
+  //   }
 
-    const keyLength = apiKey.length;
+  //   const keyLength = apiKey.length;
 
-    if (keyLength === 1) {
-      // Return the single character unmasked
-      return apiKey;
-    } else if (keyLength === 2 || keyLength === 3) {
-      // Mask the first character and show the second
-      return '*' + apiKey.slice (1);
-    } else {
-      // For keys with more than 3 characters, mask all but the last 3 characters
-      const numAsterisks = Math.min (6, keyLength - 3);
-      return '*'.repeat (numAsterisks) + apiKey.slice (-3);
-    }
-  }
+  //   if (keyLength === 1) {
+  //     // Return the single character unmasked
+  //     return apiKey;
+  //   } else if (keyLength === 2 || keyLength === 3) {
+  //     // Mask the first character and show the second
+  //     return '*' + apiKey.slice (1);
+  //   } else {
+  //     // For keys with more than 3 characters, mask all but the last 3 characters
+  //     const numAsterisks = Math.min (6, keyLength - 3);
+  //     return '*'.repeat (numAsterisks) + apiKey.slice (-3);
+  //   }
+  // }
 
-  // Load settings from local storage
-  chrome.storage.local.get (
-    [
-      STORAGE_API_URL,
-      STORAGE_API_TOKEN,
-      STORAGE_MODEL_NAME,
-      STORAGE_MAX_TOKEN,
-      STORAGE_TEMPERATURE,
-      STORAGE_TOP_P,
-      STORAGE_DISABLE_SYSTEM_ROLE,
-      ...Array.from (
-        {length: 5},
-        (_, i) => `${STORAGE_STORED_PROMPT_PREFIX}${i + 1}`
-      ),
-    ],
-    function (result) {
-      // load disableSystemPromptCheckbox status from local storage
-      logger.debug (
-        'disableSystemPromptCheckbox storage value:' +
-          result[STORAGE_DISABLE_SYSTEM_ROLE]
-      );
-      disableSystemPromptCheckbox.checked =
-        result[STORAGE_DISABLE_SYSTEM_ROLE] || false;
+  // const saveApiUrlButton = document.getElementById (ID_SAVE_API_URL_BUTTON);
+  // const testConnectionButton = document.getElementById (
+  //   ID_TEST_CONNECTION_BUTTON
+  // );
+  // // Save configuration settings
+  // saveApiUrlButton.addEventListener ('click', () => {
+  //   // Check if required fields are not empty
+  //   if (
+  //     !apiUrlInput.value.trim () ||
+  //     !maxTokenInput.value.trim () ||
+  //     !temperatureInput.value.trim () ||
+  //     !topPInput.value.trim ()
+  //   ) {
+  //     updateStatus ('Please fill in all required * fields.');
+  //     return;
+  //   }
+  //   if (!isValidUrl (apiUrlInput.value)) {
+  //     updateStatus ('Please enter a valid API URL.');
+  //     return;
+  //   }
 
-      // console.log('Value currently is ' + result.apiUrl);
-      logger.debug ('apiUrl storage value:' + result[STORAGE_API_URL]);
-      apiUrlInput.value = result[STORAGE_API_URL] || DEFAULT_API_URL;
-      document.getElementById (
-        ID_API_URL_STORAGE_SPAN
-      ).textContent = `(Stored: ${result[STORAGE_API_URL] || 'None'})`;
+  //   // Ensure that numeric inputs are not only positive but also within expected ranges
+  //   const maxTokens = parseInt (maxTokenInput.value, 10);
+  //   const temperature = parseFloat (temperatureInput.value);
+  //   const topP = parseFloat (topPInput.value);
 
-      // masked token display, example ****123
-      logger.debug ('apiToken storage value:' + result[STORAGE_API_TOKEN]);
-      let tokenDisplay = result[STORAGE_API_TOKEN]
-        ? maskApiKey (result[STORAGE_API_TOKEN])
-        : 'None';
-      apiTokenInput.value = result[STORAGE_API_TOKEN];
-      document.getElementById (
-        ID_API_TOKEN_STORAGE_SPAN
-      ).textContent = `(Masked Token: ${tokenDisplay})`;
+  //   if (isNaN (maxTokens) || maxTokens <= 0) {
+  //     updateStatus ('Max tokens must be a positive number.');
+  //     return;
+  //   }
 
-      // Set the model name, max tokens, temperature, and top P from local storage
-      logger.debug ('modelName storage value:' + result[STORAGE_MODEL_NAME]);
-      modelNameInput.value = result[STORAGE_MODEL_NAME] || DEFAULT_MODEL_NAME;
-      document.getElementById (
-        ID_MODEL_NAME_STORAGE_SPAN
-      ).textContent = `(Stored: ${result[STORAGE_MODEL_NAME] || 'None'})`;
+  //   if (isNaN (temperature) || temperature < 0 || temperature > 1) {
+  //     updateStatus ('Temperature must be a number between 0 and 1.');
+  //     return;
+  //   }
 
-      logger.debug ('maxToken storage value:' + result[STORAGE_MAX_TOKEN]);
-      maxTokenInput.value = result[STORAGE_MAX_TOKEN] || DEFAULT_MAX_TOKENS;
-      document.getElementById (
-        ID_MAX_TOKEN_STORAGE_SPAN
-      ).textContent = `(Stored: ${result[STORAGE_MAX_TOKEN] || 'None'})`;
+  //   if (isNaN (topP) || topP < 0 || topP > 1) {
+  //     updateStatus ('Top P must be a number between 0 and 1.');
+  //     return;
+  //   }
+  //   chrome.storage.local.set (
+  //     {
+  //       [STORAGE_API_URL]: apiUrlInput.value,
+  //       [STORAGE_API_TOKEN]: apiTokenInput.value,
+  //       [STORAGE_MODEL_NAME]: modelNameInput.value,
+  //       [STORAGE_MAX_TOKEN]: maxTokenInput.value,
+  //       [STORAGE_TEMPERATURE]: temperatureInput.value,
+  //       [STORAGE_TOP_P]: topPInput.value,
+  //       storedPrompt1: storedPrompt1Input.value,
+  //       storedPrompt2: storedPrompt2Input.value,
+  //       storedPrompt3: storedPrompt3Input.value,
+  //       storedPrompt4: storedPrompt4Input.value,
+  //       storedPrompt5: storedPrompt5Input.value,
+  //     },
+  //     () => {
+  //       document.getElementById (
+  //         ID_API_URL_STORAGE_SPAN
+  //       ).textContent = `(Stored: ${apiUrlInput.value})`;
 
-      logger.debug ('temperature storage value:' + result[STORAGE_TEMPERATURE]);
-      temperatureInput.value =
-        result[STORAGE_TEMPERATURE] || DEFAULT_TEMPERATURE;
-      document.getElementById (
-        ID_TEMPERATURE_STORAGE_SPAN
-      ).textContent = `(Stored: ${result[STORAGE_TEMPERATURE] || 'None'})`;
+  //       // Extract and conditionally format the apiToken for display
+  //       if (apiTokenInput.value.trim ()) {
+  //         // Check if the input is effectively non-empty after trimming
+  //         // If not empty, format with first 4 chars '***' and the last 4 chars
+  //         document.getElementById (
+  //           ID_API_TOKEN_STORAGE_SPAN
+  //         ).textContent = `(Stored: ${maskApiKey (apiTokenInput.value)})`;
+  //       } else {
+  //         // If empty, set display to indicate no stored token
+  //         document.getElementById (
+  //           ID_API_TOKEN_STORAGE_SPAN
+  //         ).textContent = `(Stored: None)`;
+  //       }
 
-      logger.debug ('topP storage value:' + result[STORAGE_TOP_P]);
-      topPInput.value = result[STORAGE_TOP_P] || DEFAULT_TOP_P;
-      document.getElementById (
-        ID_TOP_P_STORAGE_SPAN
-      ).textContent = `(Stored: ${result[STORAGE_TOP_P] || 'None'})`;
+  //       document.getElementById (
+  //         ID_MODEL_NAME_STORAGE_SPAN
+  //       ).textContent = `(Stored: ${modelNameInput.value})`;
 
-      // Load stored prompts from local storage in a loop
-      storedPromptInputs.forEach ((input, index) => {
-        // Safely get the stored prompt value with a fallback to an empty string if undefined
-        const promptKey = `${STORAGE_STORED_PROMPT_PREFIX}${index + 1}`;
-        const promptValue = result[promptKey] || '';
-        logger.debug (`${promptKey} storage value: ${promptValue}`);
+  //       document.getElementById (
+  //         ID_MAX_TOKEN_STORAGE_SPAN
+  //       ).textContent = `(Stored: ${maxTokenInput.value})`;
 
-        // Set the input value
-        input.value = promptValue;
+  //       document.getElementById (
+  //         ID_TEMPERATURE_STORAGE_SPAN
+  //       ).textContent = `(Stored: ${temperatureInput.value})`;
 
-        // Safely slice the prompt for display, defaulting to 'None' if empty
-        const displayText = promptValue ? promptValue.slice (0, 20) : 'None';
-        document.getElementById (
-          `${promptKey}Storage`
-        ).textContent = `(Stored: ${displayText})`;
+  //       document.getElementById (
+  //         ID_TOP_P_STORAGE_SPAN
+  //       ).textContent = `(Stored: ${topPInput.value})`;
 
-        // Update the button title with the first 100 characters of the prompt, or empty if not available
-        const titleText = promptValue ? promptValue.slice (0, 100) : '';
-        storedPromptButtons[index].title = titleText;
-      });
+  //       // Loop through stored prompts to update both storage text and button title
+  //       storedPromptInputs.forEach ((input, index) => {
+  //         // Check if input value exists and handle appropriately
+  //         const inputValue = input.value || ''; // Ensure it defaults to an empty string if undefined
 
-      updateStatus ('Ready.');
-    }
-  );
+  //         // Update storage text if corresponding storage element exists
+  //         if (index < storedPromptStorages.length) {
+  //           const displayText = inputValue ? inputValue.slice (0, 20) : 'None';
+  //           storedPromptStorages[
+  //             index
+  //           ].textContent = `(Stored: ${displayText})`;
+  //         }
 
-  const saveApiUrlButton = document.getElementById (ID_SAVE_API_URL_BUTTON);
-  const testConnectionButton = document.getElementById (
-    ID_TEST_CONNECTION_BUTTON
-  );
-  // Save configuration settings
-  saveApiUrlButton.addEventListener ('click', () => {
-    // Check if required fields are not empty
-    if (
-      !apiUrlInput.value.trim () ||
-      !maxTokenInput.value.trim () ||
-      !temperatureInput.value.trim () ||
-      !topPInput.value.trim ()
-    ) {
-      updateStatus ('Please fill in all required * fields.');
-      return;
-    }
-    if (!isValidUrl (apiUrlInput.value)) {
-      updateStatus ('Please enter a valid API URL.');
-      return;
-    }
+  //         // Update button title if corresponding button exists
+  //         if (index < storedPromptButtons.length) {
+  //           const titleText = inputValue ? inputValue.slice (0, 100) : '';
+  //           storedPromptButtons[index].title = titleText;
+  //         }
+  //       });
 
-    // Ensure that numeric inputs are not only positive but also within expected ranges
-    const maxTokens = parseInt (maxTokenInput.value, 10);
-    const temperature = parseFloat (temperatureInput.value);
-    const topP = parseFloat (topPInput.value);
-
-    if (isNaN (maxTokens) || maxTokens <= 0) {
-      updateStatus ('Max tokens must be a positive number.');
-      return;
-    }
-
-    if (isNaN (temperature) || temperature < 0 || temperature > 1) {
-      updateStatus ('Temperature must be a number between 0 and 1.');
-      return;
-    }
-
-    if (isNaN (topP) || topP < 0 || topP > 1) {
-      updateStatus ('Top P must be a number between 0 and 1.');
-      return;
-    }
-    chrome.storage.local.set (
-      {
-        [STORAGE_API_URL]: apiUrlInput.value,
-        [STORAGE_API_TOKEN]: apiTokenInput.value,
-        [STORAGE_MODEL_NAME]: modelNameInput.value,
-        [STORAGE_MAX_TOKEN]: maxTokenInput.value,
-        [STORAGE_TEMPERATURE]: temperatureInput.value,
-        [STORAGE_TOP_P]: topPInput.value,
-        storedPrompt1: storedPrompt1Input.value,
-        storedPrompt2: storedPrompt2Input.value,
-        storedPrompt3: storedPrompt3Input.value,
-        storedPrompt4: storedPrompt4Input.value,
-        storedPrompt5: storedPrompt5Input.value,
-      },
-      () => {
-        document.getElementById (
-          ID_API_URL_STORAGE_SPAN
-        ).textContent = `(Stored: ${apiUrlInput.value})`;
-
-        // Extract and conditionally format the apiToken for display
-        if (apiTokenInput.value.trim ()) {
-          // Check if the input is effectively non-empty after trimming
-          // If not empty, format with first 4 chars '***' and the last 4 chars
-          document.getElementById (
-            ID_API_TOKEN_STORAGE_SPAN
-          ).textContent = `(Stored: ${maskApiKey (apiTokenInput.value)})`;
-        } else {
-          // If empty, set display to indicate no stored token
-          document.getElementById (
-            ID_API_TOKEN_STORAGE_SPAN
-          ).textContent = `(Stored: None)`;
-        }
-
-        document.getElementById (
-          ID_MODEL_NAME_STORAGE_SPAN
-        ).textContent = `(Stored: ${modelNameInput.value})`;
-
-        document.getElementById (
-          ID_MAX_TOKEN_STORAGE_SPAN
-        ).textContent = `(Stored: ${maxTokenInput.value})`;
-
-        document.getElementById (
-          ID_TEMPERATURE_STORAGE_SPAN
-        ).textContent = `(Stored: ${temperatureInput.value})`;
-
-        document.getElementById (
-          ID_TOP_P_STORAGE_SPAN
-        ).textContent = `(Stored: ${topPInput.value})`;
-
-        // Loop through stored prompts to update both storage text and button title
-        storedPromptInputs.forEach ((input, index) => {
-          // Check if input value exists and handle appropriately
-          const inputValue = input.value || ''; // Ensure it defaults to an empty string if undefined
-
-          // Update storage text if corresponding storage element exists
-          if (index < storedPromptStorages.length) {
-            const displayText = inputValue ? inputValue.slice (0, 20) : 'None';
-            storedPromptStorages[
-              index
-            ].textContent = `(Stored: ${displayText})`;
-          }
-
-          // Update button title if corresponding button exists
-          if (index < storedPromptButtons.length) {
-            const titleText = inputValue ? inputValue.slice (0, 100) : '';
-            storedPromptButtons[index].title = titleText;
-          }
-        });
-
-        //configPopup.style.display = 'none'; // Optionally hide the popup after saving
-        updateStatus ('Settings saved successfully.');
-      }
-    );
-  });
+  //       //configPopup.style.display = 'none'; // Optionally hide the popup after saving
+  //       updateStatus ('Settings saved successfully.');
+  //     }
+  //   );
+  // });
 
   function handlePromptSubmissionWithContext (prompt, language) {
     const includeWebContent = document.getElementById (
@@ -499,19 +469,27 @@ export function initUI () {
 
   storedPromptButtons.forEach ((button, index) => {
     button.addEventListener ('click', () => {
-      const promptInput = storedPromptInputs[index];
+      logger.debug (`Stored prompt button ${index + 1} clicked:`, index);
       const selectedLanguage = languageSelect.value;
-      if (!promptInput.value.trim ()) {
-        logger.warn ('No stored prompt is found.');
-        updateStatus (
-          `No stored prompt is found. Please save your prompt to stored prompt ${index + 1} in Settings.`
-        );
-        return;
-      }
-      customPromptInput.value = promptInput.value;
-      logger.debug (`To submit stored prompt ${index}: ${promptInput.value}`);
-      logger.debug ('Selected language: ' + selectedLanguage);
-      handlePromptSubmissionWithContext (promptInput.value, selectedLanguage);
+      const promptStorageKey = `storedPrompt${index + 1}`;
+
+      chrome.storage.local.get (promptStorageKey, result => {
+        const storedPrompt = result[promptStorageKey];
+        if (storedPrompt && storedPrompt.trim () !== '') {
+          logger.debug (`Stored prompt ${index + 1} is found:`, storedPrompt);
+          customPromptInput.value = storedPrompt;
+          logger.debug (
+            `To submit stored prompt ${index + 1}: ${storedPrompt}`
+          );
+          logger.debug ('Selected language: ' + selectedLanguage);
+          handlePromptSubmissionWithContext (storedPrompt, selectedLanguage);
+        } else {
+          logger.warn (`No stored prompt ${index + 1} is found.`);
+          updateStatus (
+            `No stored prompt ${index + 1} is found. Please save your prompt to stored prompt ${index + 1} in Settings.`
+          );
+        }
+      });
     });
   });
 
@@ -551,15 +529,15 @@ export function initUI () {
     });
   }
 
-  testConnectionButton.addEventListener ('click', () => {
-    const apiUrl = apiUrlInput.value;
-    const apiToken = apiTokenInput.value;
-    if (!isValidUrl (apiUrl)) {
-      updateStatus ('Please enter a valid API URL.');
-      return;
-    }
-    testApiConnection (apiUrl, apiToken);
-  });
+  // testConnectionButton.addEventListener ('click', () => {
+  //   const apiUrl = apiUrlInput.value;
+  //   const apiToken = apiTokenInput.value;
+  //   if (!isValidUrl (apiUrl)) {
+  //     updateStatus ('Please enter a valid API URL.');
+  //     return;
+  //   }
+  //   testApiConnection (apiUrl, apiToken);
+  // });
 }
 
 // ui.js ends here

@@ -1,0 +1,80 @@
+<div id="apiConfigDiv">
+  <div class="mb-1 border-top h6 pt-1 pb-1">API Configuration</div>
+  <div class="mb-3 form-check">
+    <input
+      type="checkbox"
+      class="form-check-input"
+      id="disableSystemRoleCheckbox"
+    />
+    <label class="form-check-label" for="disableSystemRoleCheckbox"
+      >Disable System Prompt</label
+    >
+    <span id="disableSystemRoleSpan" style="display: none" class="storage-value"
+      >Saved to local storage</span
+    >
+  </div>
+  <div class="mb-3">
+    <label for="apiUrlInput" class="form-label">* API URL</label>
+    <div class="d-flex">
+      <input
+        type="text"
+        class="form-control flex-grow-1"
+        id="apiUrlInput"
+        placeholder="Enter API URL"
+      />
+      <button class="btn btn-success ms-2 btn-sm" id="testConnectionButton">
+        Test
+      </button>
+    </div>
+    <span id="apiUrlStorage" class="storage-value"></span>
+    <div
+      id="apiConnectionTestStatusDiv"
+      class="alert alert-light"
+      role="alert"
+      style="display: none"
+    >
+      &nbsp;
+    </div>
+  </div>
+  <div class="mb-3">
+    <label for="apiTokenInput" class="form-label">API Token</label>
+    <input type="password" class="form-control" id="apiTokenInput" />
+    <span id="apiTokenStorage" class="storage-value"></span>
+  </div>
+  <div class="mb-3">
+    <label for="modelNameInput" class="form-label">Model Name</label>
+    <input
+      type="text"
+      class="form-control"
+      id="modelNameInput"
+      placeholder="Model Name"
+    />
+    <span id="modelNameStorage" class="storage-value"></span>
+  </div>
+  <div class="mb-3">
+    <label for="maxTokenInput" class="form-label">* Max Tokens</label>
+    <input
+      type="text"
+      class="form-control"
+      id="maxTokenInput"
+      placeholder="4096"
+    />
+    <span id="maxTokenStorage" class="storage-value"></span>
+  </div>
+  <div class="mb-3">
+    <label for="temperatureInput" class="form-label">* Temperature</label>
+    <input
+      type="text"
+      class="form-control"
+      id="temperatureInput"
+      placeholder="0"
+    />
+    <span id="temperatureStorage" class="storage-value"></span>
+  </div>
+  <div class="mb-3">
+    <label for="topPInput" class="form-label">* Top P</label>
+    <input type="text" class="form-control" id="topPInput" placeholder="0.9" />
+    <span id="topPStorage" class="storage-value"></span>
+  </div>
+  <button class="btn btn-success btn-sm" id="saveApiConfigButton">Save</button>
+</div>

@@ -1,0 +1,16 @@
+[
+  {
+    "id": "apiConfigLink",
+    "text": "Chat API Settings",
+    "handlerFunction": "init",
+    "jsFile": "api-config.js",
+    "htmlFile": "api-config.html"
+  },
+  {
+    "id": "promptsConfigLink",
+    "text": "Prompt Settings",
+    "handlerFunction": "init",
+    "jsFile": "prompts-config.js",
+    "htmlFile": "prompts-config.html"
+  }
+]
