@@ -3,10 +3,6 @@
 // This file contains the functions that handle the submission of prompts
 import {fetchOpenAI} from '../scripts/api.js';
 import {
-  ID_OUTPUT_FORMAT_TEXT_RADIO,
-  ID_OUTPUT_FORMAT_JSON_RADIO,
-  ID_OUTPUT_FORMAT_MARKDOWN_RADIO,
-  ID_OUTPUT_FORMAT_TABLE_RADIO,
   ID_DISABLE_SYSTEM_ROLE_CHECKBOX,
   ID_MAGIC_CLICK_CHECKBOX,
   ID_CUSTOM_PROMPT_INPUT,
@@ -15,20 +11,21 @@ import {
 } from '../scripts/constants.js';
 import {createLogger} from '../scripts/logger.js';
 import {updateStatus} from '../scripts/utils.js';
-const logger = createLogger ();
+const logger = createLogger ('aiServices.js');
 
-chrome.runtime.onMessage.addListener ((request, sender, sendResponse) => {
-  if (request.action === 'performChatCompletion') {
-    logger.debug ('Chat completion request received');
-    performChatCompletion (request.data, sender, sendResponse);
-  } else if (request.action === 'performOverwriteText') {
-    logger.debug ('Overwrite text request received');
-    performOverwriteText (request.data, sender, sendResponse);
-  }
-  return true;
-});
+// chrome.runtime.onMessage.addListener ((request, sender, sendResponse) => {
+//   logger.debug ('Message received:', request);
+//   if (request.action === 'performChatCompletion') {
+//     logger.debug ('Chat completion request received');
+//     performChatCompletion (request.data, sender, sendResponse);
+//   } else if (request.action === 'performOverwriteText') {
+//     logger.debug ('Overwrite text request received');
+//     performOverwriteText (request.data, sender, sendResponse);
+//   }
+//   return true;
+// });
 
-function performChatCompletion (request, sender, sendResponse) {
+export function performChatCompletion (request, sender, sendResponse) {
   // get prompt from customized prompt
   logger.debug ('Chat completion request received' + request);
   prompt = request.subAction;
@@ -45,11 +42,12 @@ function performChatCompletion (request, sender, sendResponse) {
   return true;
 }
 
-function performOverwriteText (request, sender, sendResponse) {
+export function performOverwriteText (request, sender, sendResponse) {
   // Request markdown content from the popup
   logger.debug ('Overwrite text request received');
   const markdownContent = document.getElementById (ID_MARKDOWN_CONTENT)
     .innerText;
+  logger.debug ('Markdown content: ' + markdownContent);
   if (markdownContent) {
     // Overwrite the text in the chat box with the markdown content
     sendResponse ({content: markdownContent});
@@ -61,10 +59,6 @@ function performOverwriteText (request, sender, sendResponse) {
 }
 
 export function handlePromptSubmission (prompt, language, context) {
-  // const outputFormat = document.querySelector (
-  //   'input[name="outputFormat"]:checked'
-  // ).id;
-  // Set the output format based on the radio button selected
   let outputPrompt = `The output format should be in markdown, here is an example markdown: \n\n
       # Title
       ## Subtitle
@@ -73,58 +67,6 @@ export function handlePromptSubmission (prompt, language, context) {
       - List item 3
       \n
       `;
-  // if (outputFormat === ID_OUTPUT_FORMAT_TEXT_RADIO) {
-  //   outputPrompt = 'The output format should be in text. ';
-  // } else if (outputFormat === ID_OUTPUT_FORMAT_MARKDOWN_RADIO) {
-  //   outputPrompt = `The output format should be in markdown, here is an example markdown: \n\n
-  //     # Title
-  //     ## Subtitle
-  //     - List item 1
-  //     - List item 2
-  //     - List item 3
-  //     \n
-  //     `;
-  // } else if (outputFormat === ID_OUTPUT_FORMAT_TABLE_RADIO) {
-  //   outputPrompt = `Output the response as a table. Here is an example table: \n\n';
-  //   \`\`\`
-  // +-----------------------+-------------------+------+
-  // | Title                 | Author            | Year |
-  // +-----------------------+-------------------+------+
-  // | To Kill a Mockingbird | Harper Lee        | 1960 |
-  // | 1984                  | George Orwell     | 1949 |
-  // | Pride and Prejudice   | Jane Austen       | 1813 |
-  // | The Great Gatsby      | F. Scott Fitzgerald | 1925 |
-  // | The Catcher in the Rye | J.D. Salinger     | 1951 |
-  // +-----------------------+-------------------+------+ \n\n
-  // \`\`\`
-  //   \n`;
-  // } else if (outputFormat === ID_OUTPUT_FORMAT_JSON_RADIO) {
-  //   outputPrompt = `Output the response in JSON format. Here is an example JSON object: \n\n
-  //   \`\`\`json
-  //       {
-  //     "name": "John Doe",
-  //     "age": 30,
-  //     "email": "johndoe@example.com",
-  //     "phoneNumbers": [
-  //       {
-  //         "type": "home",
-  //         "number": "212-555-1234"
-  //       },
-  //       {
-  //         "type": "work",
-  //         "number": "646-555-4567"
-  //       }
-  //     ],
-  //     "address": {
-  //       "street": "123 Elm St",
-  //       "city": "Anytown",
-  //       "state": "CA",
-  //       "postalCode": "90210"
-  //     }
-  //   }
-  //   \`\`\`
-  //   \n`;
-  // }
 
   const systemPrompt = `
   As an advanced language model, you must strictly adhere to the following rules when answering any question:

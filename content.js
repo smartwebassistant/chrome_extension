@@ -12,24 +12,21 @@ style.textContent = `
     z-index: 10000;
   }
   .floating-button {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    border: none;
-    background-color: #007bff;
-    color: white;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    border: 1px solid #198754;
+    border-radius: 4px;
+    background-color: #fffffe;
     font-size: 12px;
     cursor: pointer;
     display: flex;
-    align-items: center;
-    justify-content: center;
     position: relative;
+    color: #333;
   }
   .dropdown-menu {
     position: absolute;
     top: 100%;
     left: 0;
-    background-color: #ffffff;
+    background-color: #fffffe;
     border: 1px solid #198754;
     border-radius: 4px;
     box-shadow: 0 2px 5px rgba(0,0,0,0.2);
@@ -99,11 +96,98 @@ chrome.runtime.onMessage.addListener (function (request, sender, sendResponse) {
     );
   } else if (request.action === 'aiWriteAction') {
     handleAIWriteAction (request.context);
+  } else if (request.action === 'content.executeAgent') {
+    handleExecuteAgent (request, sender, sendResponse);
+  } else if (request.action === 'content.fillText') {
+    content = request.content;
+    handleFillText (content);
   }
   return true;
 });
 
 let currentObserver = null;
+
+function handleFillText (text, element = lastRightClickedElement) {
+  if (element) {
+    if (element.tagName === 'SPAN') {
+      element.textContent = text;
+    } else {
+      element.innerHTML = text;
+    }
+  }
+}
+
+function messageBackground (action, data) {
+  return new Promise ((resolve, reject) => {
+    chrome.runtime.sendMessage ({action, data}, response => {
+      if (chrome.runtime.lastError) {
+        reject (chrome.runtime.lastError);
+      } else {
+        resolve (response);
+      }
+    });
+  });
+}
+
+function handleExecuteAgent (request, sender, sendResponse) {
+  // get agent id
+  if (!request.agentId) {
+    logger.error ('No agent ID provided');
+    return;
+  }
+  // get clicked element
+  const clickedElement = lastRightClickedElement;
+  let elementId = '';
+  let parentElement = null;
+  let isEditable = false;
+  let elementText = '';
+  let rect = null;
+  if (clickedElement) {
+    // get element id
+    elementId = clickedElement ? clickedElement.id : '';
+    // get parent element
+    parentElement = clickedElement ? clickedElement.parentElement : null;
+    // is element editable
+    isEditable = isElementEditable (clickedElement);
+    // get inner text of clicked element
+    elementText = clickedElement ? clickedElement.innerText : '';
+    // get coordination of clicked element
+    rect = clickedElement ? clickedElement.getBoundingClientRect () : null;
+  }
+  // get the url of the page
+  const url = window.location.href;
+  // get the title of the page
+  const title = document.title;
+  // get the selected text
+  const selectedText = window.getSelection ().toString ();
+  // get the entire page text
+  const pageText = document.body.innerText;
+
+  // send the agent id and context to the background script
+  messageBackground ('bg.executeAgent', {
+    agentId: request.agentId,
+    context: {
+      clickedElement: {
+        elementId: elementId,
+        parentElement: parentElement,
+        currentElement: clickedElement,
+        elementText: elementText,
+        rect: rect,
+        isEditable: isEditable,
+      },
+      url: url,
+      title: title,
+      selectedText: selectedText,
+      pageText: pageText,
+    },
+  })
+    .then (response => {
+      sendResponse (response);
+    })
+    .catch (error => {
+      sendResponse ({error: error.message});
+    });
+}
 
 function setupTextChangeListener (element) {
   if (currentObserver) {
@@ -150,8 +234,8 @@ function handleClick (event) {
     // In the handleClick function, update the AI Call button and dropdown creation
     const aiCallButton = document.createElement ('button');
     aiCallButton.className = 'floating-button chatCompletionRequest';
-    aiCallButton.innerHTML = '💭';
     aiCallButton.title = 'Chat Completion';
+    aiCallButton.innerHTML = '🤖';
 
     const dropdownMenu = document.createElement ('div');
     dropdownMenu.className = 'dropdown-menu';

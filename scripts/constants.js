@@ -67,3 +67,14 @@ export const ID_STORED_PROMPT_BUTTON = index => `storedPrompt${index}Button`;
 export const ID_STORED_PROMPT_STORAGE = index => `storedPrompt${index}Storage`;
 
 export const SIDE_PANEL_HTML = 'ui/sidepanel.html';
+export const STORAGE_KEYS = {
+  STORED_PROMPTS: [
+    'storedPrompt1',
+    'storedPrompt2',
+    'storedPrompt3',
+    'storedPrompt4',
+    'storedPrompt5',
+  ],
+  LAST_CUSTOM_PROMPT: 'lastCustomPrompt',
+  AGENTS: 'agents',
+};

@@ -1,34 +1,56 @@
 // background.js
 //
 
-import {
-  createContextMenu,
-  handleContextMenuClick,
-  updateAIReadSubmenus,
-} from './contextMenu.js';
-
+import {createContextMenu, handleContextMenuClick} from './contextMenu.js';
 import {createLogger} from '../scripts/logger.js';
-const logger = createLogger ();
+
+const logger = createLogger ('background.js');
 
 // Main Logic of background.js
-logger.log ('Background script loaded...');
+logger.debug ('Background script loaded...');
+
+// required for user clicking icon to open sidepanel
+chrome.sidePanel
+  .setPanelBehavior ({openPanelOnActionClick: true})
+  .catch (error => logger.error (error));
 
 // Create context menu when the extension is installed or updated
 chrome.runtime.onInstalled.addListener (details => {
-  console.log ('Extension installed or updated. Reason:', details.reason);
+  logger.debug ('Extension installed or updated. Reason:', details.reason);
   createContextMenuForCurrentTab ();
+
+  if (details.reason === 'install' || details.reason === 'update') {
+    initializeAgents ();
+  }
 });
+
+async function initializeAgents () {
+  logger.debug ('Initializing agents...');
+  try {
+    const response = await fetch (
+      chrome.runtime.getURL ('background/init-agents.json')
+    );
+    const agents = await response.json ();
+    logger.debug ('Agents loaded:', agents.length);
+
+    chrome.storage.local.set ({agents: agents}, () => {
+      logger.info ('Initial agents loaded into storage');
+    });
+  } catch (error) {
+    logger.error ('Error initializing agents:', error);
+  }
+}
 
 // Recreate context menu when Chrome starts
 chrome.runtime.onStartup.addListener (() => {
-  console.log ('Chrome started. Recreating context menu.');
+  logger.info ('Chrome started. Recreating context menu.');
   createContextMenuForCurrentTab ();
 });
 
 // Update context menu when the active tab changes
 chrome.tabs.onActivated.addListener (activeInfo => {
   chrome.tabs.get (activeInfo.tabId, tab => {
-    console.log ('Tab activated:', tab.url);
+    logger.info ('Tab activated:', tab.url);
     createContextMenu (tab);
   });
 });
@@ -36,7 +58,7 @@ chrome.tabs.onActivated.addListener (activeInfo => {
 // Update context menu when a tab is updated
 chrome.tabs.onUpdated.addListener ((tabId, changeInfo, tab) => {
   if (changeInfo.status === 'complete') {
-    console.log ('Tab updated:', tab.url);
+    logger.info ('Tab updated:', tab.url);
     createContextMenu (tab);
   }
 });
@@ -79,6 +101,50 @@ const ACTIONS = {
   AI_WRITE_ACTION: 'aiWriteAction',
   PERFORM_CHAT_COMPLETION: 'performChatCompletion',
   PERFORM_OVERWRITE_TEXT: 'performOverwriteText',
+  QUERY_AGENT: 'bg.queryAgent',
+  EXECUTE_AGENT: 'bg.executeAgent',
+};
+
+const OUTBOUND_ACTIONS = {
+  EXECUTE_AGENT: 'agentExecutor.executeAgent',
+};
+
+const executeAgent = (request, sender, sendResponse) => {
+  logger.debug ('Execute agent request received:', request);
+  const messageExtensionRequest = {
+    action: OUTBOUND_ACTIONS.EXECUTE_AGENT,
+    data: request.data,
+  };
+  logger.debug (
+    'Forwarding agent execution request to extension:',
+    messageExtensionRequest
+  );
+  chrome.runtime.sendMessage (messageExtensionRequest, response => {
+    logger.debug ('Agent execution response received:', response);
+    sendResponse (response);
+  });
+  return true;
+};
+
+const queryAgent = (request, sender, sendResponse) => {
+  logger.debug ('Query agent request received:', request);
+
+  // fetch the agents from storage
+  chrome.storage.local.get ('agents', result => {
+    if (chrome.runtime.lastError) {
+      logger.error ('Error fetching agents:', chrome.runtime.lastError);
+      sendResponse ({agents: []});
+      return;
+    }
+
+    const agents = result.agents || [];
+    logger.debug ('Agents:', agents);
+
+    // find the agent by id
+    const agent = agents.find (a => a.id === request.agentId);
+    sendResponse ({agent: agent});
+  });
+  return true;
 };
 
 // Handler for chat completion requests
@@ -148,6 +214,8 @@ const actionHandlers = {
   [ACTIONS.GET_STORED_PROMPTS]: handleGetStoredPromptsRequest,
   [ACTIONS.AI_READ_ACTION]: handleAIAction,
   [ACTIONS.AI_WRITE_ACTION]: handleAIAction,
+  [ACTIONS.QUERY_AGENT]: queryAgent,
+  [ACTIONS.EXECUTE_AGENT]: executeAgent,
 };
 
 // Listener for messages from the content script
@@ -179,3 +247,31 @@ chrome.action.onClicked.addListener (tab => {
     }
   );
 });
+
+chrome.runtime.onConnect.addListener (function (port) {
+  logger.debug ('Port connected:', port.name);
+  if (port.name === 'sidepanel') {
+    port.onDisconnect.addListener (async () => {
+      logger.debug ('Sidepanel disconnected');
+      closeAllSidepanels ();
+      logger.info ('All Sidepanels closed');
+    });
+  }
+});
+
+// Function to close sidepanels for all tabs
+function closeAllSidepanels () {
+  // Query for all tabs
+  chrome.tabs.query ({}, tabs => {
+    tabs.forEach (tab => {
+      // Attempt to close the sidepanel for each tab
+      chrome.sidePanel
+        .setOptions ({enabled: false, tabId: tab.id})
+        .catch (error => {
+          // If there's an error (e.g., sidepanel wasn't open), log it but continue
+          logger.error (`Error closing sidepanel for tab ${tab.id}:`, error);
+        });
+      logger.debug (`Sidepanel closed for tab ${tab.id}`);
+    });
+  });
+}

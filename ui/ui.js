@@ -11,12 +11,6 @@ import {
   ID_TOGGLE_SIDEBAR_BUTTON,
   ID_LANGUAGE_SELECT,
   ID_CUSTOM_PROMPT_INPUT,
-  ID_API_URL_INPUT,
-  ID_API_TOKEN_INPUT,
-  ID_MODEL_NAME_INPUT,
-  ID_MAX_TOKEN_INPUT,
-  ID_TEMPERATURE_INPUT,
-  ID_TOP_P_INPUT,
   ID_SUBMIT_CUSTOM_PROMPT_BUTTON,
   ID_CONFIG_DROPDOWN,
   ID_STORED_PROMPT_BUTTON,
@@ -28,9 +22,10 @@ import {
   ID_STORED_PROMPT_INPUT,
 } from '../scripts/constants.js';
 import {createLogger} from '../scripts/logger.js';
+import '../services/messageGateway.js';
+const logger = createLogger ('ui.js');
 
-const logger = createLogger ();
-
+// Function to initialize the configuration dropdown menu
 async function initConfigDropdown () {
   logger.debug ('Initializing configuration dropdown menu');
   const configDropdown = document.getElementById (ID_CONFIG_DROPDOWN);
@@ -71,17 +66,18 @@ async function initConfigDropdown () {
   configButton.addEventListener ('click', e => {
     e.stopPropagation ();
     const isDisplayed = dropdownMenu.style.display === 'block';
-    dropdownMenu.style.display = isDisplayed ? 'none' : 'block';
 
     if (markdownContent.style.display === 'none') {
       showMarkdownContent ();
       hideConfigPopup ();
-    }
+    } else {
+      dropdownMenu.style.display = isDisplayed ? 'none' : 'block';
 
-    if (!isDisplayed) {
-      const buttonRect = configButton.getBoundingClientRect ();
-      dropdownMenu.style.top = `${buttonRect.bottom}px`;
-      dropdownMenu.style.right = '0px';
+      if (!isDisplayed) {
+        const buttonRect = configButton.getBoundingClientRect ();
+        dropdownMenu.style.top = `${buttonRect.bottom}px`;
+        dropdownMenu.style.right = '0px';
+      }
     }
   });
 
@@ -113,6 +109,7 @@ function hideConfigPopup () {
   configPopupDiv.style.display = 'none';
 }
 
+// dynamitcally load dropdown items from config-menu.json
 async function loadDropdownItems () {
   logger.debug ('Loading dropdown items');
   try {
@@ -125,6 +122,7 @@ async function loadDropdownItems () {
   }
 }
 
+// load the configuration html page based on the selected dropdown item
 async function loadConfigPage (item) {
   try {
     if (!item.htmlFile || !item.jsFile || !item.handlerFunction) {
@@ -155,6 +153,7 @@ async function loadConfigPage (item) {
   }
 }
 
+// main function to initialize the UI
 export function initUI () {
   //1. Button to show or hide the configuration popup
   initConfigDropdown ();
@@ -181,18 +180,20 @@ export function initUI () {
     const tabId = tab.id;
     console.log ('Tab ID:', tabId);
     try {
-      // Open the side panel for the active tab
-      await chrome.sidePanel.open ({tabId});
       // Set options for the side panel
       await chrome.sidePanel.setOptions ({
         tabId,
         path: SIDE_PANEL_HTML,
         enabled: true,
       });
-      window.close (); // Closes the popup after opening the side panel
+      // Open the side panel for the active tab
+      await chrome.sidePanel.open ({tabId});
+      logger.info ('Side panel opened for tab:', tabId);
+      chrome.runtime.connect ({name: 'sidepanel'});
+      //window.close (); // Closes the popup after opening the side panel
       chrome.storage.local.set ({preferSidePanel: true});
     } catch (error) {
-      console.error ('Failed to open or configure the side panel:', error);
+      logger.error ('Failed to open or configure the side panel:', error);
     }
   });
 
@@ -293,149 +294,6 @@ export function initUI () {
 
   // 8. configuration settings
 
-  const apiUrlInput = document.getElementById (ID_API_URL_INPUT);
-  const apiTokenInput = document.getElementById (ID_API_TOKEN_INPUT);
-  const modelNameInput = document.getElementById (ID_MODEL_NAME_INPUT);
-  const maxTokenInput = document.getElementById (ID_MAX_TOKEN_INPUT);
-  const temperatureInput = document.getElementById (ID_TEMPERATURE_INPUT);
-  const topPInput = document.getElementById (ID_TOP_P_INPUT);
-
-  // Helper function to mask the API key for display
-  // function maskApiKey (apiKey) {
-  //   if (typeof apiKey !== 'string' || !apiKey) {
-  //     return 'None'; // Return empty if no key is provided or if it's not a string
-  //   }
-
-  //   const keyLength = apiKey.length;
-
-  //   if (keyLength === 1) {
-  //     // Return the single character unmasked
-  //     return apiKey;
-  //   } else if (keyLength === 2 || keyLength === 3) {
-  //     // Mask the first character and show the second
-  //     return '*' + apiKey.slice (1);
-  //   } else {
-  //     // For keys with more than 3 characters, mask all but the last 3 characters
-  //     const numAsterisks = Math.min (6, keyLength - 3);
-  //     return '*'.repeat (numAsterisks) + apiKey.slice (-3);
-  //   }
-  // }
-
-  // const saveApiUrlButton = document.getElementById (ID_SAVE_API_URL_BUTTON);
-  // const testConnectionButton = document.getElementById (
-  //   ID_TEST_CONNECTION_BUTTON
-  // );
-  // // Save configuration settings
-  // saveApiUrlButton.addEventListener ('click', () => {
-  //   // Check if required fields are not empty
-  //   if (
-  //     !apiUrlInput.value.trim () ||
-  //     !maxTokenInput.value.trim () ||
-  //     !temperatureInput.value.trim () ||
-  //     !topPInput.value.trim ()
-  //   ) {
-  //     updateStatus ('Please fill in all required * fields.');
-  //     return;
-  //   }
-  //   if (!isValidUrl (apiUrlInput.value)) {
-  //     updateStatus ('Please enter a valid API URL.');
-  //     return;
-  //   }
-
-  //   // Ensure that numeric inputs are not only positive but also within expected ranges
-  //   const maxTokens = parseInt (maxTokenInput.value, 10);
-  //   const temperature = parseFloat (temperatureInput.value);
-  //   const topP = parseFloat (topPInput.value);
-
-  //   if (isNaN (maxTokens) || maxTokens <= 0) {
-  //     updateStatus ('Max tokens must be a positive number.');
-  //     return;
-  //   }
-
-  //   if (isNaN (temperature) || temperature < 0 || temperature > 1) {
-  //     updateStatus ('Temperature must be a number between 0 and 1.');
-  //     return;
-  //   }
-
-  //   if (isNaN (topP) || topP < 0 || topP > 1) {
-  //     updateStatus ('Top P must be a number between 0 and 1.');
-  //     return;
-  //   }
-  //   chrome.storage.local.set (
-  //     {
-  //       [STORAGE_API_URL]: apiUrlInput.value,
-  //       [STORAGE_API_TOKEN]: apiTokenInput.value,
-  //       [STORAGE_MODEL_NAME]: modelNameInput.value,
-  //       [STORAGE_MAX_TOKEN]: maxTokenInput.value,
-  //       [STORAGE_TEMPERATURE]: temperatureInput.value,
-  //       [STORAGE_TOP_P]: topPInput.value,
-  //       storedPrompt1: storedPrompt1Input.value,
-  //       storedPrompt2: storedPrompt2Input.value,
-  //       storedPrompt3: storedPrompt3Input.value,
-  //       storedPrompt4: storedPrompt4Input.value,
-  //       storedPrompt5: storedPrompt5Input.value,
-  //     },
-  //     () => {
-  //       document.getElementById (
-  //         ID_API_URL_STORAGE_SPAN
-  //       ).textContent = `(Stored: ${apiUrlInput.value})`;
-
-  //       // Extract and conditionally format the apiToken for display
-  //       if (apiTokenInput.value.trim ()) {
-  //         // Check if the input is effectively non-empty after trimming
-  //         // If not empty, format with first 4 chars '***' and the last 4 chars
-  //         document.getElementById (
-  //           ID_API_TOKEN_STORAGE_SPAN
-  //         ).textContent = `(Stored: ${maskApiKey (apiTokenInput.value)})`;
-  //       } else {
-  //         // If empty, set display to indicate no stored token
-  //         document.getElementById (
-  //           ID_API_TOKEN_STORAGE_SPAN
-  //         ).textContent = `(Stored: None)`;
-  //       }
-
-  //       document.getElementById (
-  //         ID_MODEL_NAME_STORAGE_SPAN
-  //       ).textContent = `(Stored: ${modelNameInput.value})`;
-
-  //       document.getElementById (
-  //         ID_MAX_TOKEN_STORAGE_SPAN
-  //       ).textContent = `(Stored: ${maxTokenInput.value})`;
-
-  //       document.getElementById (
-  //         ID_TEMPERATURE_STORAGE_SPAN
-  //       ).textContent = `(Stored: ${temperatureInput.value})`;
-
-  //       document.getElementById (
-  //         ID_TOP_P_STORAGE_SPAN
-  //       ).textContent = `(Stored: ${topPInput.value})`;
-
-  //       // Loop through stored prompts to update both storage text and button title
-  //       storedPromptInputs.forEach ((input, index) => {
-  //         // Check if input value exists and handle appropriately
-  //         const inputValue = input.value || ''; // Ensure it defaults to an empty string if undefined
-
-  //         // Update storage text if corresponding storage element exists
-  //         if (index < storedPromptStorages.length) {
-  //           const displayText = inputValue ? inputValue.slice (0, 20) : 'None';
-  //           storedPromptStorages[
-  //             index
-  //           ].textContent = `(Stored: ${displayText})`;
-  //         }
-
-  //         // Update button title if corresponding button exists
-  //         if (index < storedPromptButtons.length) {
-  //           const titleText = inputValue ? inputValue.slice (0, 100) : '';
-  //           storedPromptButtons[index].title = titleText;
-  //         }
-  //       });
-
-  //       //configPopup.style.display = 'none'; // Optionally hide the popup after saving
-  //       updateStatus ('Settings saved successfully.');
-  //     }
-  //   );
-  // });
-
   function handlePromptSubmissionWithContext (prompt, language) {
     const includeWebContent = document.getElementById (
       ID_INCLUDE_WEB_CONTENT_CHECKBOX
@@ -528,16 +386,6 @@ export function initUI () {
       });
     });
   }
-
-  // testConnectionButton.addEventListener ('click', () => {
-  //   const apiUrl = apiUrlInput.value;
-  //   const apiToken = apiTokenInput.value;
-  //   if (!isValidUrl (apiUrl)) {
-  //     updateStatus ('Please enter a valid API URL.');
-  //     return;
-  //   }
-  //   testApiConnection (apiUrl, apiToken);
-  // });
 }
 
 // ui.js ends here

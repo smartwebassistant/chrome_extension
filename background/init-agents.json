@@ -1,0 +1,88 @@
+[
+  {
+    "id": "agent_001",
+    "name": "Email Reply Assistant",
+    "description": "Helps craft professional email replies for Gmail and Outlook",
+    "ownerId": "user_123",
+    "createdBy": "user_123",
+    "lastUpdatedBy": "user_123",
+    "creationTime": "2024-03-15T10:30:00Z",
+    "lastUpdateTime": "2024-03-15T10:30:00Z",
+    "tags": ["email", "productivity", "gmail", "outlook"],
+    "category": "Communication",
+    "version": "1.1",
+    "likes": 150,
+    "downloads": 500,
+    "isPublic": true,
+    "triggers": [
+      {
+        "type": "url",
+        "condition": [
+          "https://mail.google.com/*",
+          "https://outlook.live.com/mail/*"
+        ]
+      },
+      {
+        "type": "element_type",
+        "condition": "RW"
+      }
+    ],
+    "steps": [
+      {
+        "id": "step_001",
+        "name": "Extract Email Content",
+        "description": "Extract the text content from the web page",
+        "tool": {
+          "id": "tool_001",
+          "name": "Web Content Extractor",
+          "description": "Extracts text content from web pages",
+          "type": "web-scraper"
+        },
+        "input": "${pageText}",
+        "output": {
+          "key": "emailContent"
+        }
+      },
+      {
+        "id": "step_002",
+        "name": "Generate Reply",
+        "description": "Craft a professional reply based on the email content",
+        "tool": {
+          "id": "tool_101",
+          "name": "Email Reply Generator",
+          "description": "Generates professional email replies",
+          "type": "llm",
+          "config": {
+            "model": "gpt-4",
+            "temperature": 0.7
+          }
+        },
+        "input": {
+          "system_prompt": "Using the following email content as context, generate a professional and concise reply: ${emailContent}",
+          "user_prompt": "Please provide a professional and concise reply to the email content above."
+        },
+        "output": {
+          "key": "generatedReply"
+        }
+      },
+      {
+        "id": "step_003",
+        "name": "Fill Reply",
+        "description": "Fill the generated reply into the email input field",
+        "tool": {
+          "id": "tool_002",
+          "name": "DOM Manipulator",
+          "description": "Fills text into specified DOM elements",
+          "type": "dom-manipulator"
+        },
+        "input": {
+          "elementSelector": "${clickedElement}",
+          "content": "${generatedReply}"
+        },
+        "output": {
+          "key": "fillStatus"
+        }
+      }
+    ]
+  }
+]

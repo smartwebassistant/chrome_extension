@@ -1,12 +1,8 @@
 //utils.js;
 
 import {ID_STATUS_FOOTER} from './constants.js';
-// Log levels
-export const LOG_LEVELS = {
-  ERROR: 1,
-  INFO: 2,
-  DEBUG: 3,
-};
+import {createLogger} from './logger.js';
+const logger = createLogger ('utils.js');
 // Update the status display in the bottom
 export function updateStatus (message) {
   // let user know the status of each operation
@@ -27,4 +23,41 @@ export function isValidUrl (url) {
     'i'
   ); // fragment locator
   return !!pattern.test (url);
+}
+
+export function messageExtension (request) {
+  logger.debug ('Sending message to extension:', request);
+  return new Promise ((resolve, reject) => {
+    chrome.runtime.sendMessage (request, response => {
+      if (chrome.runtime.lastError) {
+        reject (chrome.runtime.lastError);
+      } else {
+        resolve (response);
+      }
+    });
+  });
+}
+
+export function messageContentScript (tabId, request) {
+  return new Promise ((resolve, reject) => {
+    chrome.tabs.sendMessage (tabId, request, response => {
+      if (chrome.runtime.lastError) {
+        reject (chrome.runtime.lastError);
+      } else {
+        resolve (response);
+      }
+    });
+  });
+}
+
+export function messageBackground (request) {
+  return new Promise ((resolve, reject) => {
+    chrome.runtime.sendMessage (request, response => {
+      if (chrome.runtime.lastError) {
+        reject (chrome.runtime.lastError);
+      } else {
+        resolve (response);
+      }
+    });
+  });
 }

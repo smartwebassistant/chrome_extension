@@ -12,5 +12,12 @@
     "handlerFunction": "init",
     "jsFile": "prompts-config.js",
     "htmlFile": "prompts-config.html"
+  },
+  {
+    "id": "agentConfigLink",
+    "text": "Agent Configuration",
+    "handlerFunction": "init",
+    "jsFile": "agent-config.js",
+    "htmlFile": "agent-config.html"
   }
 ]

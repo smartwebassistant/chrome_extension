@@ -9,7 +9,7 @@ import {
 } from '../../scripts/constants.js';
 import {updateStatus} from '../../scripts/utils.js';
 import {createLogger} from '../../scripts/logger.js';
-const logger = createLogger ();
+const logger = createLogger ('promptsConfig.js');
 
 export function init () {
   const configPopupDiv = document.getElementById (ID_CONFIG_POPUP);

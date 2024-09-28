@@ -27,7 +27,7 @@ import {
 import {testApiConnection} from '../../scripts/api.js';
 import {createLogger} from '../../scripts/logger.js';
 import {isValidUrl, updateStatus} from '../../scripts/utils.js';
-const logger = createLogger ();
+const logger = createLogger ('apiConfig.js');
 
 export function init () {
   logger.debug ('Initializing API configuration...');

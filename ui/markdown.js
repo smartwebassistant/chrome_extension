@@ -3,7 +3,7 @@
 import {ID_MARKDOWN_CONTENT} from '../scripts/constants.js';
 import {createLogger} from '../scripts/logger.js';
 
-const logger = createLogger ();
+const logger = createLogger ('markdown.js');
 
 // Define the 'codeblocks' extension to make the code blocks more readable
 function codeblocks () {

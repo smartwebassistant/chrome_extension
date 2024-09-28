@@ -12,7 +12,7 @@
     "tabs"
   ],
   "action": {
-    "default_popup": "ui/popup.html"
+    "default_tile": "side_panel"
   },
   "background": {
     "service_worker": "background/background.js",
@@ -20,7 +20,7 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["contextMenu.js", "ui/config-menus/*"],
+      "resources": ["contextMenu.js", "ui/config-menus/*", "init-agent.json"],
       "matches": ["<all_urls>"]
     }
   ],
