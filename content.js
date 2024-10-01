@@ -108,12 +108,38 @@ chrome.runtime.onMessage.addListener (function (request, sender, sendResponse) {
 let currentObserver = null;
 
 function handleFillText (text, element = lastRightClickedElement) {
-  if (element) {
-    if (element.tagName === 'SPAN') {
-      element.textContent = text;
-    } else {
-      element.innerHTML = text;
-    }
+  console.debug ('Filling text:', text);
+  if (!element || !isElementEditable (element)) {
+    alert (
+      "Unable to insert text. Please make sure you're in an editable area."
+    );
+    return;
+  }
+
+  const currentText = element.innerText.trim ();
+  const shouldOverwrite = currentText
+    ? confirm (getOverwriteConfirmationMessage (currentText))
+    : true;
+
+  if (shouldOverwrite) {
+    fillElementWithText (element, text);
+  } else {
+    console.log ('Overwrite cancelled by user');
+  }
+}
+
+function getOverwriteConfirmationMessage (text) {
+  const previewText = text.length > 100
+    ? `${text.substring (0, 100)}...`
+    : text;
+  return `Do you want to overwrite the following text with an AI response?\n\n${previewText}`;
+}
+
+function fillElementWithText (element, text) {
+  if (element.tagName === 'SPAN') {
+    element.textContent = text;
+  } else {
+    element.value = text;
   }
 }
 

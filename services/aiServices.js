@@ -30,7 +30,7 @@ export function performChatCompletion (request, sender, sendResponse) {
   logger.debug ('Chat completion request received' + request);
   prompt = request.subAction;
   const language = document.getElementById (ID_LANGUAGE_SELECT).value;
-  const context = request.elementInfo.text;
+  const context = request.data.elementInfo.text;
 
   handlePromptSubmission (prompt, language, context)
     .then (result => {

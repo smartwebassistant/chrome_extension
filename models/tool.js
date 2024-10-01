@@ -24,6 +24,20 @@ export class Tool {
     }
   }
 
+  static fromJSON (json) {
+    return new Tool (json);
+  }
+
+  toJSON () {
+    return {
+      id: this.id,
+      name: this.name,
+      description: this.description,
+      type: this.type,
+      config: this.config,
+    };
+  }
+
   async executeWebScraper (input) {
     logger.debug ('Executing web scraper:', input);
     // Implement web scraping logic here

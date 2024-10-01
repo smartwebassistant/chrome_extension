@@ -35,7 +35,7 @@ export function fetchOpenAI (system_prompt, user_prompt) {
     //print debug log in console
     logger.debug (`system_prompt: ${system_prompt}`);
     logger.debug (`user_prompt: ${user_prompt}`);
-    let response = '';
+    let generated_text = '';
 
     // Get settings from local storage
     chrome.storage.local.get (
@@ -141,8 +141,8 @@ export function fetchOpenAI (system_prompt, user_prompt) {
                     ) {
                       const content = json.choices[0].delta.content;
                       logger.debug ('Received content: ' + content);
+                      generated_text += content;
                       appendMarkdown (content);
-                      response += content;
                       if (content.includes ('\n')) {
                         displayMarkdown ();
                       }
@@ -169,7 +169,8 @@ export function fetchOpenAI (system_prompt, user_prompt) {
                 updateStatus (`Stream completed.`);
                 displayMarkdown (true);
                 cancelButton.style.display = 'none'; // Hide cancel button
-                resolve (response);
+                logger.debug ('generated_text ', generated_text);
+                resolve (generated_text);
                 return;
               }
               const chunk = new TextDecoder ('utf-8').decode (value);
