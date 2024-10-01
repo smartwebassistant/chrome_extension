@@ -64,14 +64,14 @@ function removeExistingMenuItems () {
 
 function createSubMenus () {
   createAIReadSubmenu ();
-  createAIWriteSubmenu ();
+  //createAIWriteSubmenu ();
   createSmartAgentsSubmenu ();
 }
 
 function createAIReadSubmenu () {
   createSubmenu (
     MENU_IDS.AI_READ,
-    'Read Assistant',
+    'Stored Prompts',
     ['all'],
     updateAIReadSubmenus
   );
