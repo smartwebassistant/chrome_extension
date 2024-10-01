@@ -4,7 +4,7 @@
 export const DEFAULT_API_URL = 'https://api.openai.com/v1/chat/completions';
 export const DEFAULT_MODEL_NAME = 'gpt-4o';
 export const DEFAULT_MAX_TOKENS = 4096;
-export const DEFAULT_TEMPERATURE = 0.7;
+export const DEFAULT_TEMPERATURE = 0;
 export const DEFAULT_TOP_P = 0.9;
 
 export const DEFAULT_LANGUAGE = 'English';
