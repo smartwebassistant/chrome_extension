@@ -20,6 +20,7 @@ export const STORAGE_KEY_LAST_CUSTOM_PROMPT = 'lastCustomPrompt';
 export const STORAGE_KEY_SELECTED_LANGUAGE = 'selectedLanguage';
 export const STORAGE_STORED_PROMPT_PREFIX = 'storedPrompt'; // Generic prefix for dynamic prompt storage
 export const STORAGE_DISABLE_SYSTEM_ROLE = 'disableSystemRole';
+export const STORAGE_INITIALIZATION_KEY = 'extensionInitialized';
 
 // HTML ID Constants
 export const ID_CONFIG_BUTTON = 'configButton';

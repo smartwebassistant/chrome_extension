@@ -1,7 +1,12 @@
 // background.js
 //
 
-import {createContextMenu, handleContextMenuClick} from './contextMenu.js';
+import {
+  createContextMenu,
+  handleContextMenuClick,
+  updateAIReadSubmenus,
+} from './contextMenu.js';
+import {initializeExtension} from './initializeExtension.js';
 import {createLogger} from '../scripts/logger.js';
 
 const logger = createLogger ('background.js');
@@ -15,13 +20,14 @@ chrome.sidePanel
   .catch (error => logger.error (error));
 
 // Create context menu when the extension is installed or updated
-chrome.runtime.onInstalled.addListener (details => {
+chrome.runtime.onInstalled.addListener (async details => {
   logger.debug ('Extension installed or updated. Reason:', details.reason);
-  createContextMenuForCurrentTab ();
 
   if (details.reason === 'install' || details.reason === 'update') {
-    initializeAgents ();
+    await initializeAgents ();
+    await initializeExtension ();
   }
+  createContextMenuForCurrentTab ();
 });
 
 async function initializeAgents () {

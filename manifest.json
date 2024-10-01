@@ -20,7 +20,12 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["contextMenu.js", "ui/config-menus/*", "init-agent.json"],
+      "resources": [
+        "contextMenu.js",
+        "ui/config-menus/*",
+        "init-agent.json",
+        "initializeExtension.js"
+      ],
       "matches": ["<all_urls>"]
     }
   ],
