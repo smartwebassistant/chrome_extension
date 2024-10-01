@@ -169,101 +169,99 @@ function maskApiKey (apiKey) {
 
 function save () {
   const saveApiUrlButton = document.getElementById (ID_SAVE_API_CONFIG_BUTTON);
-  saveApiUrlButton.addEventListener ('click', () => {
-    // Check if required fields are not empty
-    if (
-      !apiUrlInput.value.trim () ||
-      !maxTokenInput.value.trim () ||
-      !temperatureInput.value.trim () ||
-      !topPInput.value.trim ()
-    ) {
-      updateStatus ('Please fill in all required * fields.');
-      return;
-    }
-    if (!isValidUrl (apiUrlInput.value)) {
-      updateStatus ('Please enter a valid API URL.');
-      return;
-    }
+  // Check if required fields are not empty
+  if (
+    !apiUrlInput.value.trim () ||
+    !maxTokenInput.value.trim () ||
+    !temperatureInput.value.trim () ||
+    !topPInput.value.trim ()
+  ) {
+    updateStatus ('Please fill in all required * fields.');
+    return;
+  }
+  if (!isValidUrl (apiUrlInput.value)) {
+    updateStatus ('Please enter a valid API URL.');
+    return;
+  }
 
-    // Ensure that numeric inputs are not only positive but also within expected ranges
-    const maxTokens = parseInt (maxTokenInput.value, 10);
-    const temperature = parseFloat (temperatureInput.value);
-    const topP = parseFloat (topPInput.value);
+  // Ensure that numeric inputs are not only positive but also within expected ranges
+  const maxTokens = parseInt (maxTokenInput.value, 10);
+  const temperature = parseFloat (temperatureInput.value);
+  const topP = parseFloat (topPInput.value);
 
-    if (isNaN (maxTokens) || maxTokens <= 0) {
-      updateStatus ('Max tokens must be a positive number.');
-      return;
-    }
+  if (isNaN (maxTokens) || maxTokens <= 0) {
+    updateStatus ('Max tokens must be a positive number.');
+    return;
+  }
 
-    if (isNaN (temperature) || temperature < 0 || temperature > 1) {
-      updateStatus ('Temperature must be a number between 0 and 1.');
-      return;
-    }
+  if (isNaN (temperature) || temperature < 0 || temperature > 1) {
+    updateStatus ('Temperature must be a number between 0 and 1.');
+    return;
+  }
 
-    if (isNaN (topP) || topP < 0 || topP > 1) {
-      updateStatus ('Top P must be a number between 0 and 1.');
-      return;
-    }
+  if (isNaN (topP) || topP < 0 || topP > 1) {
+    updateStatus ('Top P must be a number between 0 and 1.');
+    return;
+  }
 
-    const disableSystemRoleCheckbox = document.getElementById (
-      ID_DISABLE_SYSTEM_ROLE_CHECKBOX
-    );
-    const disableSystemRoleSpan = document.getElementById (
-      ID_DISABLE_SYSTEM_ROLE_SPAN
-    );
-    chrome.storage.local.set (
-      {
-        [STORAGE_API_URL]: apiUrlInput.value,
-        [STORAGE_API_TOKEN]: apiTokenInput.value,
-        [STORAGE_MODEL_NAME]: modelNameInput.value,
-        [STORAGE_MAX_TOKEN]: maxTokenInput.value,
-        [STORAGE_TEMPERATURE]: temperatureInput.value,
-        [STORAGE_TOP_P]: topPInput.value,
-        [STORAGE_DISABLE_SYSTEM_ROLE]: disableSystemRoleCheckbox.checked,
-      },
-      () => {
+  const disableSystemRoleCheckbox = document.getElementById (
+    ID_DISABLE_SYSTEM_ROLE_CHECKBOX
+  );
+  const disableSystemRoleSpan = document.getElementById (
+    ID_DISABLE_SYSTEM_ROLE_SPAN
+  );
+  chrome.storage.local.set (
+    {
+      [STORAGE_API_URL]: apiUrlInput.value,
+      [STORAGE_API_TOKEN]: apiTokenInput.value,
+      [STORAGE_MODEL_NAME]: modelNameInput.value,
+      [STORAGE_MAX_TOKEN]: maxTokenInput.value,
+      [STORAGE_TEMPERATURE]: temperatureInput.value,
+      [STORAGE_TOP_P]: topPInput.value,
+      [STORAGE_DISABLE_SYSTEM_ROLE]: disableSystemRoleCheckbox.checked,
+    },
+    () => {
+      document.getElementById (
+        ID_API_URL_STORAGE_SPAN
+      ).textContent = `(Stored: ${apiUrlInput.value})`;
+
+      // Extract and conditionally format the apiToken for display
+      if (apiTokenInput.value.trim ()) {
+        // Check if the input is effectively non-empty after trimming
+        // If not empty, format with first 4 chars '***' and the last 4 chars
         document.getElementById (
-          ID_API_URL_STORAGE_SPAN
-        ).textContent = `(Stored: ${apiUrlInput.value})`;
-
-        // Extract and conditionally format the apiToken for display
-        if (apiTokenInput.value.trim ()) {
-          // Check if the input is effectively non-empty after trimming
-          // If not empty, format with first 4 chars '***' and the last 4 chars
-          document.getElementById (
-            ID_API_TOKEN_STORAGE_SPAN
-          ).textContent = `(Stored: ${maskApiKey (apiTokenInput.value)})`;
-        } else {
-          // If empty, set display to indicate no stored token
-          document.getElementById (
-            ID_API_TOKEN_STORAGE_SPAN
-          ).textContent = `(Stored: None)`;
-        }
-
+          ID_API_TOKEN_STORAGE_SPAN
+        ).textContent = `(Stored: ${maskApiKey (apiTokenInput.value)})`;
+      } else {
+        // If empty, set display to indicate no stored token
         document.getElementById (
-          ID_MODEL_NAME_STORAGE_SPAN
-        ).textContent = `(Stored: ${modelNameInput.value})`;
-
-        document.getElementById (
-          ID_MAX_TOKEN_STORAGE_SPAN
-        ).textContent = `(Stored: ${maxTokenInput.value})`;
-
-        document.getElementById (
-          ID_TEMPERATURE_STORAGE_SPAN
-        ).textContent = `(Stored: ${temperatureInput.value})`;
-
-        document.getElementById (
-          ID_TOP_P_STORAGE_SPAN
-        ).textContent = `(Stored: ${topPInput.value})`;
-
-        disableSystemRoleSpan.style.display = 'inline';
-        setTimeout (() => {
-          disableSystemRoleSpan.style.display = 'none';
-        }, 2000);
-
-        //configPopup.style.display = 'none'; // Optionally hide the popup after saving
-        updateStatus ('Settings saved successfully.');
+          ID_API_TOKEN_STORAGE_SPAN
+        ).textContent = `(Stored: None)`;
       }
-    );
-  });
+
+      document.getElementById (
+        ID_MODEL_NAME_STORAGE_SPAN
+      ).textContent = `(Stored: ${modelNameInput.value})`;
+
+      document.getElementById (
+        ID_MAX_TOKEN_STORAGE_SPAN
+      ).textContent = `(Stored: ${maxTokenInput.value})`;
+
+      document.getElementById (
+        ID_TEMPERATURE_STORAGE_SPAN
+      ).textContent = `(Stored: ${temperatureInput.value})`;
+
+      document.getElementById (
+        ID_TOP_P_STORAGE_SPAN
+      ).textContent = `(Stored: ${topPInput.value})`;
+
+      disableSystemRoleSpan.style.display = 'inline';
+      setTimeout (() => {
+        disableSystemRoleSpan.style.display = 'none';
+      }, 2000);
+
+      //configPopup.style.display = 'none'; // Optionally hide the popup after saving
+      updateStatus ('Settings saved successfully.');
+    }
+  );
 }
