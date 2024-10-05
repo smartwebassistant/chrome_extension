@@ -139,7 +139,7 @@ function fillElementWithText (element, text) {
   if (element.tagName === 'SPAN') {
     element.textContent = text;
   } else {
-    element.value = text;
+    element.innerHTML = `<pre>${text}</pre>`;
   }
 }
 
