@@ -21,11 +21,11 @@ import {createLogger} from '../scripts/logger.js';
 const logger = createLogger ('initializeExtension.js');
 
 const DEFAULT_PROMPTS = [
-  'Summarize it.',
-  'Explain this concept.',
-  'Translate it.',
-  'Find the main points in this text.',
-  'Provide pros and cons for this topic.',
+  'Summarize the Article, Provide a concise summary of this article, highlighting the main points and any conclusions drawn.',
+  'Extract Key Facts, List all key facts mentioned in this article, including dates, statistics, and important names.',
+  'Identify Opinions vs. Facts, Identify and separate opinions from facts in this article. Provide a list of statements classified as either factual or opinion-based.',
+  'Generate Questions for Further Research, Based on the content of this article, what are some follow-up questions that could be asked for further research or clarification? ',
+  'Clarify Technical Terms, Identify and explain any technical terms or jargon used in this article. Provide definitions or simplified explanations to help understand the context.',
 ];
 
 export async function initializeExtension () {
