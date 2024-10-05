@@ -11,6 +11,7 @@ import {
 } from '../scripts/constants.js';
 import {createLogger} from '../scripts/logger.js';
 import {updateStatus} from '../scripts/utils.js';
+import {MarkdownHandler} from '../scripts/responseHandler.js';
 const logger = createLogger ('aiServices.js');
 
 // chrome.runtime.onMessage.addListener ((request, sender, sendResponse) => {
@@ -113,7 +114,8 @@ export function handlePromptSubmission (prompt, language, context) {
         fetchOpenAI (
           // if disableSystemRole is checked, use userPrompt only
           disableSystemRole ? '' : outputLanguage,
-          disableSystemRole ? `${outputLanguage} ${userPrompt}` : userPrompt
+          disableSystemRole ? `${outputLanguage} ${userPrompt}` : userPrompt,
+          [new MarkdownHandler ()]
         ).catch (error => {
           logger.error ('Failed to process custom prompt.' + error.message);
           updateStatus ('Failed to process custom prompt.' + error.message);
@@ -132,7 +134,8 @@ export function handlePromptSubmission (prompt, language, context) {
         disableSystemRole ? '' : systemPrompt,
         disableSystemRole
           ? `${systemPrompt} ${outputLanguage} ${userPrompt}`
-          : `${outputLanguage} ${userPrompt}`
+          : `${outputLanguage} ${userPrompt}`,
+        [new MarkdownHandler ()]
       ).catch (error => {
         logger.error ('Failed to process custom prompt.' + error.message);
         updateStatus ('Failed to process custom prompt.' + error.message);
@@ -142,7 +145,8 @@ export function handlePromptSubmission (prompt, language, context) {
         disableSystemRole ? '' : systemPrompt,
         disableSystemRole
           ? `${systemPrompt} ${outputLanguage} ${prompt}`
-          : `${outputLanguage} ${prompt}`
+          : `${outputLanguage} ${prompt}`,
+        [new MarkdownHandler ()]
       ).catch (error => {
         logger.error ('Failed to process custom prompt.' + error.message);
         updateStatus ('Failed to process custom prompt.' + error.message);

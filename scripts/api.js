@@ -4,6 +4,7 @@ import {updateStatus} from './utils.js';
 import {initMarkdown, appendMarkdown, displayMarkdown} from '../ui/markdown.js';
 import {ID_API_CONNECTION_TEST_STATUS} from './constants.js';
 import {createLogger} from './logger.js';
+import {ChatCompletionResponseHandler} from './responseHandler.js';
 
 const logger = createLogger ('api.js');
 
@@ -30,8 +31,24 @@ cancelButton.addEventListener ('click', () => {
   * @param {string} user_prompt - The user prompt to be sent to the API.
   * @returns {void}
  */
-export function fetchOpenAI (system_prompt, user_prompt) {
+export function fetchOpenAI (system_prompt, user_prompt, responseHandler = []) {
   return new Promise ((resolve, reject) => {
+    if (system_prompt === undefined || user_prompt === undefined) {
+      logger.error ('System or user prompt is undefined.');
+      return reject (new Error ('System or user prompt is undefined.'));
+    }
+
+    if (responseHandler.length === 0) {
+      logger.error ('No response handler provided.');
+      return reject (new Error ('No response handler provided.'));
+    }
+
+    responseHandler.forEach (handler => {
+      if (!(handler instanceof ChatCompletionResponseHandler)) {
+        logger.error ('Invalid response handler provided.');
+        return reject (new Error ('Invalid response handler provided.'));
+      }
+    });
     //print debug log in console
     logger.debug (`system_prompt: ${system_prompt}`);
     logger.debug (`user_prompt: ${user_prompt}`);
@@ -43,7 +60,14 @@ export function fetchOpenAI (system_prompt, user_prompt) {
       async function (settings) {
         if (chrome.runtime.lastError) {
           logger.error ('Error fetching settings:', chrome.runtime.lastError);
-          updateStatus ('Failed to load settings. Please try again.');
+          responseHandler.forEach (handler => {
+            handler.processError (chrome.runtime.lastError);
+          });
+          responseHandler.forEach (handler => {
+            handler.processStatus (
+              'Failed to load settings. Please try again.'
+            );
+          });
           return;
         }
         // Cancel any ongoing fetch
@@ -79,7 +103,6 @@ export function fetchOpenAI (system_prompt, user_prompt) {
         };
 
         // Convert payload to JSON string
-        const payloadString = JSON.stringify (payload);
         const requestOptions = {
           method: 'POST',
           headers: {
@@ -90,7 +113,14 @@ export function fetchOpenAI (system_prompt, user_prompt) {
           signal: currentController.signal,
         };
 
-        updateStatus ('Calling API ' + settings.apiUrl);
+        responseHandler.forEach (handler => {
+          logger.debug (handler);
+          handler.init ();
+        });
+
+        responseHandler.forEach (handler => {
+          handler.processStatus ('Calling API ' + settings.apiUrl);
+        });
         cancelButton.style.display = 'block'; // Show cancel button
 
         try {
@@ -98,18 +128,21 @@ export function fetchOpenAI (system_prompt, user_prompt) {
           fetch (settings.apiUrl, requestOptions).then (response => {
             const statusCode = response.status; // Capture the HTTP status code
             if (!response.ok) {
-              logger.error (
-                `API call failed: ${statusCode} ${response.statusText}`
-              );
-              updateStatus (
-                `API call failed: ${statusCode} ${response.statusText}`
-              );
+              errorText = `API call failed: ${statusCode} ${response.statusText}`;
+              logger.error (errorText);
+              responseHandler.forEach (handler => {
+                handler.processError (errorText);
+              });
               cancelButton.style.display = 'none'; // Hide cancel button
               return;
             }
             const reader = response.body.getReader ();
             initMarkdown ();
-            updateStatus (`Status : ${statusCode}. Waiting for response...`);
+            responseHandler.forEach (handler => {
+              handler.processStatus (
+                `Status : ${statusCode}. Waiting for response...`
+              );
+            });
             let buffer = '';
 
             function processChunk (text) {
@@ -132,7 +165,9 @@ export function fetchOpenAI (system_prompt, user_prompt) {
                       return;
                     }
                     const json = JSON.parse (content); // Parse JSON after 'data:'
-                    updateStatus ('Stream received data.');
+                    responseHandler.forEach (handler => {
+                      handler.processStatus ('Stream received data.');
+                    });
                     if (
                       json.choices &&
                       json.choices[0] &&
@@ -142,10 +177,13 @@ export function fetchOpenAI (system_prompt, user_prompt) {
                       const content = json.choices[0].delta.content;
                       logger.debug ('Received content: ' + content);
                       generated_text += content;
-                      appendMarkdown (content);
-                      if (content.includes ('\n')) {
-                        displayMarkdown ();
-                      }
+                      responseHandler.forEach (handler => {
+                        handler.processContent (content);
+                      });
+                      // appendMarkdown (content);
+                      // if (content.includes ('\n')) {
+                      //   displayMarkdown ();
+                      // }
                     }
                   } catch (error) {
                     logger.error ('Error parsing JSON:', error);
@@ -166,8 +204,13 @@ export function fetchOpenAI (system_prompt, user_prompt) {
 
             reader.read ().then (function pump({done, value}) {
               if (done) {
-                updateStatus (`Stream completed.`);
-                displayMarkdown (true);
+                responseHandler.forEach (handler => {
+                  handler.processStatus ('Stream completed.');
+                });
+                responseHandler.forEach (handler => {
+                  handler.postProcess ();
+                });
+                //displayMarkdown (true);
                 cancelButton.style.display = 'none'; // Hide cancel button
                 logger.debug ('generated_text ', generated_text);
                 resolve (generated_text);
@@ -185,10 +228,14 @@ export function fetchOpenAI (system_prompt, user_prompt) {
           });
         } catch (error) {
           if (error.name === 'AbortError') {
-            updateStatus ('Request was cancelled.');
+            responseHandler.forEach (handler => {
+              handler.processError ('Request was cancelled.');
+            });
           } else {
             logger.error ('Error during fetch or reading:', error);
-            updateStatus (`API call failed: ${error.message}`);
+            responseHandler.forEach (handler => {
+              handler.processError (`API call failed: ${error.message}`);
+            });
           }
           cancelButton.style.display = 'none'; // Hide cancel button
         }

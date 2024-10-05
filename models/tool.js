@@ -1,6 +1,7 @@
 import {createLogger} from '../scripts/logger.js';
 const logger = createLogger ('tool.js');
 import {fetchOpenAI} from '../scripts/api.js';
+import {MarkdownHandler} from '../scripts/responseHandler.js';
 
 export class Tool {
   constructor (toolConfig) {
@@ -47,7 +48,11 @@ export class Tool {
   async executeChatCompletion (input) {
     logger.debug ('Executing LLM:', input);
     // await fetchOpenAI api then return the result
-    const response = await fetchOpenAI (input.system_prompt, input.user_prompt);
+    const response = await fetchOpenAI (
+      input.system_prompt,
+      input.user_prompt,
+      [new MarkdownHandler ()]
+    );
     return response;
   }
 
