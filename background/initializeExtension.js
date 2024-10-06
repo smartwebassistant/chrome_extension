@@ -15,6 +15,7 @@ import {
   DEFAULT_MAX_TOKENS,
   DEFAULT_TEMPERATURE,
   DEFAULT_TOP_P,
+  STORAGE_ENABLE_CONTEXT_MENU,
 } from '../scripts/constants.js';
 import {createLogger} from '../scripts/logger.js';
 
@@ -33,9 +34,8 @@ export async function initializeExtension () {
     const result = await chrome.storage.local.get (STORAGE_INITIALIZATION_KEY);
 
     if (!result[STORAGE_INITIALIZATION_KEY]) {
-      logger.info ('Initializing extension for the first time...');
-
       const defaultSettings = {
+        [STORAGE_INITIALIZATION_KEY]: true, // Set to true to prevent re-initialization
         [STORAGE_API_URL]: DEFAULT_API_URL,
         [STORAGE_API_TOKEN]: '',
         [STORAGE_MODEL_NAME]: DEFAULT_MODEL_NAME,
@@ -43,8 +43,11 @@ export async function initializeExtension () {
         [STORAGE_TEMPERATURE]: DEFAULT_TEMPERATURE,
         [STORAGE_TOP_P]: DEFAULT_TOP_P,
         [STORAGE_DISABLE_SYSTEM_ROLE]: false,
-        [STORAGE_INITIALIZATION_KEY]: true,
+        [STORAGE_ENABLE_CONTEXT_MENU]: true,
       };
+      logger.info (
+        'Initializing extension for the first time...' + defaultSettings
+      );
 
       // Add stored prompts 1 to 5
       for (let i = 1; i <= 5; i++) {

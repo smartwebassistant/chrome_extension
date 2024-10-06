@@ -3,6 +3,7 @@
 import {handlePromptSubmission} from '../services/aiServices.js';
 import {updateStatus} from '../scripts/utils.js';
 import {extractWebpageText} from '../background/contentExtraction.js';
+import {messageContentScript} from '../scripts/utils.js';
 import {
   DEFAULT_LANGUAGE,
   ID_CONFIG_BUTTON,
@@ -20,9 +21,16 @@ import {
   ID_MAGIC_CLICK_CHECKBOX,
   ID_INCLUDE_WEB_CONTENT_CHECKBOX,
   ID_STORED_PROMPT_INPUT,
+  ID_ENABLE_CONTEXT_MENU_CHECKBOX,
+  STORAGE_ENABLE_CONTEXT_MENU,
+  ID_ENABLE_CONTEXT_MENU_SPAN,
 } from '../scripts/constants.js';
 import {createLogger} from '../scripts/logger.js';
 import '../services/messageGateway.js';
+import {
+  createContextMenu,
+  removeExistingMenuItems,
+} from '../background/contextMenu.js';
 const logger = createLogger ('ui.js');
 
 // Function to initialize the configuration dropdown menu
@@ -274,6 +282,49 @@ export function initUI () {
       chrome.tabs.query ({active: true, currentWindow: true}, function (tabs) {
         chrome.tabs.sendMessage (tabs[0].id, {action: 'stopSelectingElement'});
       });
+    }
+  });
+
+  // 6.2 enable context menu checkbox
+  const enableContextMenuCheckbox = document.getElementById (
+    ID_ENABLE_CONTEXT_MENU_CHECKBOX
+  );
+  // read from local storage and set the checkbox
+  chrome.storage.local.get ([STORAGE_ENABLE_CONTEXT_MENU], result => {
+    logger.debug (
+      'enableContextMenuCheckbox:',
+      result[STORAGE_ENABLE_CONTEXT_MENU]
+    );
+    const checked = result[STORAGE_ENABLE_CONTEXT_MENU];
+
+    if (checked) {
+      enableContextMenuCheckbox.checked = true;
+    } else {
+      // set default value
+      enableContextMenuCheckbox.checked = false;
+    }
+  });
+  const enableContextMenuSpan = document.getElementById (
+    ID_ENABLE_CONTEXT_MENU_SPAN
+  );
+  enableContextMenuCheckbox.addEventListener ('change', function () {
+    const checked = this.checked;
+    chrome.storage.local.set ({[STORAGE_ENABLE_CONTEXT_MENU]: checked});
+    enableContextMenuSpan.style.display = 'inline';
+    setTimeout (() => {
+      enableContextMenuSpan.style.display = 'none';
+    }, 2000);
+    if (checked) {
+      // create context menu in the current tab
+      chrome.tabs.query ({active: true, currentWindow: true}, tabs => {
+        if (tabs.length > 0) {
+          createContextMenu (tabs[0]);
+          messageContentScript ({action: 'content.handleContextMenuClick'}); // add green rectangle when right click
+        }
+      });
+    } else {
+      removeExistingMenuItems ();
+      messageContentScript ({action: 'content.removeContextMenuClick'}); // remove green rectangle when right click
     }
   });
 

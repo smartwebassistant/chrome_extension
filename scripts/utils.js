@@ -38,13 +38,23 @@ export function messageExtension (request) {
   });
 }
 
-export function messageContentScript (tabId, request) {
+export function messageContentScript (request) {
   return new Promise ((resolve, reject) => {
-    chrome.tabs.sendMessage (tabId, request, response => {
-      if (chrome.runtime.lastError) {
-        reject (chrome.runtime.lastError);
+    chrome.tabs.query ({active: true, currentWindow: true}, tabs => {
+      if (tabs.length === 0) {
+        reject ('No active tab found');
+        logger.error (
+          'No active tab found when sending message to content script'
+        );
       } else {
-        resolve (response);
+        const tabId = tabs[0].id;
+        chrome.tabs.sendMessage (tabId, request, response => {
+          if (chrome.runtime.lastError) {
+            reject (chrome.runtime.lastError);
+          } else {
+            resolve (response);
+          }
+        });
       }
     });
   });

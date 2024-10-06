@@ -21,6 +21,8 @@ export const STORAGE_KEY_SELECTED_LANGUAGE = 'selectedLanguage';
 export const STORAGE_STORED_PROMPT_PREFIX = 'storedPrompt'; // Generic prefix for dynamic prompt storage
 export const STORAGE_DISABLE_SYSTEM_ROLE = 'disableSystemRole';
 export const STORAGE_INITIALIZATION_KEY = 'extensionInitialized';
+//enableContextMenu
+export const STORAGE_ENABLE_CONTEXT_MENU = 'enableContextMenu';
 
 // HTML ID Constants
 export const ID_CONFIG_BUTTON = 'configButton';
@@ -40,6 +42,11 @@ export const ID_SAVE_API_CONFIG_BUTTON = 'saveApiConfigButton';
 export const ID_TEST_CONNECTION_BUTTON = 'testConnectionButton';
 export const ID_API_CONNECTION_TEST_STATUS = 'apiConnectionTestStatusDiv';
 export const ID_INCLUDE_WEB_CONTENT_CHECKBOX = 'includeWebContentCheckbox';
+//enableContextMenuCheckbox
+export const ID_ENABLE_CONTEXT_MENU_CHECKBOX = 'enableContextMenuCheckbox';
+//enableContextMenuSpan
+export const ID_ENABLE_CONTEXT_MENU_SPAN = 'enableContextMenuSpan';
+
 //magicClickCheckbox
 export const ID_MAGIC_CLICK_CHECKBOX = 'magicClickCheckbox';
 // disableSystemRoleCheckbox

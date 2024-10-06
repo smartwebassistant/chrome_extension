@@ -1,6 +1,10 @@
 // contextMenu.js
 import {createLogger} from '../scripts/logger.js';
-import {STORAGE_KEYS} from '../scripts/constants.js';
+import {
+  STORAGE_KEYS,
+  STORAGE_ENABLE_CONTEXT_MENU,
+} from '../scripts/constants.js';
+import {messageContentScript} from '../scripts/utils.js';
 const logger = createLogger ('contextMenu.js');
 
 const MENU_IDS = {
@@ -19,10 +23,20 @@ export function createContextMenu (tab) {
     return;
   }
 
-  removeExistingMenuItems ()
-    .then (createTopLevelMenuItem)
-    .then (createSubMenus)
-    .catch (error => logger.error ('Error in context menu creation:', error));
+  // check if createContextMenu in local storage
+  chrome.storage.local.get ([STORAGE_ENABLE_CONTEXT_MENU], result => {
+    const enableContextMenu = result[STORAGE_ENABLE_CONTEXT_MENU];
+    logger.debug ('Enable context menu:', enableContextMenu);
+    if (enableContextMenu) {
+      messageContentScript ({action: 'content.handleContextMenuClick'});
+      removeExistingMenuItems ()
+        .then (createTopLevelMenuItem)
+        .then (createSubMenus)
+        .catch (error =>
+          logger.error ('Error in context menu creation:', error)
+        );
+    }
+  });
 }
 
 function isValidTab (tab) {
@@ -53,7 +67,7 @@ function createTopLevelMenuItem () {
   });
 }
 
-function removeExistingMenuItems () {
+export function removeExistingMenuItems () {
   return new Promise (resolve => {
     chrome.contextMenus.removeAll (() => {
       logger.debug ('Removed all existing context menu items');

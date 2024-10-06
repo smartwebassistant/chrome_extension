@@ -52,15 +52,40 @@ document.head.appendChild (style);
 let lastRightClickedElement = null;
 let highlightedElement = null;
 
-// Add event listener for right-click
-document.addEventListener (
-  'contextmenu',
-  function (e) {
+// // Add event listener for right-click
+// document.addEventListener (
+//   'contextmenu',
+//   function (e) {
+//     lastRightClickedElement = e.target;
+//     highlightElement (lastRightClickedElement);
+//   },
+//   true
+// );
+let contextMenuHandler; // Declare this at the top of your script or in an appropriate scope
+
+function handleContextMenuClick () {
+  console.debug ('starting to enable the green border');
+  // remove the existing contextmenu
+  removeContextMenuClick ();
+  contextMenuHandler = function (e) {
     lastRightClickedElement = e.target;
     highlightElement (lastRightClickedElement);
-  },
-  true
-);
+  };
+
+  // Add the event listener
+  document.addEventListener ('contextmenu', contextMenuHandler, true);
+  console.log ('Context menu click event listener added');
+}
+
+function removeContextMenuClick () {
+  console.debug ('starting to remove the green border');
+
+  if (contextMenuHandler) {
+    document.removeEventListener ('contextmenu', contextMenuHandler, true);
+    contextMenuHandler = null; // Clear the reference
+    console.log ('Context menu click event listener removed');
+  }
+}
 
 chrome.runtime.onMessage.addListener (function (request, sender, sendResponse) {
   console.log ('Message received:', request);
@@ -101,6 +126,10 @@ chrome.runtime.onMessage.addListener (function (request, sender, sendResponse) {
   } else if (request.action === 'content.fillText') {
     content = request.content;
     handleFillText (content);
+  } else if (request.action === 'content.handleContextMenuClick') {
+    handleContextMenuClick ();
+  } else if (request.action === 'content.removeContextMenuClick') {
+    removeContextMenuClick ();
   }
   return true;
 });
