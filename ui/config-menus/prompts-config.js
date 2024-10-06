@@ -38,7 +38,7 @@ function load () {
       storedPromptInputs.forEach ((input, index) => {
         // Safely get the stored prompt value with a fallback to an empty string if undefined
         const promptKey = `${STORAGE_STORED_PROMPT_PREFIX}${index + 1}`;
-        const promptValue = result[promptKey] || '';
+        const promptValue = result[promptKey] ?? '';
         logger.debug (`${promptKey} storage value: ${promptValue}`);
 
         // Set the input value
@@ -90,7 +90,7 @@ function save () {
       // Loop through stored prompts to update both storage text and button title
       storedPromptInputs.forEach ((input, index) => {
         // Check if input value exists and handle appropriately
-        const inputValue = input.value || ''; // Ensure it defaults to an empty string if undefined
+        const inputValue = input.value ?? ''; // Ensure it defaults to an empty string if undefined
 
         // Update storage text if corresponding storage element exists
         if (index < storedPromptStorages.length) {

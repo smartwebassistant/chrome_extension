@@ -64,10 +64,10 @@ function load () {
       );
       // console.log('Value currently is ' + result.apiUrl);
       logger.debug ('apiUrl storage value:' + result[STORAGE_API_URL]);
-      apiUrlInput.value = result[STORAGE_API_URL] || DEFAULT_API_URL;
+      apiUrlInput.value = result[STORAGE_API_URL] ?? DEFAULT_API_URL;
       document.getElementById (
         ID_API_URL_STORAGE_SPAN
-      ).textContent = `(Stored: ${result[STORAGE_API_URL] || 'None'})`;
+      ).textContent = `(Stored: ${result[STORAGE_API_URL] ?? 'None'})`;
 
       // masked token display, example ****123
       logger.debug ('apiToken storage value:' + result[STORAGE_API_TOKEN]);
@@ -81,29 +81,29 @@ function load () {
 
       // Set the model name, max tokens, temperature, and top P from local storage
       logger.debug ('modelName storage value:' + result[STORAGE_MODEL_NAME]);
-      modelNameInput.value = result[STORAGE_MODEL_NAME] || DEFAULT_MODEL_NAME;
+      modelNameInput.value = result[STORAGE_MODEL_NAME] ?? DEFAULT_MODEL_NAME;
       document.getElementById (
         ID_MODEL_NAME_STORAGE_SPAN
-      ).textContent = `(Stored: ${result[STORAGE_MODEL_NAME] || 'None'})`;
+      ).textContent = `(Stored: ${result[STORAGE_MODEL_NAME] ?? 'None'})`;
 
       logger.debug ('maxToken storage value:' + result[STORAGE_MAX_TOKEN]);
-      maxTokenInput.value = result[STORAGE_MAX_TOKEN] || DEFAULT_MAX_TOKENS;
+      maxTokenInput.value = result[STORAGE_MAX_TOKEN] ?? DEFAULT_MAX_TOKENS;
       document.getElementById (
         ID_MAX_TOKEN_STORAGE_SPAN
-      ).textContent = `(Stored: ${result[STORAGE_MAX_TOKEN] || 'None'})`;
+      ).textContent = `(Stored: ${result[STORAGE_MAX_TOKEN] ?? 'None'})`;
 
       logger.debug ('temperature storage value:' + result[STORAGE_TEMPERATURE]);
       temperatureInput.value =
-        result[STORAGE_TEMPERATURE] || DEFAULT_TEMPERATURE;
+        result[STORAGE_TEMPERATURE] ?? DEFAULT_TEMPERATURE;
       document.getElementById (
         ID_TEMPERATURE_STORAGE_SPAN
-      ).textContent = `(Stored: ${result[STORAGE_TEMPERATURE] || 'None'})`;
+      ).textContent = `(Stored: ${result[STORAGE_TEMPERATURE] ?? 'None'})`;
 
       logger.debug ('topP storage value:' + result[STORAGE_TOP_P]);
-      topPInput.value = result[STORAGE_TOP_P] || DEFAULT_TOP_P;
+      topPInput.value = result[STORAGE_TOP_P] ?? DEFAULT_TOP_P;
       document.getElementById (
         ID_TOP_P_STORAGE_SPAN
-      ).textContent = `(Stored: ${result[STORAGE_TOP_P] || 'None'})`;
+      ).textContent = `(Stored: ${result[STORAGE_TOP_P] ?? 'None'})`;
 
       document
         .getElementById ('saveApiConfigButton')
