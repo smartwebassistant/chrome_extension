@@ -1,7 +1,7 @@
 // responseHandler.js
 
 import {createLogger} from './logger.js';
-import {updateStatus} from './utils.js';
+import {updateStatus, state} from './utils.js';
 import {displayMarkdown, appendMarkdown, initMarkdown} from '../ui/markdown.js';
 
 const logger = createLogger ('responseHandler.js');
@@ -60,7 +60,7 @@ export class MarkdownHandler extends ChatCompletionResponseHandler {
   }
 
   processError (error) {
-    updateStatus (error);
+    updateStatus (error, state.error);
   }
 
   processContent (content) {
@@ -79,6 +79,6 @@ export class MarkdownHandler extends ChatCompletionResponseHandler {
   }
 
   processStatus (status) {
-    updateStatus (status);
+    updateStatus (status, state.inProgress);
   }
 }

@@ -1,6 +1,9 @@
 // markdown.js
 
-import {ID_MARKDOWN_CONTENT} from '../scripts/constants.js';
+import {
+  ID_MARKDOWN_CONTENT,
+  ID_COPY_MARKDOWN_BUTTON,
+} from '../scripts/constants.js';
 import {createLogger} from '../scripts/logger.js';
 
 const logger = createLogger ('markdown.js');
@@ -36,6 +39,33 @@ const converter = new showdown.Converter ({
 const markdownContent = document.getElementById (ID_MARKDOWN_CONTENT);
 // Buffer to hold Markdown content (chunks from stream) until ready for conversion
 let contentBuffer = '';
+
+const copyMarkdownButton = document.getElementById (ID_COPY_MARKDOWN_BUTTON);
+removeCopyButtonListener (); // Remove any existing listeners
+addCopyButtonListener (markdownContent, copyMarkdownButton); // Add a new listener
+
+function addCopyButtonListener () {
+  copyMarkdownButton.addEventListener ('click', () => {
+    handleCopyMarkdown (markdownContent, copyMarkdownButton);
+  });
+}
+
+function handleCopyMarkdown (markdownContent, copyMarkdownButton) {
+  const img = copyMarkdownButton.querySelector ('img');
+  img.src = '../images/check2-square.svg'; // Change icon to indicate success
+
+  // Reset the icon after 10 seconds
+  setTimeout (() => {
+    img.src = '../images/copy.svg';
+  }, 10000);
+  navigator.clipboard.writeText (markdownContent.innerText).then (() => {
+    logger.debug ('Markdown content copied to clipboard.');
+  });
+}
+
+function removeCopyButtonListener () {
+  copyMarkdownButton.removeEventListener ('click', () => {});
+}
 
 // Function to convert the content to HTML and display it
 // the original logic was to call displayMarkdown only when receving \n, but

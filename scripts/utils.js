@@ -4,10 +4,40 @@ import {ID_STATUS_FOOTER} from './constants.js';
 import {createLogger} from './logger.js';
 const logger = createLogger ('utils.js');
 // Update the status display in the bottom
-export function updateStatus (message) {
+// create constants for icons and export them
+const hourglassIcon = '\u23F3'; // ⏳ Hourglass for in-progress
+const checkmarkIcon = '\u2705'; // ✅ Green checkmark for completion
+const errorIcon = '\u274C'; // ❌ Red cross mark for error
+const actionRequiredIcon = '\u26A0'; // ⚠️ Warning sign for action required
+
+export const state = {
+  inProgress: 'inProgress',
+  completed: 'completed',
+  error: 'error',
+  actionRequired: 'actionRequired',
+};
+
+export function updateStatus (message, status = 'actionRequired') {
   // let user know the status of each operation
   const statusDisplay = document.getElementById (ID_STATUS_FOOTER);
-  statusDisplay.textContent = message;
+  let icon;
+
+  switch (status) {
+    case state.completed:
+      icon = checkmarkIcon;
+      break;
+    case state.error:
+      icon = errorIcon;
+      break;
+    case state.actionRequired:
+      icon = actionRequiredIcon;
+      break;
+    case state.inProgress:
+    default:
+      icon = hourglassIcon;
+  }
+
+  statusDisplay.textContent = `${icon} ${message}`;
 }
 
 // test if a string is a valid URL

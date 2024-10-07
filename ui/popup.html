@@ -172,10 +172,24 @@
 
       <div id="configPopupDiv"></div>
 
-      <div
-        id="markdownContentTextArea"
-        class="border p-3 mb-1 bg-white overflow-auto markdown-content"
-      ></div>
+      <div class="position-relative">
+        <div
+          id="markdownContentTextArea"
+          class="border p-3 mb-1 bg-white overflow-auto markdown-content"
+        ></div>
+        <div
+          id="copyMarkdownButton"
+          class="div-pointer position-absolute top-0 end-0 m-2"
+          title="Copy to clipboard"
+          style="z-index: 1000"
+        >
+          <img
+            src="../images/copy.svg"
+            alt="Copy"
+            style="width: 16px; height: 16px"
+          />
+        </div>
+      </div>
 
       <!--       <div class="d-flex justify-content-between align-items-center mt-1">
         <footer id="statusFooter" class="flex-grow-1">Ready.</footer>

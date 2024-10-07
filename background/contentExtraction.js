@@ -1,11 +1,11 @@
 // contentExtraction.js
-import {updateStatus} from '../scripts/utils.js';
+import {updateStatus, state} from '../scripts/utils.js';
 import {createLogger} from '../scripts/logger.js';
 const logger = createLogger ('contentExtraction.js');
 
 export function extractWebpageText (tabId, processFunction) {
   logger.debug ('Extracting text from the webpage...');
-  updateStatus ('Extracting text from the webpage...');
+  updateStatus ('Extracting text from the webpage...', state.inProgress);
   chrome.tabs.sendMessage (tabId, {action: 'getText'}, function (response) {
     if (chrome.runtime.lastError || !response) {
       handleResponseError ('Extraction');

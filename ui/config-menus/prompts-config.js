@@ -7,7 +7,7 @@ import {
   ID_STORED_PROMPT_STORAGE,
   ID_STORED_PROMPT_BUTTON,
 } from '../../scripts/constants.js';
-import {updateStatus} from '../../scripts/utils.js';
+import {updateStatus, state} from '../../scripts/utils.js';
 import {createLogger} from '../../scripts/logger.js';
 const logger = createLogger ('promptsConfig.js');
 
@@ -56,7 +56,7 @@ function load () {
       document
         .getElementById (ID_SAVE_PROMPTS_CONFIG_BUTTON)
         .addEventListener ('click', save);
-      updateStatus ('Ready.');
+      updateStatus ('Ready.', state.completed);
     }
   );
 }
@@ -106,7 +106,7 @@ function save () {
       });
 
       //configPopup.style.display = 'none'; // Optionally hide the popup after saving
-      updateStatus ('Settings saved successfully.');
+      updateStatus ('Settings saved successfully.', state.completed);
     }
   );
 }

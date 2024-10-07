@@ -10,7 +10,7 @@ import {
   ID_MARKDOWN_CONTENT,
 } from '../scripts/constants.js';
 import {createLogger} from '../scripts/logger.js';
-import {updateStatus} from '../scripts/utils.js';
+import {updateStatus, state} from '../scripts/utils.js';
 import {MarkdownHandler} from '../scripts/responseHandler.js';
 const logger = createLogger ('aiServices.js');
 
@@ -118,10 +118,13 @@ export function handlePromptSubmission (prompt, language, context) {
           [new MarkdownHandler ()]
         ).catch (error => {
           logger.error ('Failed to process custom prompt.' + error.message);
-          updateStatus ('Failed to process custom prompt.' + error.message);
+          updateStatus (
+            'Failed to process custom prompt.' + error.message,
+            state.error
+          );
         });
       }
-      updateStatus ('Calling API, wait for response');
+      updateStatus ('Calling API, wait for response', state.inProgress);
     });
   } else {
     // if context is not empty
@@ -138,7 +141,10 @@ export function handlePromptSubmission (prompt, language, context) {
         [new MarkdownHandler ()]
       ).catch (error => {
         logger.error ('Failed to process custom prompt.' + error.message);
-        updateStatus ('Failed to process custom prompt.' + error.message);
+        updateStatus (
+          'Failed to process custom prompt.' + error.message,
+          state.error
+        );
       });
     } else {
       fetchOpenAI (
@@ -149,10 +155,13 @@ export function handlePromptSubmission (prompt, language, context) {
         [new MarkdownHandler ()]
       ).catch (error => {
         logger.error ('Failed to process custom prompt.' + error.message);
-        updateStatus ('Failed to process custom prompt.' + error.message);
+        updateStatus (
+          'Failed to process custom prompt.' + error.message,
+          state.error
+        );
       });
     }
   }
 
-  updateStatus ('Submitting prompt: ' + prompt);
+  updateStatus ('Submitting prompt: ' + prompt, state.inProgress);
 }

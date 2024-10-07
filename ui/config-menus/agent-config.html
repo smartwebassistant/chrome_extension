@@ -23,7 +23,22 @@
             role="switch"
           />
         </div>
-        <button class="btn btn-success btn-sm agent-delete">Delete</button>
+        <div class="dropdown d-inline-block">
+          <button
+            class="btn btn-secondary btn-sm dropdown-toggle"
+            type="button"
+            data-bs-toggle="dropdown"
+            aria-expanded="false"
+          >
+            Actions
+          </button>
+          <ul class="dropdown-menu">
+            <li><a class="dropdown-item view-agent" href="#">View</a></li>
+            <li><a class="dropdown-item edit-agent" href="#">Edit</a></li>
+            <li><hr class="dropdown-divider" /></li>
+            <li><a class="dropdown-item delete-agent" href="#">Delete</a></li>
+          </ul>
+        </div>
       </div>
     </li>
   </template>

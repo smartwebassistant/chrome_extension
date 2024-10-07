@@ -1,6 +1,6 @@
 // api.js
 
-import {updateStatus} from './utils.js';
+import {updateStatus, state} from './utils.js';
 import {initMarkdown, appendMarkdown, displayMarkdown} from '../ui/markdown.js';
 import {ID_API_CONNECTION_TEST_STATUS} from './constants.js';
 import {createLogger} from './logger.js';
@@ -190,7 +190,7 @@ export function fetchOpenAI (system_prompt, user_prompt, responseHandler = []) {
                   }
                 } else if (line.startsWith ('ping:')) {
                   logger.debug ('Received ping:' + chunk);
-                  updateStatus ('ping received.');
+                  updateStatus ('ping received.', state.inProgress);
                 } else {
                   logger.error (
                     'Unexpected line:' + line + '. length:' + line.length
@@ -205,7 +205,7 @@ export function fetchOpenAI (system_prompt, user_prompt, responseHandler = []) {
             reader.read ().then (function pump({done, value}) {
               if (done) {
                 responseHandler.forEach (handler => {
-                  handler.processStatus ('Stream completed.');
+                  handler.processStatus ('\u2705 Stream completed.');
                 });
                 responseHandler.forEach (handler => {
                   handler.postProcess ();

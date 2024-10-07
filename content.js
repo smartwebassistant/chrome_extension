@@ -94,33 +94,33 @@ chrome.runtime.onMessage.addListener (function (request, sender, sendResponse) {
       ? document.getElementById ('main-content').innerText
       : document.body.innerText;
     sendResponse ({text: mainContentText});
-  } else if (request.action === 'selectElement') {
-    // Handle action to select an element
-    document.addEventListener ('click', handleClick, false);
-  } else if (request.action === 'stopSelectingElement') {
-    // Handle action to stop selecting an element
-    document.removeEventListener ('click', handleClick, false);
-    console.log ('Click event listener removed');
-  } else if (request.action === 'getSelectedElementText') {
-    // Handle action to get the text of the selected element
-    if (currentObserver) {
-      // use html to locate the element and get the text of its parent element
-      sendResponse ({text: writingContent});
-    } else {
-      sendResponse ({text: ''});
-    }
+    // } else if (request.action === 'selectElement') {
+    //   // Handle action to select an element
+    //   document.addEventListener ('click', handleClick, false);
+    // } else if (request.action === 'stopSelectingElement') {
+    //   // Handle action to stop selecting an element
+    //   document.removeEventListener ('click', handleClick, false);
+    //   console.log ('Click event listener removed');
+    // } else if (request.action === 'getSelectedElementText') {
+    //   // Handle action to get the text of the selected element
+    //   if (currentObserver) {
+    //     // use html to locate the element and get the text of its parent element
+    //     sendResponse ({text: writingContent});
+    //   } else {
+    //     sendResponse ({text: ''});
+    //   }
   } else if (request.action === 'getContextForAIRead') {
     handleGetContextForAIRead (request.selectedText, sendResponse);
-  } else if (request.action === 'getContextForAIWrite') {
-    handleGetContextForAIWrite (sendResponse);
+    // } else if (request.action === 'getContextForAIWrite') {
+    //   handleGetContextForAIWrite (sendResponse);
   } else if (request.action === 'aiReadAction') {
     handleAIReadAction (
       request.prompt,
       request.context,
       request.isElementHighlighted
     );
-  } else if (request.action === 'aiWriteAction') {
-    handleAIWriteAction (request.context);
+    // } else if (request.action === 'aiWriteAction') {
+    //   handleAIWriteAction (request.context);
   } else if (request.action === 'content.executeAgent') {
     handleExecuteAgent (request, sender, sendResponse);
   } else if (request.action === 'content.fillText') {

@@ -28,6 +28,8 @@ export const STORAGE_ENABLE_CONTEXT_MENU = 'enableContextMenu';
 export const ID_CONFIG_BUTTON = 'configButton';
 export const ID_CONFIG_POPUP = 'configPopupDiv';
 export const ID_MARKDOWN_CONTENT = 'markdownContentTextArea';
+//copyMarkdownButton
+export const ID_COPY_MARKDOWN_BUTTON = 'copyMarkdownButton';
 export const ID_TOGGLE_SIDEBAR_BUTTON = 'toggleSidebarButton';
 export const ID_LANGUAGE_SELECT = 'languageSelect';
 export const ID_CUSTOM_PROMPT_INPUT = 'customPromptInput';

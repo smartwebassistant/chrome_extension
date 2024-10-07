@@ -26,7 +26,7 @@ import {
 } from '../../scripts/constants.js';
 import {testApiConnection} from '../../scripts/api.js';
 import {createLogger} from '../../scripts/logger.js';
-import {isValidUrl, updateStatus} from '../../scripts/utils.js';
+import {isValidUrl, updateStatus, state} from '../../scripts/utils.js';
 const logger = createLogger ('apiConfig.js');
 
 export function init () {
@@ -111,7 +111,7 @@ function load () {
       document
         .getElementById (ID_TEST_CONNECTION_BUTTON)
         .addEventListener ('click', testConnection);
-      updateStatus ('Ready.');
+      updateStatus ('Ready.', state.completed);
     }
   );
 }
@@ -261,7 +261,7 @@ function save () {
       }, 2000);
 
       //configPopup.style.display = 'none'; // Optionally hide the popup after saving
-      updateStatus ('Settings saved successfully.');
+      updateStatus ('Settings saved successfully.', state.completed);
     }
   );
 }

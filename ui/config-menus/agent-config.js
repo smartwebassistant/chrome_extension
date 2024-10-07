@@ -49,9 +49,7 @@ export function init () {
   }
 
   function renderAgentsList () {
-    const listContainer = document
-      .getElementById ('existingAgentsList')
-      .querySelector ('ul');
+    const listContainer = existingAgentsList.querySelector ('ul');
     listContainer.innerHTML = '';
     const template = document.getElementById ('agentListItemTemplate');
 
@@ -65,10 +63,16 @@ export function init () {
         toggleAgent (agent.id, toggleSwitch.checked)
       );
 
-      const deleteButton = listItem.querySelector ('.agent-delete');
-      deleteButton.addEventListener ('click', () =>
-        showDeleteConfirmation (agent.id)
-      );
+      const dropdownMenu = listItem.querySelector ('.dropdown-menu');
+      dropdownMenu
+        .querySelector ('.view-agent')
+        .addEventListener ('click', () => viewAgent (agent.id));
+      dropdownMenu
+        .querySelector ('.edit-agent')
+        .addEventListener ('click', () => editAgent (agent.id));
+      dropdownMenu
+        .querySelector ('.delete-agent')
+        .addEventListener ('click', () => showDeleteConfirmation (agent.id));
 
       listContainer.appendChild (listItem);
     });
@@ -130,6 +134,7 @@ export function init () {
     const bsModal = new bootstrap.Modal (modal);
     bsModal.show ();
   }
+
   function renderAgentsList () {
     const listContainer = existingAgentsList.querySelector ('ul');
     listContainer.innerHTML = '';
@@ -145,20 +150,74 @@ export function init () {
         toggleAgent (agent.id, toggleSwitch.checked)
       );
 
-      const deleteButton = listItem.querySelector ('.agent-delete');
-      deleteButton.addEventListener ('click', () =>
-        showDeleteConfirmation (agent.id)
-      );
+      const dropdownMenu = listItem.querySelector ('.dropdown-menu');
+      dropdownMenu
+        .querySelector ('.view-agent')
+        .addEventListener ('click', () => viewAgent (agent.id));
+      dropdownMenu
+        .querySelector ('.edit-agent')
+        .addEventListener ('click', () => editAgent (agent.id));
+      dropdownMenu
+        .querySelector ('.delete-agent')
+        .addEventListener ('click', () => showDeleteConfirmation (agent.id));
 
       listContainer.appendChild (listItem);
     });
+
+    const dropdownElementList = [].slice.call (
+      document.querySelectorAll ('.dropdown-toggle')
+    );
+    const dropdownList = dropdownElementList.map (function (dropdownToggleEl) {
+      return new bootstrap.Dropdown (dropdownToggleEl);
+    });
+
+    // Close dropdowns when clicking outside
+    document.addEventListener ('click', event => {
+      if (!event.target.matches ('.dropdown-toggle')) {
+        const dropdowns = document.getElementsByClassName ('dropdown-menu');
+        for (let i = 0; i < dropdowns.length; i++) {
+          const openDropdown = dropdowns[i];
+          if (openDropdown.classList.contains ('show')) {
+            openDropdown.classList.remove ('show');
+          }
+        }
+      }
+    });
   }
+
+  document.addEventListener ('click', event => {
+    if (!event.target.matches ('.dropdown-toggle')) {
+      const dropdowns = document.getElementsByClassName ('dropdown-menu');
+      for (let i = 0; i < dropdowns.length; i++) {
+        const openDropdown = dropdowns[i];
+        if (openDropdown.classList.contains ('show')) {
+          openDropdown.classList.remove ('show');
+        }
+      }
+    }
+  });
 
   function toggleAgent (agentId, isEnabled) {
     const agent = agents.find (a => a.id === agentId);
     if (agent) {
       agent.isEnabled = isEnabled;
       saveAgents ();
+    }
+  }
+
+  function viewAgent (agentId) {
+    // Implement view functionality
+    logger.debug (`Viewing agent: ${agentId}`);
+    // You might want to show a modal or navigate to a detailed view
+  }
+
+  function editAgent (agentId) {
+    // Implement edit functionality
+    logger.debug (`Editing agent: ${agentId}`);
+    const agent = agents.find (a => a.id === agentId);
+    if (agent) {
+      currentAgent = agent;
+      populateForm (agent);
     }
   }
 
@@ -174,6 +233,21 @@ export function init () {
     };
 
     modal.show ();
+  }
+
+  function populateForm (agent) {
+    agentNameInput.value = agent.name;
+    agentDescriptionInput.value = agent.description;
+    // Populate triggers and steps
+    updateTriggersList ();
+    updateStepsList ();
+  }
+
+  function updateStepsList () {
+    stepsContainer.innerHTML = '';
+    currentAgent.steps.forEach ((step, index) => {
+      addStep (step);
+    });
   }
 
   function deleteAgent (agentId) {
