@@ -33,6 +33,24 @@ const converter = new showdown.Converter ({
   strikethrough: true,
   tables: true,
   extensions: ['codeblocks'],
+  simpleLineBreaks: true,
+  parseImgDimensions: true,
+  smoothLivePreview: true,
+  smartIndentationFix: true,
+  disableForced4SpacesIndentedSublists: true,
+  literalMidWordUnderscores: true,
+  omitExtraWLInCodeBlocks: true,
+});
+
+// Add a custom rule to prevent single-line '+' content from becoming a code block
+converter.addExtension ({
+  type: 'output',
+  filter: function (text) {
+    return text.replace (
+      /<pre><code>\+ (.*?)<\/code><\/pre>/g,
+      '<ul><li>$1</li></ul>'
+    );
+  },
 });
 
 // Get the markdown content element
@@ -90,6 +108,7 @@ export function displayMarkdown (forceDisplay = false) {
   // to the previous converted html content which is why in the code it searches for the last html tag and truncate the text after that
   // obvisously the buffered content will be flushed after that
   const html = converter.makeHtml (contentBuffer);
+  logger.debug ('Converted HTML:', html);
 
   // find out the last html tag in the innerHTML, truncate the text after that and append the new html
   const lastTagIndex = markdownContent.innerHTML.lastIndexOf ('</');
