@@ -45,7 +45,7 @@ export class ChatCompletionResponseHandler {
    * Process status updates.
    * @param {string} status - The status message.
    */
-  processStatus (status) {
+  processStatus (status, stateIcon) {
     throw new Error ("Method 'processStatus()' must be implemented.");
   }
 }
@@ -78,7 +78,7 @@ export class MarkdownHandler extends ChatCompletionResponseHandler {
     displayMarkdown (true); // Force display
   }
 
-  processStatus (status) {
-    updateStatus (status, state.inProgress);
+  processStatus (status, stateIcon) {
+    updateStatus (status, stateIcon);
   }
 }

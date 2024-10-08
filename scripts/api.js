@@ -65,7 +65,8 @@ export function fetchOpenAI (system_prompt, user_prompt, responseHandler = []) {
           });
           responseHandler.forEach (handler => {
             handler.processStatus (
-              'Failed to load settings. Please try again.'
+              'Failed to load settings. Please try again.',
+              state.error
             );
           });
           return;
@@ -119,7 +120,10 @@ export function fetchOpenAI (system_prompt, user_prompt, responseHandler = []) {
         });
 
         responseHandler.forEach (handler => {
-          handler.processStatus ('Calling API ' + settings.apiUrl);
+          handler.processStatus (
+            'Calling API ' + settings.apiUrl,
+            state.inProgress
+          );
         });
         cancelButton.style.display = 'block'; // Show cancel button
 
@@ -140,7 +144,8 @@ export function fetchOpenAI (system_prompt, user_prompt, responseHandler = []) {
             initMarkdown ();
             responseHandler.forEach (handler => {
               handler.processStatus (
-                `Status : ${statusCode}. Waiting for response...`
+                `Status : ${statusCode}. Waiting for response...`,
+                state.inProgress
               );
             });
             let buffer = '';
@@ -166,7 +171,10 @@ export function fetchOpenAI (system_prompt, user_prompt, responseHandler = []) {
                     }
                     const json = JSON.parse (content); // Parse JSON after 'data:'
                     responseHandler.forEach (handler => {
-                      handler.processStatus ('Stream received data.');
+                      handler.processStatus (
+                        'Stream received data.',
+                        state.inProgress
+                      );
                     });
                     if (
                       json.choices &&
@@ -205,7 +213,7 @@ export function fetchOpenAI (system_prompt, user_prompt, responseHandler = []) {
             reader.read ().then (function pump({done, value}) {
               if (done) {
                 responseHandler.forEach (handler => {
-                  handler.processStatus ('\u2705 Stream completed.');
+                  handler.processStatus ('Stream completed.', state.completed);
                 });
                 responseHandler.forEach (handler => {
                   handler.postProcess ();
