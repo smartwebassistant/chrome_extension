@@ -18,6 +18,10 @@ import {
   ID_MODEL_NAME_STORAGE_SPAN,
   ID_MAX_TOKEN_STORAGE_SPAN,
   ID_TEMPERATURE_STORAGE_SPAN,
+  ID_API_URL_INPUT,
+  ID_MAX_TOKEN_INPUT,
+  ID_TEMPERATURE_INPUT,
+  ID_TOP_P_INPUT,
   ID_TOP_P_STORAGE_SPAN,
   DEFAULT_MAX_TOKENS,
   DEFAULT_TEMPERATURE,
@@ -37,6 +41,7 @@ export function init () {
   load ();
   configPopupDiv.style.display = 'block';
 }
+
 function load () {
   chrome.storage.local.get (
     [
@@ -167,6 +172,19 @@ function maskApiKey (apiKey) {
   }
 }
 
+// function to make the background of input field red
+function makeInputFieldBackgroundRed (input) {
+  // if the value is empty, make the background bootstrap alert color
+    if (!input.value || input.value.trim () === '') {
+      input.style.backgroundColor = '#f8d7da';
+    }
+}
+
+// function to restore the background of input field
+function restoreInputFieldBackground (input) {
+  input.style.backgroundColor = '';
+}
+
 function save () {
   const saveApiUrlButton = document.getElementById (ID_SAVE_API_CONFIG_BUTTON);
   // Check if required fields are not empty
@@ -176,6 +194,11 @@ function save () {
     !temperatureInput.value.trim () ||
     !topPInput.value.trim ()
   ) {
+
+    for (const input of [apiUrlInput, maxTokenInput, temperatureInput, topPInput]) {
+      makeInputFieldBackgroundRed (input);
+    }
+
     updateStatus ('Please fill in all required * fields.');
     return;
   }
@@ -210,6 +233,9 @@ function save () {
   const disableSystemRoleSpan = document.getElementById (
     ID_DISABLE_SYSTEM_ROLE_SPAN
   );
+  for (const input of [apiUrlInput, maxTokenInput, temperatureInput, topPInput]) {
+    restoreInputFieldBackground (input);
+  }
   chrome.storage.local.set (
     {
       [STORAGE_API_URL]: apiUrlInput.value,
