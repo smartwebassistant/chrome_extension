@@ -27,6 +27,8 @@ export const STORAGE_ENABLE_CONTEXT_MENU = 'enableContextMenu';
 // HTML ID Constants
 export const ID_CONFIG_BUTTON = 'configButton';
 export const ID_CONFIG_POPUP = 'configPopupDiv';
+//markdownContentGroupDiv
+export const ID_MARKDOWN_CONTENT_GROUP_DIV = 'markdownContentGroupDiv';
 export const ID_MARKDOWN_CONTENT = 'markdownContentTextArea';
 //copyMarkdownButton
 export const ID_COPY_MARKDOWN_BUTTON = 'copyMarkdownButton';

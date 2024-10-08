@@ -24,6 +24,7 @@ import {
   ID_ENABLE_CONTEXT_MENU_CHECKBOX,
   STORAGE_ENABLE_CONTEXT_MENU,
   ID_ENABLE_CONTEXT_MENU_SPAN,
+  ID_MARKDOWN_CONTENT_GROUP_DIV,
 } from '../scripts/constants.js';
 import {createLogger} from '../scripts/logger.js';
 import '../services/messageGateway.js';
@@ -75,7 +76,7 @@ async function initConfigDropdown () {
     e.stopPropagation ();
     const isDisplayed = dropdownMenu.style.display === 'block';
 
-    if (markdownContent.style.display === 'none') {
+    if (!isMarkdownContentVisible ()) {
       showMarkdownContent ();
       hideConfigPopup ();
     } else {
@@ -99,16 +100,27 @@ async function initConfigDropdown () {
 
 function showMarkdownContent () {
   // Show the markdown content and hide the config popup
-  const markdownContent = document.getElementById (ID_MARKDOWN_CONTENT);
+  const markdownContentGroupDiv = document.getElementById (
+    ID_MARKDOWN_CONTENT_GROUP_DIV
+  );
   logger.debug ('show markdown content');
-  markdownContent.style.display = 'block';
+  markdownContentGroupDiv.style.display = 'block';
 }
 
 function hideMarkdownContent () {
   // Hide the markdown content and show the config popup
-  const markdownContent = document.getElementById (ID_MARKDOWN_CONTENT);
+  const markdownContentGroupDiv = document.getElementById (
+    ID_MARKDOWN_CONTENT_GROUP_DIV
+  );
   logger.debug ('hide markdown content');
-  markdownContent.style.display = 'none';
+  markdownContentGroupDiv.style.display = 'none';
+}
+
+function isMarkdownContentVisible () {
+  const markdownContentGroupDiv = document.getElementById (
+    ID_MARKDOWN_CONTENT_GROUP_DIV
+  );
+  return markdownContentGroupDiv.style.display === 'block';
 }
 
 function hideConfigPopup () {
